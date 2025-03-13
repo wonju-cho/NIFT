@@ -21,4 +21,5 @@ public class User {
     private String kakaoId;
     private String nickName;
     private String walletAddress;
+    
 }
