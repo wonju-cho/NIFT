@@ -1,0 +1,23 @@
+package com.e101.nift.product.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Setter;
+import java.time.LocalDateTime;
+
+
+@Entity
+@Table(name = "브랜드")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Brand {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long brandId;
+
+    private String brandName;
+}
