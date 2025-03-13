@@ -1,10 +1,10 @@
 package com.e101.nift.user.entity;
+
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
 
 
 @Entity
@@ -21,5 +21,4 @@ public class User {
     private String kakaoId;
     private String nickName;
     private String walletAddress;
-
 }
