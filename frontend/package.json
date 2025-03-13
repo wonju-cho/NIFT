@@ -1,12 +1,9 @@
 {
-  "name": "ssafy-sample-pjt-frontend",
-  "author": {
-    "name": "NonceLab",
-    "url": "https://www.noncelab.com/"
-  },
-  "version": "1.0.0",
-  "private": false,
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
+<<<<<<< Updated upstream
     "start": "export PORT=3001 && react-scripts start", 
     "build": "react-scripts build",
     "test": "react-scripts test"
@@ -62,10 +59,20 @@
     "web-vitals": "^2.1.0",
     "web3": "^1.6.1",
     "yup": "^0.32.9"
+=======
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "next": "13.4.19"
+>>>>>>> Stashed changes
   },
   "devDependencies": {
-    "@babel/core": "^7.15.5",
-    "prettier": "^2.4.1"
-  },
-  "proxy": "http://localhost:3000"
+    "@tailwindcss/postcss": "^4",
+    "tailwindcss": "^4"
+  }
 }
