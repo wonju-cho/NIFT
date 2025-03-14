@@ -21,4 +21,9 @@ public class User {
     private String kakaoId;
     private String nickName;
     private String walletAddress;
+<<<<<<< HEAD
+=======
+    private String profileImage;
+
+>>>>>>> 406ced2d1fb6b88b4234573762974b09701046ec
 }
