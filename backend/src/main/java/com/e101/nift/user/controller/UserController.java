@@ -1,9 +1,9 @@
 package com.e101.nift.user.controller;
 
 import com.e101.nift.user.entity.User;
-import com.e101.nift.user.model.dto.NicknameDTO;
-import com.e101.nift.user.model.dto.UserResponseDto;
-import com.e101.nift.user.model.dto.WalletAddressDTO;
+import com.e101.nift.user.model.dto.request.NicknameDTO;
+import com.e101.nift.user.model.dto.response.UserInfoDto;
+import com.e101.nift.user.model.dto.request.WalletAddressDTO;
 import com.e101.nift.user.service.KakaoAuthService;
 import com.e101.nift.user.service.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
@@ -57,7 +57,7 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDto> getMyInfo(HttpServletRequest request) {
+    public ResponseEntity<UserInfoDto> getMyInfo(HttpServletRequest request) {
         String accessToken = request.getHeader("Authorization");
 
         if (accessToken == null || !accessToken.startsWith("Bearer ")) {
@@ -67,7 +67,7 @@ public class UserController {
         // "Bearer " 부분 제거하여 순수 accessToken만 추출
         accessToken = accessToken.substring(7);
 
-        UserResponseDto userResponse = userServiceImpl.getUserInfo(accessToken);
+        UserInfoDto userResponse = userServiceImpl.getUserInfo(accessToken);
         return ResponseEntity.ok(userResponse);
     }
 

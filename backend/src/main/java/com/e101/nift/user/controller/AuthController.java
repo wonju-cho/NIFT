@@ -1,9 +1,9 @@
 package com.e101.nift.user.controller;
 
 import com.e101.nift.user.entity.User;
+import com.e101.nift.user.model.dto.request.NicknameDTO;
 import com.e101.nift.user.service.KakaoAuthService;
 import lombok.RequiredArgsConstructor;
-import com.e101.nift.user.model.dto.UserSignupRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,7 +22,7 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/auth")
 public class AuthController {
 
     private final KakaoAuthService kakaoAuthService;
@@ -51,7 +51,7 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@Valid @RequestBody UserSignupRequestDto requestDto) {
+    public ResponseEntity<String> signup(@Valid @RequestBody NicknameDTO.UserSignupDto requestDto) {
         return ResponseEntity.ok("회원가입 성공");
     }
 }

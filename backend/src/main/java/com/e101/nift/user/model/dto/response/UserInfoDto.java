@@ -1,7 +1,5 @@
-package com.e101.nift.user.model.dto;
+package com.e101.nift.user.model.dto.response;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Lob;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,7 +7,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Builder
-public class UserResponseDto {
+public class UserInfoDto {
 
     private final String profileImage;
 
