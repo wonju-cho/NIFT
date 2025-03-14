@@ -1,6 +1,7 @@
 package com.e101.nift.user.service;
 
 import com.e101.nift.user.entity.User;
+import com.e101.nift.user.model.state.KakaoApiUrl;
 import com.e101.nift.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,8 +17,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class KakaoAuthService {
-    private static final String USER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
-
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final UserRepository userRepository;
@@ -30,7 +29,7 @@ public class KakaoAuthService {
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
             HttpEntity<String> request = new HttpEntity<>(headers);
-            ResponseEntity<String> response = restTemplate.exchange(USER_INFO_URL, HttpMethod.GET, request, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(KakaoApiUrl.KAKAO_USER_ME.getUrl(), HttpMethod.GET, request, String.class);
 
             JsonNode jsonResponse = objectMapper.readTree(response.getBody());
             Long kakaoId = jsonResponse.get("id").asLong();

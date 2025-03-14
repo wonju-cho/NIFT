@@ -4,7 +4,7 @@ import com.e101.nift.common.exception.CustomException;
 import com.e101.nift.common.exception.ErrorCode;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.response.UserInfoDto;
-import com.e101.nift.user.model.state.KakaoApiState;
+import com.e101.nift.user.model.state.KakaoApiUrl;
 import com.e101.nift.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,19 +18,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 
 
-@Service
-@RequiredArgsConstructor
 @Slf4j
+@Service
 @Transactional
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
     private final WalletService walletService;
     private final ObjectMapper objectMapper;
 
-
-    // ✅ Kakao API URL
-    private static final String KAKAO_API_URL = "https://kapi.kakao.com/v2/user/me";
+    private final KakaoAuthService kakaoAuthService;
     private final RestTemplateBuilder restTemplateBuilder;
 
     @Override
@@ -53,8 +51,8 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public void deleteUser(Long kakaoId) {
-
+    public void deleteUser(String accessToken) {
+        unlinkedKakaoInfo(accessToken);
     }
 
     @Override
@@ -67,7 +65,7 @@ public class UserServiceImpl implements UserService{
         log.info("🔍 [UserService] 사용자 정보 조회 요청: accessToken={}", accessToken);
 
         // ✅ 1. 카카오 API에서 프로필 이미지 가져오기
-        KakaoApiState kakaoApiState = fetchKakaoInfo(accessToken, "profile_image");
+        String profileImg = kakaoAuthService.getKakaoUserInfo(accessToken).getProfileImage();
 
         // ✅ 2. DB에서 유저 조회 (닉네임 & 지갑 주소)
         User user = getUserFromDb(accessToken);
@@ -80,7 +78,7 @@ public class UserServiceImpl implements UserService{
 
         // ✅ 4. 모든 정보를 DTO에 담아 반환
         return UserInfoDto.builder()
-                .profileImage(kakaoApiState.getProfileImgSrc())
+                .profileImage(profileImg)
                 .nickname(user.getNickName())
                 .walletAddress(user.getWalletAddress())
                 .balance(balance)
@@ -88,41 +86,60 @@ public class UserServiceImpl implements UserService{
                 .build();
     }
 
-    // ✅ 공통된 Kakao API 요청을 처리하는 메서드 (Jackson `ObjectMapper` 사용)
-    private KakaoApiState fetchKakaoInfo(String accessToken, String key) {
-        log.info("🔍 [UserService] Kakao API 요청: key={}", key);
+
+    private boolean unlinkedKakaoInfo(String accessToken) {
+        log.info("🔍 [UserService] Kakao Unlink API 요청");
 
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + accessToken);
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-            ResponseEntity<String> response = restTemplateBuilder.build().exchange(KAKAO_API_URL, HttpMethod.GET, entity, String.class);
+            Long kakaoId = kakaoAuthService.getKakaoUserInfo(accessToken).getKakaoId();
+
+            String requestBody = "target_id_type=user_id&target_id=" + kakaoId;
+
+            HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<String> response = restTemplateBuilder.build()
+                    .exchange(
+                            KakaoApiUrl.KAKAO_USER_UNLINK.getUrl(),
+                            HttpMethod.POST,
+                            requestEntity,
+                            String.class
+                    );
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 JsonNode jsonNode = objectMapper.readTree(response.getBody());
-                log.info("✅ [UserService] Kakao API 응답 성공");
+                log.info("✅ [UserService] Kakao unlink API 응답 성공: {}", jsonNode);
+                long responseId = jsonNode.path("id").asLong(-1); // id가 없을 경우 -1 반환
 
-                // ✅ "id" 가져오기
-                Long kakaoId = jsonNode.get("id").asLong();
-                String profileImg = jsonNode.get("properties").get(key).asText();
-                return new KakaoApiState(kakaoId, profileImg);
+                if(responseId == kakaoId) {
+                    userRepository.findByKakaoId(kakaoId)
+                            .ifPresentOrElse(userRepository::delete, () -> {
+                                throw new CustomException(ErrorCode.INVALID_REQUEST);
+                            });
+
+                    return true;
+                }
+                else {
+                    log.error("❌ [UserService] Kakao unlink API 응답 ID 불일치: 요청 ID={}, 응답 ID={}",
+                            kakaoId, responseId);
+                    throw new CustomException(ErrorCode.INVALID_REQUEST);
+                }
             } else {
                 log.error("❌ [UserService] Kakao API 호출 실패: statusCode={}", response.getStatusCode());
                 throw new CustomException(ErrorCode.INVALID_REQUEST);
-//                return key.equals("profile_image") ? "https://default-profile-image.com/default.jpg" : "N/A";
             }
         } catch (Exception e) {
             log.error("❌ [UserService] Kakao API 응답 파싱 실패: {}", e.getMessage(), e);
-//            return key.equals("profile_image") ? "https://default-profile-image.com/default.jpg" : "N/A";
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
     }
 
     // ✅ DB에서 Kakao ID로 사용자 조회
     private User getUserFromDb(String accessToken) {
-        Long kakaoId = fetchKakaoInfo(accessToken, "id").getKakaoId(); // ✅ Kakao ID 추출
+        Long kakaoId = kakaoAuthService.getKakaoUserInfo(accessToken).getKakaoId();
         log.info("🔍 [UserService] DB에서 사용자 조회: kakaoId={}", kakaoId);
 
         return userRepository.findByKakaoId(kakaoId)

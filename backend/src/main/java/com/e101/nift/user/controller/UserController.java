@@ -9,10 +9,12 @@ import com.e101.nift.user.service.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -67,8 +69,25 @@ public class UserController {
         // "Bearer " 부분 제거하여 순수 accessToken만 추출
         accessToken = accessToken.substring(7);
 
+        log.info("[UserController] getMyInfo accessToken 추출: {}", accessToken);
+
         UserInfoDto userResponse = userServiceImpl.getUserInfo(accessToken);
         return ResponseEntity.ok(userResponse);
     }
 
+    @DeleteMapping("/me")
+    public  ResponseEntity<Void> deleteUser(HttpServletRequest request) {
+        String accessToken = request.getHeader("Authorization");
+
+        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 토큰이 없거나 잘못됨
+        }
+
+        // "Bearer " 부분 제거하여 순수 accessToken만 추출
+        accessToken = accessToken.substring(7);
+
+        userServiceImpl.deleteUser(accessToken);
+
+        return ResponseEntity.noContent().build();
+    }
 }
