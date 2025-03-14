@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 const KAKAO_REST_API_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY;

@@ -29,7 +29,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<User> kakaoLogin(@RequestBody Map<String, String> request) {
-        String accessToken = request.get("access_token");
+        String accessToken = request.get("accessToken");
 
         log.info("accessToken: {}", accessToken);
 

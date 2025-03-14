@@ -5,7 +5,7 @@
 // }
 
 // import { Footer } from "@/components/layout/footer"
-import { Button } from "@/components/ui/button"
+import KakaoLoginButton from "./component/KakaoLoginButton";
 
 export default function SignupPage() {
   return (
@@ -39,19 +39,7 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-4">
-              <Button>카카오로 시작하기</Button>
-              {/* <Button
-                className="w-full h-12 bg-[#FEE500] hover:bg-[#FEE500]/90 text-[#000000] hover:text-[#000000]/90"
-                size="lg"
-              >
-                <Image src="/kakao-logo.png" alt="Kakao" width={20} height={20} className="mr-2" />
-              </Button> */}
-
-              {/* <div className="text-center">
-                <Link href="/email-signup" className="text-sm text-gray-500 hover:text-gray-700 hover:underline">
-                  다른 이메일로 시작하기
-                </Link>
-              </div> */}
+              <KakaoLoginButton />
             </div>
           </div>
         </div>

@@ -2,8 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { sendKakaoTokenToBackend } from "@/app/api/kakao";
-import LoadingSpinner from "@/app/component/LoadingSpinner";
+import LoadingSpinner from "../../../component/LoadingSpinner"; 
 
 const KakaoCallback = () => {
   const router = useRouter();
@@ -14,6 +13,7 @@ const KakaoCallback = () => {
       if (!code) return;
 
       try {
+        // 🔹 1. 카카오 OAuth API를 통해 access_token 요청
         const response = await fetch("https://kauth.kakao.com/oauth/token", {
           method: "POST",
           headers: {
@@ -29,12 +29,25 @@ const KakaoCallback = () => {
 
         const data = await response.json();
         console.log("카카오 토큰:", data);
+
+        if (!data.access_token) {
+          throw new Error("카카오 액세스 토큰을 가져오지 못했습니다.");
+        }
+
         localStorage.setItem("kakao_access_token", data.access_token);
 
-        // 백엔드로 토큰 보내기
-        const userInfo = await sendKakaoTokenToBackend(data.access_token);
-        console.log("백엔드 응답 확인 : ", userInfo);
-        
+        // 🔹 2. Next.js API (`/api/kakao`)로 access_token 전송
+        const backendResponse = await fetch("/api/kakao", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ accessToken: data.access_token }),
+        });
+
+        const userInfo = await backendResponse.json();
+        console.log("백엔드 응답 확인:", userInfo);
+
         router.push("/");
       } catch (error) {
         console.error("카카오 로그인 실패:", error);
@@ -44,7 +57,7 @@ const KakaoCallback = () => {
     getKakaoToken();
   }, [router]);
 
-  return <LoadingSpinner />
+  return <LoadingSpinner />;
 };
 
 export default KakaoCallback;
