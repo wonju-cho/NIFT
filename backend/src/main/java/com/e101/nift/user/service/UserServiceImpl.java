@@ -1,7 +1,7 @@
 package com.e101.nift.user.service;
 
 import com.e101.nift.user.entity.User;
-import com.e101.nift.user.model.dto.UserResponseDto;
+import com.e101.nift.user.model.dto.response.UserInfoDto;
 import com.e101.nift.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +12,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import org.springframework.http.HttpHeaders;
@@ -35,7 +34,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public UserResponseDto updateNickname(String kakaoId, String nickname) {
+    public UserInfoDto updateNickname(String kakaoId, String nickname) {
         User user = userRepository.findByKakaoId(kakaoId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setNickName(nickname);
@@ -44,7 +43,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UserResponseDto updateWalletAddress(String kakaoId, String walletAddress) {
+    public UserInfoDto updateWalletAddress(String kakaoId, String walletAddress) {
         User user = userRepository.findByKakaoId(kakaoId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setWalletAddress(walletAddress);
@@ -58,7 +57,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDto getUserInfo(String accessToken) {
+    public UserInfoDto getUserInfo(String accessToken) {
         log.info("🔍 [UserService] 사용자 정보 조회 요청: accessToken={}", accessToken);
 
         // ✅ 1. 카카오 API에서 프로필 이미지 가져오기
@@ -74,7 +73,7 @@ public class UserServiceImpl implements UserService{
                 user.getUserId(), user.getNickName(), user.getWalletAddress(), balance);
 
         // ✅ 4. 모든 정보를 DTO에 담아 반환
-        return UserResponseDto.builder()
+        return UserInfoDto.builder()
                 .profileImage(profileImage)
                 .nickname(user.getNickName())
                 .walletAddress(user.getWalletAddress())
