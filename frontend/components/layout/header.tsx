@@ -121,11 +121,11 @@ export function Header() {
           </Button>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
+            {/* <Button variant="outline" size="sm" asChild>
               <Link href="/signin">로그인</Link>
-            </Button>
+            </Button> */}
             <Button size="sm" asChild>
-              <Link href="/signup">회원가입</Link>
+              <Link href="/signin">로그인</Link>
             </Button>
           </div>
         </div>
