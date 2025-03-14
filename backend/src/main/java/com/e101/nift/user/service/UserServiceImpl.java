@@ -1,20 +1,21 @@
 package com.e101.nift.user.service;
 
+import com.e101.nift.common.exception.CustomException;
+import com.e101.nift.common.exception.ErrorCode;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.response.UserInfoDto;
+import com.e101.nift.user.model.state.KakaoApiState;
 import com.e101.nift.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import org.springframework.http.HttpHeaders;
 
 
 @Service
@@ -34,7 +35,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public UserInfoDto updateNickname(String kakaoId, String nickname) {
+    public UserInfoDto updateNickname(Long kakaoId, String nickname) {
         User user = userRepository.findByKakaoId(kakaoId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setNickName(nickname);
@@ -43,12 +44,17 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UserInfoDto updateWalletAddress(String kakaoId, String walletAddress) {
+    public UserInfoDto updateWalletAddress(Long kakaoId, String walletAddress) {
         User user = userRepository.findByKakaoId(kakaoId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setWalletAddress(walletAddress);
         userRepository.save(user);
         return null;
+    }
+
+    @Override
+    public void deleteUser(Long kakaoId) {
+
     }
 
     @Override
@@ -61,7 +67,7 @@ public class UserServiceImpl implements UserService{
         log.info("🔍 [UserService] 사용자 정보 조회 요청: accessToken={}", accessToken);
 
         // ✅ 1. 카카오 API에서 프로필 이미지 가져오기
-        String profileImage = fetchKakaoInfo(accessToken, "profile_image");
+        KakaoApiState kakaoApiState = fetchKakaoInfo(accessToken, "profile_image");
 
         // ✅ 2. DB에서 유저 조회 (닉네임 & 지갑 주소)
         User user = getUserFromDb(accessToken);
@@ -74,7 +80,7 @@ public class UserServiceImpl implements UserService{
 
         // ✅ 4. 모든 정보를 DTO에 담아 반환
         return UserInfoDto.builder()
-                .profileImage(profileImage)
+                .profileImage(kakaoApiState.getProfileImgSrc())
                 .nickname(user.getNickName())
                 .walletAddress(user.getWalletAddress())
                 .balance(balance)
@@ -83,7 +89,7 @@ public class UserServiceImpl implements UserService{
     }
 
     // ✅ 공통된 Kakao API 요청을 처리하는 메서드 (Jackson `ObjectMapper` 사용)
-    private String fetchKakaoInfo(String accessToken, String key) {
+    private KakaoApiState fetchKakaoInfo(String accessToken, String key) {
         log.info("🔍 [UserService] Kakao API 요청: key={}", key);
 
         try {
@@ -99,23 +105,24 @@ public class UserServiceImpl implements UserService{
                 log.info("✅ [UserService] Kakao API 응답 성공");
 
                 // ✅ "id" 가져오기
-                if ("id".equals(key)) {
-                    return jsonNode.get("id").asText();
-                }
-                return jsonNode.get("properties").get(key).asText();
+                Long kakaoId = jsonNode.get("id").asLong();
+                String profileImg = jsonNode.get("properties").get(key).asText();
+                return new KakaoApiState(kakaoId, profileImg);
             } else {
                 log.error("❌ [UserService] Kakao API 호출 실패: statusCode={}", response.getStatusCode());
-                return key.equals("profile_image") ? "https://default-profile-image.com/default.jpg" : "N/A";
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+//                return key.equals("profile_image") ? "https://default-profile-image.com/default.jpg" : "N/A";
             }
         } catch (Exception e) {
             log.error("❌ [UserService] Kakao API 응답 파싱 실패: {}", e.getMessage(), e);
-            return key.equals("profile_image") ? "https://default-profile-image.com/default.jpg" : "N/A";
+//            return key.equals("profile_image") ? "https://default-profile-image.com/default.jpg" : "N/A";
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
     }
 
     // ✅ DB에서 Kakao ID로 사용자 조회
     private User getUserFromDb(String accessToken) {
-        String kakaoId = fetchKakaoInfo(accessToken, "id"); // ✅ Kakao ID 추출
+        Long kakaoId = fetchKakaoInfo(accessToken, "id").getKakaoId(); // ✅ Kakao ID 추출
         log.info("🔍 [UserService] DB에서 사용자 조회: kakaoId={}", kakaoId);
 
         return userRepository.findByKakaoId(kakaoId)

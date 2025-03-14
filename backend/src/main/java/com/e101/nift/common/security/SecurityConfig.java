@@ -38,11 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**")
                         .permitAll()
-<<<<<<< HEAD
-                        .requestMatchers("/api/auth/**")
-=======
                         .requestMatchers("/api/auth/**", "/api/users/**")
->>>>>>> 406ced2d1fb6b88b4234573762974b09701046ec
                         .permitAll()
                         .requestMatchers("/", "/error", "/favicon.ico", "/*.png", "/*.gif", "/*.svg", "/*.jpg", "/*.html", "/*.css", "/*.js")
                         .permitAll()

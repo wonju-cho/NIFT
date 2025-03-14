@@ -1,7 +1,6 @@
 package com.e101.nift.user.service;
 
 import com.e101.nift.user.entity.User;
-
 import com.e101.nift.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,8 +10,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -36,7 +33,7 @@ public class KakaoAuthService {
             ResponseEntity<String> response = restTemplate.exchange(USER_INFO_URL, HttpMethod.GET, request, String.class);
 
             JsonNode jsonResponse = objectMapper.readTree(response.getBody());
-            String kakaoId = jsonResponse.get("id").asText();
+            Long kakaoId = jsonResponse.get("id").asLong();
             String nickname = jsonResponse.get("kakao_account").get("profile").get("nickname").asText();
 
             JsonNode profileNode = jsonResponse.path("kakao_account").path("profile"); // `path()` 사용하여 null 방지
