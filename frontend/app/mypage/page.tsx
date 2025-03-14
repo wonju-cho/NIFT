@@ -17,14 +17,28 @@ import { ProductCard } from "@/components/product/product-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  AlertCircle,
   Copy,
   CreditCard,
   Heart,
+  LogOut,
   Package,
   Settings,
   ShoppingBag,
   User,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { deleteUser } from "@/lib/api/mypage";
+import { useRouter } from "next/router";
 
 export default function MyPage() {
   // Sample user data
@@ -36,7 +50,22 @@ export default function MyPage() {
     balance: 125000,
   };
 
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const deleteProcess = async () => {
+    try {
+      const response = await deleteUser();
+
+      if (response.status === 204) {
+        setShowDeleteConfirm(true);
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("회원 탈퇴 실패:", error);
+    }
+  };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(user.wallet);
@@ -336,6 +365,81 @@ export default function MyPage() {
                             <Button variant="outline" className="w-full">
                               비밀번호 변경
                             </Button>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>계정 관리</CardTitle>
+                            <CardDescription>
+                              계정 관련 중요 설정을 관리합니다.
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <Alert
+                              variant="destructive"
+                              className="border-red-300 bg-red-50"
+                            >
+                              <AlertCircle className="h-4 w-4" />
+                              <AlertTitle>주의</AlertTitle>
+                              <AlertDescription>
+                                회원 탈퇴 시 모든 계정 정보와 거래 내역이
+                                삭제되며, 복구할 수 없습니다.
+                              </AlertDescription>
+                            </Alert>
+
+                            <Dialog
+                              open={showDeleteConfirm}
+                              onOpenChange={setShowDeleteConfirm}
+                            >
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="w-full border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                >
+                                  <LogOut className="mr-2 h-4 w-4" />
+                                  회원 탈퇴
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>
+                                    정말 탈퇴하시겠습니까?
+                                  </DialogTitle>
+                                  <DialogDescription>
+                                    회원 탈퇴 시 모든 계정 정보와 거래 내역이
+                                    영구적으로 삭제됩니다. 이 작업은 되돌릴 수
+                                    없습니다.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor="confirm">
+                                      확인을 위해 &quot;탈퇴합니다&quot;를
+                                      입력하세요
+                                    </Label>
+                                    <Input
+                                      id="confirm"
+                                      placeholder="탈퇴합니다"
+                                    />
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                  >
+                                    취소
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    onClick={() => deleteProcess()}
+                                  >
+                                    회원 탈퇴 진행
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
                           </CardContent>
                         </Card>
                       </div>
