@@ -41,19 +41,7 @@ public class KakaoAuthService {
 
             JsonNode profileNode = jsonResponse.path("kakao_account").path("profile"); // `path()` 사용하여 null 방지
             // 프로필 이미지 가져오기 (기본 이미지 처리 포함)
-            String profileImg;
-            if (profileNode.has("profile_image_url")) {
-                boolean isDefaultImage = profileNode.has("is_default_image") && profileNode.get("is_default_image").asBoolean();
-
-                profileImg = isDefaultImage
-//                      ? "https://media.istockphoto.com/id/1427748072/ko/%EC%82%AC%EC%A7%84/%ED%81%AC%EB%A6%AC%EC%8A%A4%EB%A7%88%EC%8A%A4%EC%97%90-%EC%A0%84%ED%86%B5%EC%A0%81%EC%9D%B8-%EC%82%B0%ED%83%80-%ED%81%B4%EB%A1%9C%EC%8A%A4%EC%9D%98-%EC%B4%88%EC%83%81%ED%99%94.jpg?s=612x612&w=0&k=20&c=gKsociI3Ls7ivHnQF-71HVSMb3jgPmKzdORUY4YIauM="  // ✅ 기본 프로필 이미지 URL
-                        ? "https://postfiles.pstatic.net/20140606_111/sjinwon2_1402052862659ofnU1_PNG/130917_224626.png?type=w1"
-                        : profileNode.get("profile_image_url").asText(); // ✅ 사용자 프로필 이미지
-            } else {
-//                profileImg = "https://media.istockphoto.com/id/1427748072/ko/%EC%82%AC%EC%A7%84/%ED%81%AC%EB%A6%AC%EC%8A%A4%EB%A7%88%EC%8A%A4%EC%97%90-%EC%A0%84%ED%86%B5%EC%A0%81%EC%9D%B8-%EC%82%B0%ED%83%80-%ED%81%B4%EB%A1%9C%EC%8A%A4%EC%9D%98-%EC%B4%88%EC%83%81%ED%99%94.jpg?s=612x612&w=0&k=20&c=gKsociI3Ls7ivHnQF-71HVSMb3jgPmKzdORUY4YIauM="; // ✅ 필드가 아예 없을 경우 기본 이미지 사용
-                  profileImg = "https://postfiles.pstatic.net/20140606_111/sjinwon2_1402052862659ofnU1_PNG/130917_224626.png?type=w1";
-
-            }
+            String profileImg = profileNode.get("profile_image_url").asText();
 
             log.info("profileImg : " + profileImg);
 
