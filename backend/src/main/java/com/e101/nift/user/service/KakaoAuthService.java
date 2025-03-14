@@ -1,7 +1,7 @@
 package com.e101.nift.user.service;
 
 import com.e101.nift.user.entity.User;
-
+import com.e101.nift.user.model.state.KakaoApiUrl;
 import com.e101.nift.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,16 +11,12 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class KakaoAuthService {
-    private static final String USER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
-
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final UserRepository userRepository;
@@ -33,10 +29,10 @@ public class KakaoAuthService {
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
             HttpEntity<String> request = new HttpEntity<>(headers);
-            ResponseEntity<String> response = restTemplate.exchange(USER_INFO_URL, HttpMethod.GET, request, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(KakaoApiUrl.KAKAO_USER_ME.getUrl(), HttpMethod.GET, request, String.class);
 
             JsonNode jsonResponse = objectMapper.readTree(response.getBody());
-            String kakaoId = jsonResponse.get("id").asText();
+            Long kakaoId = jsonResponse.get("id").asLong();
             String nickname = jsonResponse.get("kakao_account").get("profile").get("nickname").asText();
 
             JsonNode profileNode = jsonResponse.path("kakao_account").path("profile"); // `path()` 사용하여 null 방지
