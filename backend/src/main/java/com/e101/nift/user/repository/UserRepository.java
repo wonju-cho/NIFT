@@ -1,7 +1,10 @@
 package com.e101.nift.user.repository;
 
-import org.springframework.stereotype.Repository;
+import com.e101.nift.user.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-@Repository
-public class UserRepository {
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByKakaoId(String kakaoId);
 }

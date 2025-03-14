@@ -20,7 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = new User(Long.valueOf(1), "1", "1", "1"); // 대충 박아놓은 것
+        User user = new User(Long.valueOf(1), "1", "1", "1", "1"); // 대충 박아놓은 것
 
         UserBuilder userBuilder = org.springframework.security.core.userdetails.User.builder()
                 .username(user.getKakaoId()) // ✅ 카카오 ID를 username으로 사용
