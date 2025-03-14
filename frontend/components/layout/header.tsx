@@ -41,14 +41,14 @@ export function Header() {
           <Link href="/" className="flex items-center gap-2">
             <div className="relative h-10 w-10 overflow-hidden">
               <Image
-                src="/placeholder.svg?height=40&width=40"
+                src="/1.png?height=40&width=40"
                 alt="NIFT Logo"
                 width={40}
                 height={40}
                 className="object-contain"
               />
             </div>
-            <span className="text-2xl font-bold tracking-tight">NIFT</span>
+            <span className="text-2xl font-bold tracking-tight text-primary">NIFT</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
