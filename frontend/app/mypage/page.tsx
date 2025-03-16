@@ -27,13 +27,49 @@ import {
 } from "lucide-react";
 
 export default function MyPage() {
-  // Sample user data
-  const user = {
-    name: "닉네임",
-    avatar: "/placeholder.svg?height=100&width=100",
-    wallet: "0x1234...5678",
-    joinDate: "2025-01-15",
-    balance: 125000,
+
+    // 사용자 정보를 관리하는 상태
+    const [user, setUser] = useState({
+      name: "기존 닉네임",
+      avatar: "/placeholder.svg?height=100&width=100",
+      wallet: "0x1234...5678",
+      joinDate: "2025-01-15",
+      balance: 125000,
+    });
+  
+  const [nickname, setNickname] = useState('기존 닉네임');
+  const [walletAddress, setWalletAddress] = useState('0x123...def');
+
+  const updateNickname = async (nickname: string) => {
+    const response = await fetch("http://localhost:8080/api/users/nickname", {
+      method: "PATCH",
+      headers: {
+        'Content-Type': 'application/json'        
+      },
+      body: JSON.stringify({ nickname: nickname }),
+    });
+    const data = await response.json();
+    if (data.success) {
+      console.log('닉네임 업데이트 성공');
+    } else {
+      console.error('닉네임 업데이트 실패');
+    }
+  };
+  
+  const updateWalletAddress = async (newWalletAddress: string) => {
+    const response = await fetch('localhost:8080/api/users/wallet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ walletAddress: newWalletAddress }),
+    });
+    const data = await response.json();
+    if (data.success) {
+      console.log('지갑 주소 업데이트 성공');
+    } else {
+      console.error('지갑 주소 업데이트 실패');
+    }
   };
 
   const [copied, setCopied] = useState(false);
@@ -214,27 +250,36 @@ export default function MyPage() {
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label htmlFor="name">닉네임</Label>
-                          <Input id="name" defaultValue={user.name} />
+                          <div className="flex gap-2">
+                            <Input
+                              id="name"
+                              defaultValue={user.name}
+                              onChange={(e) =>
+                                setUser({ ...user, name: e.target.value })
+                              }
+                            />
+                            <Button onClick={() => updateNickname(user.name)}>
+                              수정
+                            </Button>
+                          </div>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="wallet">지갑 주소</Label>
                           <div className="flex gap-2">
                             <Input
                               id="wallet"
-                              value={user.wallet}
-                              readOnly
-                              className="bg-muted"
+                              defaultValue={user.wallet}
+                              onChange={(e) =>
+                                setUser({ ...user, wallet: e.target.value })
+                              }
                             />
                             <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={copyToClipboard}
+                              onClick={() => updateWalletAddress(user.wallet)}
                             >
-                              <Copy className="h-4 w-4" />
+                              수정
                             </Button>
                           </div>
                         </div>
-                        <Button>정보 수정</Button>
                       </div>
                     </TabsContent>
 
