@@ -28,11 +28,4 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/**")  // ✅ URL 매칭 확인
                 .order(1); // ✅ 필터 체인보다 먼저 실행되도록 설정
     }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000")
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
-    }
 }
