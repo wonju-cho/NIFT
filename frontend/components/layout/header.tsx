@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { usePathname, useRouter } from "next/navigation"
+import { Search, Heart, Bell, Menu, MapPin, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { cn } from "@/lib/utils"
 
 const navigation = [
   { name: "홈", href: "/" },
@@ -32,7 +34,33 @@ const categories = [
 
 export function Header() {
   const pathname = usePathname()
+  const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    // Check if user is authenticated on component mount
+    const checkAuth = () => {
+      const token = localStorage.getItem("kakao_access_token")
+      setIsAuthenticated(!!token)
+    }
+
+    checkAuth()
+
+    // Add event listener to detect changes in localStorage
+    window.addEventListener("storage", checkAuth)
+
+    return () => {
+      window.removeEventListener("storage", checkAuth)
+    }
+  }, [])
+
+  // Add logout handler function before the return statement
+  const handleLogout = () => {
+    localStorage.removeItem("kakao_access_token")
+    setIsAuthenticated(false)
+    window.location.reload()
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white">
@@ -121,12 +149,21 @@ export function Header() {
           </Button>
 
           <div className="flex items-center gap-2">
-            {/* <Button variant="outline" size="sm" asChild>
-              <Link href="/signin">로그인</Link>
-            </Button> */}
-            <Button size="sm" asChild>
-              <Link href="/signin">로그인</Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                로그아웃
+              </Button>
+            ) : (
+              <>
+                {/* <Button variant="outline" size="sm" asChild>
+                  <Link href="/signin">로그인</Link>
+                </Button> */}
+                <Button size="sm" asChild>
+                  <Link href="/signin">로그인</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
 

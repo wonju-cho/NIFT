@@ -57,9 +57,14 @@ const KakaoCallback: React.FC = () => {
 
         localStorage.setItem("kakao_access_token", data.access_token);
 
+        window.dispatchEvent(new Event("storage"))
+
         // 백엔드로 토큰 보내기
         const userInfo = await sendKakaoTokenToBackend(data.access_token);
         console.log("백엔드 응답 확인:", userInfo);
+
+        // 로그인 상태 변경을 위해 storage 이벤트 발생시키기
+        window.dispatchEvent(new Event("storage"))
 
         router.push("/");
       } catch (error) {
