@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { deleteUser } from "@/lib/api/mypage";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export default function MyPage() {
   // Sample user data
@@ -49,17 +49,20 @@ export default function MyPage() {
     joinDate: "2025-01-15",
     balance: 125000,
   };
-
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const deleteProcess = async () => {
     try {
+      console.log("회원 탈퇴 요청 시작");
       const response = await deleteUser();
+      console.log("회원 탈퇴 응답:", response);
 
       if (response.status === 204) {
-        setShowDeleteConfirm(true);
+        setShowDeleteConfirm(false);
+        localStorage.clear();
+        console.log("탈퇴 완료");
         router.push("/");
       }
     } catch (error) {
