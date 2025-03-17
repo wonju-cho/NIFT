@@ -37,54 +37,40 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { deleteUser } from "@/lib/api/mypage";
+import { deleteUser, updateUserNickname, updateWallet } from "@/lib/api/mypage";
 import { useRouter } from "next/navigation";
 
 export default function MyPage() {
+  // 사용자 정보를 관리하는 상태
+  const [user, setUser] = useState({
+    name: "기존 닉네임",
+    avatar: "/placeholder.svg?height=100&width=100",
+    wallet: "0x1234...5678",
+    joinDate: "2025-01-15",
+    balance: 125000,
+  });
 
-    // 사용자 정보를 관리하는 상태
-    const [user, setUser] = useState({
-      name: "기존 닉네임",
-      avatar: "/placeholder.svg?height=100&width=100",
-      wallet: "0x1234...5678",
-      joinDate: "2025-01-15",
-      balance: 125000,
-    });
-  
-  const [nickname, setNickname] = useState('기존 닉네임');
-  const [walletAddress, setWalletAddress] = useState('0x123...def');
+  const [nickname, setNickname] = useState("기존 닉네임");
+  const [walletAddress, setWalletAddress] = useState("0x123...def");
 
   const updateNickname = async (nickname: string) => {
-    const response = await fetch("http://localhost:8080/api/users/nickname", {
-      method: "PATCH",
-      headers: {
-        'Content-Type': 'application/json'        
-      },
-      body: JSON.stringify({ nickname: nickname }),
-    });
-    const data = await response.json();
-    if (data.success) {
-      console.log('닉네임 업데이트 성공');
+    const data = await updateUserNickname(nickname);
+    if (data.status == 204) {
+      console.log("닉네임 업데이트 성공");
     } else {
-      console.error('닉네임 업데이트 실패');
+      console.error("닉네임 업데이트 실패");
     }
   };
-  
-  const updateWalletAddress = async (newWalletAddress: string) => {
-    const response = await fetch('localhost:8080/api/users/wallet', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ walletAddress: newWalletAddress }),
-    });
-    const data = await response.json();
-    if (data.success) {
-      console.log('지갑 주소 업데이트 성공');
+
+  const updateWalletAddress = async (walletAddress: string) => {
+    const data = await updateWallet(walletAddress);
+    if (data.status == 204) {
+      console.log("닉네임 업데이트 성공");
     } else {
-      console.error('지갑 주소 업데이트 실패');
+      console.error("닉네임 업데이트 실패");
     }
   };
+
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
