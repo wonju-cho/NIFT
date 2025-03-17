@@ -1,6 +1,8 @@
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL
+
 export const sendKakaoTokenToBackend = async (token) => {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

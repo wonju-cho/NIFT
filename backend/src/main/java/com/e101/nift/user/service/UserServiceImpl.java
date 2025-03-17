@@ -15,7 +15,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 
 
 @Slf4j
@@ -25,7 +24,6 @@ import java.math.BigDecimal;
 public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
-    private final WalletService walletService;
     private final ObjectMapper objectMapper;
 
     private final KakaoAuthService kakaoAuthService;
@@ -64,24 +62,14 @@ public class UserServiceImpl implements UserService{
     public UserInfoDto getUserInfo(String accessToken) {
         log.info("🔍 [UserService] 사용자 정보 조회 요청: accessToken={}", accessToken);
 
-        // ✅ 1. 카카오 API에서 프로필 이미지 가져오기
-        String profileImg = kakaoAuthService.getKakaoUserInfo(accessToken).getProfileImage();
-
         // ✅ 2. DB에서 유저 조회 (닉네임 & 지갑 주소)
         User user = getUserFromDb(accessToken);
 
-        // ✅ 3. SSAFY 네트워크에서 실시간 지갑 잔액 조회
-        BigDecimal balance = walletService.getWalletBalance(user.getWalletAddress());
-
-        log.info("✅ [UserService] 사용자 정보 조회 성공: userId={}, nickname={}, walletAddress={}, balance={}",
-                user.getUserId(), user.getNickName(), user.getWalletAddress(), balance);
-
         // ✅ 4. 모든 정보를 DTO에 담아 반환
         return UserInfoDto.builder()
-                .profileImage(profileImg)
+                .profileImage(user.getProfileImage())
                 .nickname(user.getNickName())
                 .walletAddress(user.getWalletAddress())
-                .balance(balance)
                 .message("본인 정보를 조회했습니다.")
                 .build();
     }

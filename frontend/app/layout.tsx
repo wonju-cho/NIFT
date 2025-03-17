@@ -2,6 +2,7 @@ import type React from "react"
 import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import { LoadingProvider } from "@/components/LoadingContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,7 +19,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <LoadingProvider>
+          {children}
+        </LoadingProvider>
+      </body>
     </html>
   )
 }
