@@ -13,9 +13,9 @@ import { NearbyItems } from "@/components/home/nearby-items"
 export default function Home() {
   useEffect(() => {
     // localStorage에서 카카오 토큰을 가져옵니다.
-    const kakaoToken = localStorage.getItem("kakao_access_token");
+    const kakaoToken = localStorage.getItem("access_token");
     if (kakaoToken) {
-      console.log("홈페이지에 찍힌 카카오 토큰:", kakaoToken);
+      console.log("홈페이지에 찍힌 토큰:", kakaoToken);
     } else {
       console.log("홈페이지에 찍힌 토큰: null");
     }

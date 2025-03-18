@@ -5,6 +5,7 @@ import com.e101.nift.user.model.dto.request.NicknameDTO;
 import com.e101.nift.user.model.dto.response.UserInfoDto;
 import com.e101.nift.user.model.dto.request.WalletAddressDTO;
 import com.e101.nift.user.service.KakaoAuthService;
+import com.e101.nift.user.service.UserService;
 import com.e101.nift.user.service.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -20,8 +21,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserServiceImpl userServiceImpl;
     private final KakaoAuthService kakaoAuthService;
+    private final UserService userService;
 
     @PatchMapping("/nickname")
     public ResponseEntity<Void> updateNickname(HttpServletRequest request,
@@ -35,8 +36,8 @@ public class UserController {
         // "Bearer " 부분 제거하여 순수 accessToken만 추출
         accessToken = accessToken.substring(7);
 
-        User user = kakaoAuthService.getKakaoUserInfo(accessToken);
-        userServiceImpl.updateNickname(user.getKakaoId(), nicknameDTO.getNickname());
+        User user = userService.findByAccessToken(accessToken);
+        userService.updateNickname(user.getKakaoId(), nicknameDTO.getNickname());
 
         return ResponseEntity.noContent().build();
     }
@@ -53,8 +54,8 @@ public class UserController {
         // "Bearer " 부분 제거하여 순수 accessToken만 추출
         accessToken = accessToken.substring(7);
 
-        User user = kakaoAuthService.getKakaoUserInfo(accessToken);
-        userServiceImpl.updateWalletAddress(user.getKakaoId(), walletAddressDTO.getWalletAddress());
+        User user = userService.findByAccessToken(accessToken);
+        userService.updateWalletAddress(user.getKakaoId(), walletAddressDTO.getWalletAddress());
 
         return ResponseEntity.noContent().build();
     }
@@ -71,12 +72,12 @@ public class UserController {
 
         log.info("[UserController] getMyInfo accessToken 추출: {}", accessToken);
 
-        UserInfoDto userResponse = userServiceImpl.getUserInfo(accessToken);
+        UserInfoDto userResponse = userService.getUserInfo(accessToken);
         return ResponseEntity.ok(userResponse);
     }
 
     @DeleteMapping("/me")
-    public  ResponseEntity<Void> deleteUser(HttpServletRequest request) {
+    public  ResponseEntity<Void> deleteUser(HttpServletRequest request) { // kakaoAccessToken 전달 받음
         String accessToken = request.getHeader("Authorization");
 
         if (accessToken == null || !accessToken.startsWith("Bearer ")) {
@@ -86,7 +87,7 @@ public class UserController {
         // "Bearer " 부분 제거하여 순수 accessToken만 추출
         accessToken = accessToken.substring(7);
 
-        userServiceImpl.deleteUser(accessToken);
+        userService.deleteUser(accessToken);
 
         return ResponseEntity.noContent().build();
     }
