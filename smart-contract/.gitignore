@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .env
 
 # Created by https://www.toptal.com/developers/gitignore/api/node
@@ -144,3 +145,22 @@ dist
 .svelte-kit
 
 # End of https://www.toptal.com/developers/gitignore/api/node
+=======
+node_modules/
+.env
+
+# Hardhat files
+/cache
+/artifacts
+
+# TypeChain files
+/typechain
+/typechain-types
+
+# solidity-coverage files
+/coverage
+/coverage.json
+
+# Hardhat Ignition default folder for deployments against a local node
+ignition/deployments/chain-31337
+>>>>>>> 2e5d541 (TODO: SSAFY Token을 이용한 NFT minting)
