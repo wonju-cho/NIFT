@@ -1,10 +1,11 @@
 import { ethers } from "ethers";
 
 // SSF 토큰 컨트랙트 정보
-const SSF_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_SSF_CONTRACT_ADDRESS!;
+export const SSF_CONTRACT_ADDRESS =
+  process.env.NEXT_PUBLIC_SSF_CONTRACT_ADDRESS!;
 const SSF_ABI = [
   "function balanceOf(address owner) view returns (uint256)",
-  "function decimals() view returns (uint8)"
+  "function decimals() view returns (uint8)",
 ];
 
 /**
@@ -24,7 +25,11 @@ export async function getSSFBalance(userAddress: string): Promise<string> {
     await provider.send("eth_requestAccounts", []); // 지갑 연결 요청
 
     // SSF 컨트랙트 인스턴스 생성
-    const contract = new ethers.Contract(SSF_CONTRACT_ADDRESS, SSF_ABI, provider);
+    const contract = new ethers.Contract(
+      SSF_CONTRACT_ADDRESS,
+      SSF_ABI,
+      provider
+    );
 
     // 사용자 SSF 잔액 가져오기
     const balance = await contract.balanceOf(userAddress);
