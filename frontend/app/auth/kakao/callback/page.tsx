@@ -58,7 +58,7 @@ const KakaoCallback: React.FC = () => {
           throw new Error("카카오 액세스 토큰을 가져오지 못했습니다.");
         }
 
-        // localStorage.setItem("kakao_access_token", data.access_token);
+        localStorage.setItem("kakao_access_token", data.access_token);
 
         window.dispatchEvent(new Event("storage"))
 

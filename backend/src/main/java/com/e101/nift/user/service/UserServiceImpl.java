@@ -2,12 +2,14 @@ package com.e101.nift.user.service;
 
 import com.e101.nift.common.exception.CustomException;
 import com.e101.nift.common.exception.ErrorCode;
+import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.response.UserInfoDto;
 import com.e101.nift.user.model.state.KakaoApiUrl;
 import com.e101.nift.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -28,6 +30,7 @@ public class UserServiceImpl implements UserService{
 
     private final KakaoAuthService kakaoAuthService;
     private final RestTemplateBuilder restTemplateBuilder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Override
     @Transactional
@@ -58,12 +61,26 @@ public class UserServiceImpl implements UserService{
         return "";
     }
 
+    @Override
+    public User findByAccessToken(String accessToken) {
+        // 1. JWT 토큰으로 user_id 추출
+        Long userId = jwtTokenProvider.getUserIdFromToken(accessToken);
+        if (userId == null) {
+            throw new IllegalArgumentException("Invalid access token");
+        }
+
+        // 2. user_id로 user 조회
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다."));
+    }
+
     @Transactional(readOnly = true)
+    @Override
     public UserInfoDto getUserInfo(String accessToken) {
         log.info("🔍 [UserService] 사용자 정보 조회 요청: accessToken={}", accessToken);
 
         // ✅ 2. DB에서 유저 조회 (닉네임 & 지갑 주소)
-        User user = getUserFromDb(accessToken);
+        User user = findByAccessToken(accessToken);
 
         // ✅ 4. 모든 정보를 DTO에 담아 반환
         return UserInfoDto.builder()
@@ -124,17 +141,4 @@ public class UserServiceImpl implements UserService{
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
     }
-
-    // ✅ DB에서 Kakao ID로 사용자 조회
-    private User getUserFromDb(String accessToken) {
-        Long kakaoId = kakaoAuthService.getKakaoUserInfo(accessToken).getKakaoId();
-        log.info("🔍 [UserService] DB에서 사용자 조회: kakaoId={}", kakaoId);
-
-        return userRepository.findByKakaoId(kakaoId)
-                .orElseThrow(() -> {
-                    log.error("❌ [UserService] 해당 카카오 ID로 등록된 사용자를 찾을 수 없음: kakaoId={}", kakaoId);
-                    return new IllegalArgumentException("해당 카카오 계정이 등록되지 않았습니다.");
-                });
-    }
-
 }

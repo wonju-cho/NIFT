@@ -45,7 +45,7 @@ public class JwtTokenProvider {
     }
 
     // ✅ JWT에서 사용자 user_id 추출
-    public Long getUsernameFromToken(String token) {
+    public Long getUserIdFromToken(String token) {
         return Long.parseLong(Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
