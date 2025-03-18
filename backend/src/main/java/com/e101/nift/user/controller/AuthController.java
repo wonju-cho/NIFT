@@ -3,6 +3,7 @@ package com.e101.nift.user.controller;
 import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.request.NicknameDTO;
+import com.e101.nift.user.model.dto.response.UserLoginDto;
 import com.e101.nift.user.service.KakaoAuthService;
 import com.e101.nift.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider; // JWT 유틸
 
     @PostMapping("/login")
-    public ResponseEntity<?> kakaoLogin(@RequestBody Map<String, String> request) {
+    public ResponseEntity<UserLoginDto> kakaoLogin(@RequestBody Map<String, String> request) {
         String accessToken = request.get("accessToken");
 
         log.info("accessToken: {}", accessToken);
@@ -45,10 +46,10 @@ public class AuthController {
 
         log.info("카카오 로그인 완료: ID={}, 닉네임={}", user.getKakaoId(), user.getNickName());
 
-        return ResponseEntity.ok(Map.of(
-                "token", jwtToken,
-                "userId", user.getUserId()
-        ));
+        // ✅ UserLoginDto 사용하여 반환
+        UserLoginDto userLoginDto = new UserLoginDto(jwtToken, user.getUserId());
+
+        return ResponseEntity.ok(userLoginDto);
     }
 
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
