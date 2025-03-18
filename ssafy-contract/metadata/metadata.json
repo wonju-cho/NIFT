@@ -1,0 +1,23 @@
+{
+  "name": "스타벅스 아메리카노 기프티콘",
+  "description": "이 기프티콘을 사용하면 스타벅스에서 아메리카노를 교환할 수 있습니다.",
+  "image": "ipfs://bafkreig3m7hkpsd4mhhryieh62yjvxtyo3pev3xxkcs24igngjghijyyu4",
+  "attributes": [
+    {
+      "trait_type": "Brand",
+      "value": "Starbucks"
+    },
+    {
+      "trait_type": "Valid Until",
+      "value": "2025-12-31"
+    },
+    {
+      "trait_type": "Gifticon Code",
+      "value": "STARBUCKS-1234-5678"
+    },
+    {
+      "trait_type": "Redeemed",
+      "value": false
+    }
+  ]
+}
