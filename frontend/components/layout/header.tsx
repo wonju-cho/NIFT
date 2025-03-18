@@ -41,7 +41,7 @@ export function Header() {
   useEffect(() => {
     // Check if user is authenticated on component mount
     const checkAuth = () => {
-      const token = localStorage.getItem("kakao_access_token")
+      const token = localStorage.getItem("access_token")
       setIsAuthenticated(!!token)
     }
 
@@ -57,7 +57,7 @@ export function Header() {
 
   // Add logout handler function before the return statement
   const handleLogout = () => {
-    localStorage.removeItem("kakao_access_token")
+    localStorage.removeItem("access_token")
     setIsAuthenticated(false)
     window.location.reload()
   }
