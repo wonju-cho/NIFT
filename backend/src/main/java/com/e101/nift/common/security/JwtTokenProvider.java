@@ -25,9 +25,9 @@ public class JwtTokenProvider {
     }
 
     // ✅ JWT 토큰 생성
-    public String generateToken(String username) {
+    public String generateToken(Long userId) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(String.valueOf(userId))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -44,14 +44,14 @@ public class JwtTokenProvider {
         }
     }
 
-    // ✅ JWT에서 사용자 이름 추출
-    public String getUsernameFromToken(String token) {
-        return Jwts.parserBuilder()
+    // ✅ JWT에서 사용자 user_id 추출
+    public Long getUsernameFromToken(String token) {
+        return Long.parseLong(Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject();
+                .getSubject());
     }
 
     // ✅ JWT에서 인증 정보 가져오기
