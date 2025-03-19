@@ -1,8 +1,11 @@
 package com.e101.nift.user.controller;
 
+import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.request.NicknameDTO;
+import com.e101.nift.user.model.dto.response.UserLoginDto;
 import com.e101.nift.user.service.KakaoAuthService;
+import com.e101.nift.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,9 +27,11 @@ import java.util.Map;
 public class AuthController {
 
     private final KakaoAuthService kakaoAuthService;
+    private final UserService userService; // DB에서 사용자 조회
+    private final JwtTokenProvider jwtTokenProvider; // JWT 유틸
 
     @PostMapping("/login")
-    public ResponseEntity<User> kakaoLogin(@RequestBody Map<String, String> request) {
+    public ResponseEntity<UserLoginDto> kakaoLogin(@RequestBody Map<String, String> request) {
         String accessToken = request.get("accessToken");
 
         log.info("accessToken: {}", accessToken);
@@ -37,9 +42,14 @@ public class AuthController {
             return ResponseEntity.badRequest().build();
         }
 
+        String jwtToken = jwtTokenProvider.generateToken(user.getUserId());
+
         log.info("카카오 로그인 완료: ID={}, 닉네임={}", user.getKakaoId(), user.getNickName());
 
-        return ResponseEntity.ok(user);
+        // ✅ UserLoginDto 사용하여 반환
+        UserLoginDto userLoginDto = new UserLoginDto(jwtToken, user.getUserId());
+
+        return ResponseEntity.ok(userLoginDto);
     }
 
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")

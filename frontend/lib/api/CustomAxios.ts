@@ -11,7 +11,7 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("kakao_access_token");
+    const token = localStorage.getItem("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -31,7 +31,8 @@ apiClient.interceptors.response.use(
       // 401 Unauthorized → 토큰 재발급 처리
       if (status === 401) {
         console.error("Token refresh failed");
-        localStorage.removeItem("accessToken");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("kakao_access_token")
         window.location.href = "/login"; // 로그인 페이지로 이동
       }
     }

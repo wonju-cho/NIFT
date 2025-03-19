@@ -46,10 +46,17 @@ import { useRouter } from "next/navigation";
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const getAccessToken = () => {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("kakao_access_token") || null;
+    console.log("토큰!!! : ", localStorage.getItem("access_token"));
+    return localStorage.getItem("access_token") || null;
   }
   return null;
 };
+const getKakaoToken = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("kakao_access_token") || null;
+  }
+  return null;
+}
 
 export default function MyPage() {
   const { isLoading, setIsLoading } = useLoading(); // 로딩 상태 가져오기
@@ -157,12 +164,26 @@ export default function MyPage() {
     setIsLoading(true);
     try {
       console.log("회원 탈퇴 요청 시작");
-      const response = await deleteUser();
+      const kakaoAccessToken = getKakaoToken(); // 회원탈퇴시 카카오 토큰이 필요함
+
+      if (!kakaoAccessToken) {
+        console.error("카카오 토큰이 없습니다.");
+        return;
+      }
+
+      const response = await fetch(`${BASE_URL}/users/me`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${kakaoAccessToken}`, // ✅ kakao_access_token을 Authorization 헤더에 포함
+          "Content-Type": "application/json",
+        },
+      });
+
       console.log("회원 탈퇴 응답:", response);
 
       if (response.status === 204) {
         setShowDeleteConfirm(false);
-        localStorage.clear();
+        localStorage.clear(); // 저장된 모든 토큰 삭제
         console.log("탈퇴 완료");
         router.push("/");
       }

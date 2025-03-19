@@ -14,19 +14,20 @@ import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
-public class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsService {
 
     private final UserRepository userRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = new User(Long.valueOf(1), Long.valueOf(1), "1", "1", "1"); // 대충 박아놓은 것
+    // user_id로 사용자 정보를 조회하는 메서드 추가
+    public UserDetails loadUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
 
-        UserBuilder userBuilder = org.springframework.security.core.userdetails.User.builder()
-                .username(user.getKakaoId().toString()) // ✅ 카카오 ID를 username으로 사용
-                .password("") // ✅ 비밀번호 없음 ("" 또는 null 가능)
-                .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-
-        return userBuilder.build();
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUserId().toString()) // user_id 사용
+                .password("") // 비밀번호 없음
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
     }
+
 }
