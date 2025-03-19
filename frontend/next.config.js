@@ -12,6 +12,10 @@ const nextConfig = {
           protocol: "http",
           hostname: "t1.kakaocdn.net",
         },
+        {
+          protocol: "https",
+          hostname: "**", // 모든 HTTPS URL 허용
+        },
       ],
     },
   };
