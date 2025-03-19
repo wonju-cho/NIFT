@@ -1,0 +1,30 @@
+{
+  "name": "Limited Edition Digital Artwork",
+  "description": "This is a unique digital artwork with high-quality resolution.",
+  "image": "https://ipfs.io/ipfs/bafybeidogwhiaht7wwl57d3plqjhzldtuwt6wdka46xfz4onim4p4e42p4",
+  "attributes": [
+    {
+      "trait_type": "Category",
+      "value": "Digital Art"
+    },
+    {
+      "trait_type": "Brand",
+      "value": "ExclusiveNFTs"
+    },
+    {
+      "trait_type": "Price",
+      "value": 500,
+      "display_type": "number"
+    },
+    {
+      "trait_type": "Created At",
+      "value": "2025-03-18T12:00:00",
+      "display_type": "date"
+    },
+    {
+      "trait_type": "Expiration Date",
+      "value": "2025-06-18T12:00:00",
+      "display_type": "date"
+    }
+  ]
+}
