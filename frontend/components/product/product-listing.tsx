@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import type React from "react"
+
+import { useState, useEffect, useCallback } from "react"
 import { ProductGrid } from "@/components/product/product-grid"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -8,204 +10,189 @@ import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 import { CategoryNavigation } from "@/components/product/category-navigation"
 
-// 샘플 데이터 - 실제 구현에서는 API에서 가져올 것
-const sampleProducts = [
-  {
-    id: "1",
-    title: "스타벅스 아메리카노 Tall",
-    price: 4500,
-    category: "커피/음료",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 강남구",
-    listedAt: "10분 전",
-  },
-  {
-    id: "2",
-    title: "배스킨라빈스 파인트",
-    price: 9800,
-    category: "뷰티/아이스크림",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 송파구",
-    listedAt: "30분 전",
-  },
-  {
-    id: "3",
-    title: "맥도날드 빅맥 세트",
-    price: 8900,
-    category: "치킨/피자/버거",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 마포구",
-    listedAt: "1시간 전",
-    isNew: true,
-  },
-  {
-    id: "4",
-    title: "CGV 영화 관람권",
-    price: 13000,
-    category: "문화/생활",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 중구",
-    listedAt: "2시간 전",
-  },
-  {
-    id: "5",
-    title: "GS25 5천원 금액권",
-    price: 5000,
-    category: "편의점/마트",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 용산구",
-    listedAt: "3시간 전",
-  },
-  {
-    id: "6",
-    title: "투썸플레이스 아메리카노",
-    price: 3800,
-    category: "커피/음료",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 강남구",
-    listedAt: "5시간 전",
-  },
-  {
-    id: "7",
-    title: "베스킨라빈스 싱글레귤러",
-    price: 3500,
-    category: "뷰티/아이스크림",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 강남구",
-    listedAt: "6시간 전",
-  },
-  {
-    id: "8",
-    title: "버거킹 와퍼 세트",
-    price: 8000,
-    category: "치킨/피자/버거",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 강남구",
-    listedAt: "8시간 전",
-  },
-  {
-    id: "9",
-    title: "메가박스 영화 관람권",
-    price: 10000,
-    category: "문화/생활",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 강남구",
-    listedAt: "10시간 전",
-  },
-  {
-    id: "10",
-    title: "CU 3천원 금액권",
-    price: 2700,
-    category: "편의점/마트",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 강남구",
-    listedAt: "12시간 전",
-  },
-  {
-    id: "11",
-    title: "이디야 카페라떼",
-    price: 4200,
-    category: "커피/음료",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 서초구",
-    listedAt: "1일 전",
-  },
-  {
-    id: "12",
-    title: "롯데시네마 영화 관람권",
-    price: 11000,
-    category: "문화/생활",
-    image: "/placeholder.svg?height=400&width=400",
-    location: "서울 영등포구",
-    listedAt: "1일 전",
-  },
-]
+// 간단한 debounce 유틸리티 함수 구현
+const debounce = <F extends (...args: any[]) => any>(func: F, waitFor: number) => {
+  let timeout: ReturnType<typeof setTimeout> | null = null
 
-// 카테고리 배열
-const categories = [
-  { name: "베이커리/도넛/떡", value: "bakery" },
-  { name: "카페", value: "cafe" },
-  { name: "아이스크림/빙수", value: "icecream" },
-  { name: "치킨", value: "chicken" },
-  { name: "버거/피자", value: "burger" },
-  { name: "편의점", value: "convenience" },
-  { name: "한식/중식/일식", value: "asian" },
-  { name: "패밀리/호텔뷔페", value: "buffet" },
-  { name: "퓨전/외국/팝", value: "fusion" },
-  { name: "분식/족/도시락", value: "snack" },
-  { name: "와인/양주/맥주", value: "alcohol" },
-]
-
-// 카테고리 값과 이름 매핑 객체 생성
-const categoryMap = categories.reduce(
-  (acc, category) => {
-    acc[category.value] = category.name
-    return acc
-  },
-  {} as Record<string, string>,
-)
-
-export function ProductListing() {
-  const [searchQuery, setSearchQuery] = useState("")
-  // 단일 카테고리 선택에서 다중 선택으로 변경
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState([0, 20000])
-  const [showFilters, setShowFilters] = useState(false)
-  const [activeFilters, setActiveFilters] = useState<string[]>([])
-
-  // 필터 추가/제거 함수
-  const toggleFilter = (filter: string) => {
-    if (activeFilters.includes(filter)) {
-      setActiveFilters(activeFilters.filter((f) => f !== filter))
-    } else {
-      setActiveFilters([...activeFilters, filter])
+  return (...args: Parameters<F>): void => {
+    if (timeout !== null) {
+      clearTimeout(timeout)
     }
+    timeout = setTimeout(() => func(...args), waitFor)
   }
+}
 
-  // 필터 초기화 함수
-  const resetFilters = () => {
-    setSelectedCategories([])
-    setPriceRange([0, 20000])
-    setActiveFilters([])
+// 백엔드 API에서 상품 데이터를 가져오는 함수
+const fetchProducts = async ({
+  categories = [],
+  sort = "newest",
+  page = 0,
+  size = 10,
+  userId,
+}: {
+  categories?: number[]
+  sort?: string
+  page?: number
+  size?: number
+  userId?: number
+}) => {
+  try {
+    // URL 쿼리 파라미터 구성
+    const params = new URLSearchParams()
+
+    if (categories.length > 0) {
+      categories.forEach((cat) => params.append("category", cat.toString()))
+    }
+
+    if (sort) params.append("sort", sort)
+    params.append("page", page.toString())
+    params.append("size", size.toString())
+    if (userId) params.append("userId", userId.toString())
+
+    const queryString = params.toString()
+    const url = `http://localhost:8080/api/secondhand/product${queryString ? `?${queryString}` : ""}`
+
+    console.log("Fetching products from:", url)
+
+    const res = await fetch(url)
+    if (!res.ok) throw new Error("Failed to fetch products")
+
+    const data = await res.json()
+    console.log("API Response:", data)
+    return data
+  } catch (error) {
+    console.error("Error fetching products:", error)
+    return { content: [], totalPages: 1, totalElements: 0 }
   }
+}
 
-  // 카테고리 필터 제거 함수
-  const removeCategory = (category: string) => {
-    setSelectedCategories(selectedCategories.filter((c) => c !== category))
-  }
-
-  // 필터링된 상품 목록
-  const filteredProducts = sampleProducts.filter((product) => {
+// 클라이언트 측 필터링 함수
+const filterProducts = (products: any[], searchQuery: string, priceRange: number[]) => {
+  return products.filter((product) => {
     // 검색어 필터링
     if (searchQuery && !product.title.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false
     }
 
-    // 카테고리 필터링 - 선택된 카테고리가 없으면 모든 상품 표시
-    if (selectedCategories.length > 0) {
-      // 선택된 카테고리 중 하나라도 일치하는지 확인
-      const matchesCategory = selectedCategories.some((categoryValue) => {
-        const categoryName = categoryMap[categoryValue]
-        return product.category === categoryName
-      })
-
-      if (!matchesCategory) {
-        return false
-      }
-    }
-
     // 가격 범위 필터링
-    if (product.price < priceRange[0] || product.price > priceRange[1]) {
-      return false
-    }
-
-    // 활성화된 필터 적용
-    if (activeFilters.includes("new") && !product.isNew) {
+    if (product.currentPrice < priceRange[0] || product.currentPrice > priceRange[1]) {
       return false
     }
 
     return true
   })
+}
+
+export function ProductListing() {
+  // 상품 데이터 및 로딩 상태
+  const [products, setProducts] = useState<any[]>([])
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [totalItems, setTotalItems] = useState(0)
+
+  // 필터링 및 정렬 상태
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [priceRange, setPriceRange] = useState([0, 20000])
+  const [showFilters, setShowFilters] = useState(false)
+  const [sortOption, setSortOption] = useState("newest")
+
+  // 페이지네이션 상태
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
+  // 사용자 ID (로그인 기능 구현 시 실제 사용자 ID로 대체)
+  const [userId, setUserId] = useState<number | undefined>(undefined)
+
+  // 상품 데이터 가져오기
+  const loadProducts = useCallback(async () => {
+    setLoading(true)
+
+    const fetchedData = await fetchProducts({
+      categories: selectedCategories.map(Number),
+      sort: sortOption,
+      page,
+      size: pageSize,
+      userId,
+    })
+
+    const productsData = fetchedData.content || []
+    console.log("Products data:", productsData)
+
+    setProducts(productsData)
+    setFilteredProducts(productsData) // 초기에는 필터링 없이 모든 상품 표시
+    setTotalPages(fetchedData.totalPages || 1)
+    setTotalItems(fetchedData.totalElements || 0)
+    setLoading(false)
+  }, [selectedCategories, sortOption, page, pageSize, userId])
+
+  // 컴포넌트 마운트 시 상품 데이터 로드
+  useEffect(() => {
+    loadProducts()
+  }, [loadProducts])
+
+  // 클라이언트 측 필터링 적용 (검색어와 가격 범위)
+  useEffect(() => {
+    if (products.length > 0) {
+      if (searchQuery || priceRange[0] > 0 || priceRange[1] < 20000) {
+        // 필터가 적용된 경우에만 필터링
+        const filtered = filterProducts(products, searchQuery, priceRange)
+        setFilteredProducts(filtered)
+      } else {
+        // 필터가 없으면 모든 상품 표시
+        setFilteredProducts(products)
+      }
+    } else {
+      setFilteredProducts([])
+    }
+  }, [products, searchQuery, priceRange])
+
+  // 디바운스된 가격 범위 변경 핸들러
+  const debouncedPriceChange = useCallback(
+    debounce((value: number[]) => {
+      setPriceRange(value)
+    }, 300),
+    [],
+  )
+
+  // 필터 초기화
+  const resetFilters = () => {
+    setSelectedCategories([])
+    setPriceRange([0, 20000])
+    setSearchQuery("")
+    setSortOption("newest")
+    setPage(0)
+    loadProducts() // 필터 초기화 후 상품 다시 로드
+  }
+
+  // 카테고리 필터 제거
+  const removeCategory = (category: string) => {
+    setSelectedCategories(selectedCategories.filter((c) => c !== category))
+    setPage(0) // 카테고리 변경 시 첫 페이지로 이동
+  }
+
+  // 카테고리 값과 이름 매핑 객체 생성
+  const categoryMap: Record<string, string> = {
+    "1": "카페",
+    "2": "베이커리/도넛/떡",
+    "3": "아이스크림/빙수",
+    "4": "치킨/피자",
+    "5": "패스트푸드",
+    "6": "편의점/마트",
+  }
+
+  // 검색 제출 핸들러
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // 검색은 클라이언트 측에서 처리
+  }
+
+  // 정렬 변경 핸들러
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOption(e.target.value)
+    setPage(0) // 정렬 변경 시 첫 페이지로 이동
+  }
 
   return (
     <div className="container py-8">
@@ -214,17 +201,27 @@ export function ProductListing() {
         <p className="text-gray-500">다양한 기프티콘을 합리적인 가격에 만나보세요.</p>
       </div>
 
-      {/* 카테고리 네비게이션 바 */}
+      {/* 카테고리 네비게이션 */}
       <CategoryNavigation
-        categories={categories}
+        categories={[
+          { name: "카페", value: "1" },
+          { name: "베이커리/도넛/떡", value: "2" },
+          { name: "아이스크림/빙수", value: "3" },
+          { name: "치킨/피자", value: "4" },
+          { name: "패스트푸드", value: "5" },
+          { name: "편의점/마트", value: "6" },
+        ]}
         selectedCategories={selectedCategories}
-        onCategoryChange={setSelectedCategories}
+        onCategoryChange={(categories) => {
+          setSelectedCategories(categories)
+          setPage(0) // 카테고리 변경 시 첫 페이지로 이동
+        }}
         className="mb-6"
       />
 
       {/* 검색 및 필터 영역 */}
       <div className="mb-8 space-y-4">
-        <div className="flex items-center gap-2">
+        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
           <div className="relative flex-1">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -248,11 +245,15 @@ export function ProductListing() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <Button type="submit" variant="default" className="hidden sm:inline-flex">
+            검색
+          </Button>
           <Button
             variant="outline"
             size="icon"
             onClick={() => setShowFilters(!showFilters)}
             className={showFilters ? "bg-primary/10" : ""}
+            type="button"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -269,7 +270,7 @@ export function ProductListing() {
               />
             </svg>
           </Button>
-        </div>
+        </form>
 
         {/* 필터 영역 */}
         {showFilters && (
@@ -305,44 +306,16 @@ export function ProductListing() {
                   max={20000}
                   step={1000}
                   value={priceRange}
-                  onValueChange={setPriceRange}
+                  onValueChange={debouncedPriceChange}
                   className="py-4"
                 />
-              </div>
-
-              {/* 추가 필터 */}
-              <div>
-                <h4 className="text-sm font-medium mb-2">추가 필터</h4>
-                <div className="flex flex-wrap gap-2">
-                  <Badge
-                    variant={activeFilters.includes("new") ? "default" : "outline"}
-                    className="cursor-pointer"
-                    onClick={() => toggleFilter("new")}
-                  >
-                    신규 등록
-                  </Badge>
-                  <Badge
-                    variant={activeFilters.includes("discount") ? "default" : "outline"}
-                    className="cursor-pointer"
-                    onClick={() => toggleFilter("discount")}
-                  >
-                    할인 상품
-                  </Badge>
-                  <Badge
-                    variant={activeFilters.includes("nearby") ? "default" : "outline"}
-                    className="cursor-pointer"
-                    onClick={() => toggleFilter("nearby")}
-                  >
-                    내 주변
-                  </Badge>
-                </div>
               </div>
             </div>
           </div>
         )}
 
         {/* 활성화된 필터 표시 */}
-        {(selectedCategories.length > 0 || priceRange[0] > 0 || priceRange[1] < 20000 || activeFilters.length > 0) && (
+        {(selectedCategories.length > 0 || priceRange[0] > 0 || priceRange[1] < 20000 || searchQuery) && (
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map((categoryValue) => (
               <Badge key={categoryValue} variant="secondary" className="flex items-center gap-1">
@@ -359,6 +332,21 @@ export function ProductListing() {
                 </svg>
               </Badge>
             ))}
+            {searchQuery && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                검색: {searchQuery}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3 w-3 cursor-pointer"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  onClick={() => setSearchQuery("")}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </Badge>
+            )}
             {(priceRange[0] > 0 || priceRange[1] < 20000) && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 {priceRange[0].toLocaleString()}원-{priceRange[1].toLocaleString()}원
@@ -374,21 +362,6 @@ export function ProductListing() {
                 </svg>
               </Badge>
             )}
-            {activeFilters.map((filter) => (
-              <Badge key={filter} variant="secondary" className="flex items-center gap-1">
-                {filter === "new" ? "신규 등록" : filter === "discount" ? "할인 상품" : "내 주변"}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-3 w-3 cursor-pointer"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  onClick={() => toggleFilter(filter)}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </Badge>
-            ))}
             <Button variant="ghost" size="sm" onClick={resetFilters} className="h-6 text-xs px-2 text-gray-500">
               모두 지우기
             </Button>
@@ -398,19 +371,25 @@ export function ProductListing() {
 
       {/* 상품 목록 */}
       <div className="mb-4 flex justify-between items-center">
-        <p className="text-sm text-gray-500">총 {filteredProducts.length}개의 상품</p>
+        <p className="text-sm text-gray-500">총 {totalItems}개의 상품</p>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-500">정렬:</span>
-          <select className="text-sm border rounded-md px-2 py-1">
-            <option>최신순</option>
-            <option>가격 낮은순</option>
-            <option>가격 높은순</option>
-            <option>인기순</option>
+          <select className="text-sm border rounded-md px-2 py-1" value={sortOption} onChange={handleSortChange}>
+            <option value="newest">최신순</option>
+            <option value="highest">높은 가격순</option>
+            <option value="lowest">낮은 가격순</option>
+            <option value="likes">좋아요순</option>
+            <option value="views">조회수순</option>
           </select>
         </div>
       </div>
 
-      {filteredProducts.length > 0 ? (
+      {/* 로딩 상태 및 상품 목록 */}
+      {loading ? (
+        <div className="flex justify-center items-center py-16">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      ) : filteredProducts.length > 0 ? (
         <ProductGrid products={filteredProducts} className="mb-8" />
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -437,11 +416,16 @@ export function ProductListing() {
       )}
 
       {/* 페이지네이션 */}
-      {filteredProducts.length > 0 && (
+      {filteredProducts.length > 0 && totalPages > 1 && (
         <div className="flex justify-center mt-8">
           <nav className="flex items-center gap-1">
-            <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-              <span className="sr-only">이전 페이지</span>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              disabled={page === 0}
+              onClick={() => setPage(page - 1)}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4"
@@ -452,23 +436,44 @@ export function ProductListing() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 bg-primary text-primary-foreground">
-              1
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8">
-              2
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8">
-              3
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8">
-              ...
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8">
-              12
-            </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              <span className="sr-only">다음 페이지</span>
+
+            {/* 페이지 번호 버튼 */}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              // 현재 페이지 주변의 페이지만 표시
+              let pageNum = page
+              if (page < 2) {
+                pageNum = i
+              } else if (page >= totalPages - 2) {
+                pageNum = totalPages - 5 + i
+              } else {
+                pageNum = page - 2 + i
+              }
+
+              // 페이지 범위 확인
+              if (pageNum >= 0 && pageNum < totalPages) {
+                return (
+                  <Button
+                    key={pageNum}
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 w-8 ${pageNum === page ? "bg-primary text-primary-foreground" : ""}`}
+                    onClick={() => setPage(pageNum)}
+                  >
+                    {pageNum + 1}
+                  </Button>
+                )
+              }
+              return null
+            })}
+
+            {/* 다음 페이지 버튼 */}
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage(page + 1)}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4"
