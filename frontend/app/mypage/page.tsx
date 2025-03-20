@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProductCard } from "@/components/product/product-card";
+import { ProductCard, ProductCardProps } from "@/components/product/product-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -40,7 +40,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { deleteUser, updateUserNickname, updateWallet } from "@/lib/api/mypage";
+import { deleteUser, updateUserNickname, updateWallet, fetchLikedProducts } from "@/lib/api/mypage";
 import { useRouter } from "next/navigation";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -72,6 +72,15 @@ export default function MyPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [ssfBalance, setSsfBalance] = useState<string>("0");
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [likedProducts, setLikedProducts] = useState<ProductCardProps[]>([]);
+  const [totalPage, setTotalPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const PAGE_GROUP_SIZE = 5; // 한 번에 표시할 페이지 수
+  // 지금 페이지 그룹 계산
+  const currentGroup = Math.ceil((currentPage + 1) / PAGE_GROUP_SIZE);
+  const startPage = (currentGroup - 1) * PAGE_GROUP_SIZE;
+  const endPage = Math.min(startPage + PAGE_GROUP_SIZE, totalPage);
 
   // 유저 정보 가져오기
   useEffect(() => {
@@ -238,6 +247,35 @@ export default function MyPage() {
       setTimeout(() => setCopied(false), 2000);
     }
   };
+  
+  // 찜한 상품 목록 불러오기
+  useEffect(() => {
+    const loadLikeProducts = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchLikedProducts(currentPage);
+
+        const transformedProducts = data.likes.map((product) => ({
+          productId: product.productId,
+          title: product.title,
+          brandName: "", // 브랜드 정보가 없을 경우 빈 문자열
+          currentPrice: product.currentPrice,
+          originalPrice: product.currentPrice, // 원래 가격이 없으면 현재 가격으로 설정
+          discountRate: 0, // 할인율 기본값 설정
+          imageUrl: product.imageUrl,
+          isLiked: true, // 찜한 상품이므로 true
+        }));
+
+        setLikedProducts(transformedProducts);
+        setTotalPage(data?.totalPage || 1);
+      } catch (error) {
+        console.error("찜한 상품 목록 가져오는데 에러 생김!! : ", error)
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadLikeProducts();
+  }, [currentPage]);
 
   // Sample product data
   const myProducts = [
@@ -483,11 +521,11 @@ export default function MyPage() {
                             구매한 기프티콘을 확인하고 사용할 수 있습니다.
                           </p>
                         </div>
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                           {myProducts.slice(0, 3).map((product) => (
                             <ProductCard key={product.id} {...product} />
                           ))}
-                        </div>
+                        </div> */}
                       </TabsContent>
 
                       <TabsContent value="sales" className="mt-6">
@@ -500,11 +538,11 @@ export default function MyPage() {
                             있습니다.
                           </p>
                         </div>
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                           {myProducts.slice(1, 4).map((product) => (
                             <ProductCard key={product.id} {...product} />
                           ))}
-                        </div>
+                        </div> */}
                       </TabsContent>
 
                       <TabsContent value="favorites" className="mt-6">
@@ -516,12 +554,47 @@ export default function MyPage() {
                             관심 있는 기프티콘을 모아볼 수 있습니다.
                           </p>
                         </div>
+
+                        {/* 찜한 상품 목록 표시 */}
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                          {myProducts
-                            .filter((product) => product.isFavorite)
-                            .map((product) => (
-                              <ProductCard key={product.id} {...product} />
-                            ))}
+                          {likedProducts?.length > 0 ? (
+                              likedProducts.map((product) => (
+                                  <ProductCard key={product.productId} {...product} />
+                              ))
+                          ) : (
+                              <p className="text-center text-gray-500">찜한 상품이 없습니다.</p>
+                          )}
+                        </div>
+
+                        {/* 페이지네이션 */}
+                        <div className="mt-8 flex justify-center items-center gap-2">
+                          <Button
+                              variant="ghost"
+                              disabled={currentPage === 0}
+                              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+                          >
+                            ‹ 이전
+                          </Button>
+
+                          {Array.from({ length: endPage - startPage }, (_, i) => startPage + i).map(
+                              (pageNum) => (
+                                  <Button
+                                      key={pageNum}
+                                      variant={currentPage === pageNum ? "default" : "ghost"}
+                                      onClick={() => setCurrentPage(pageNum)}
+                                  >
+                                    {pageNum + 1}  {/* 1부터 표시 */}
+                                  </Button>
+                              )
+                          )}
+
+                          <Button
+                              variant="ghost"
+                              disabled={currentPage === totalPage - 1}
+                              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPage - 1))}
+                          >
+                            다음 ›
+                          </Button>
                         </div>
                       </TabsContent>
 
