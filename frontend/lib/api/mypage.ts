@@ -29,7 +29,9 @@ export const updateWallet = async (walletAddress: string) => {
   return response;
 };
 
-export async function fetchLikedProducts(page: number): Promise<{ totalPage: number; likes: LikedProduct[] }> {
+export async function fetchLikedProducts(
+  page: number
+): Promise<{ totalPage: number; likes: LikedProduct[] }> {
   const accessToken = localStorage.getItem("access_token");
 
   if (!accessToken) {
@@ -41,7 +43,7 @@ export async function fetchLikedProducts(page: number): Promise<{ totalPage: num
     const response = await fetch(`${BASE_URL}/users/likes?page=${page}`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
