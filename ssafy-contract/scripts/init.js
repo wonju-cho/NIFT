@@ -1,10 +1,13 @@
+// main.js (수정된 버전)
 const { ethers } = require("hardhat");
+const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0x2D54C90F9831B168B20DB8c0a113d6F10A6AB0C3";
+  const contractAddress = "0xEAc580119cad82b6ffB63A58269F1A66A97EB590";
   const recipient = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F"; // 구매자 주소
-  const amount = 10;
-  const price = ethers.parseEther("1");
+  const amount = 1;
+  const initialPrice = ethers.parseEther("0.01"); // 초기 판매 가격 설정 (예시)
+  const sellPrice = ethers.parseEther("1"); // 판매 가격 설정
 
   console.log("🚀 컨트랙트 연결 중...");
   const gifticonNFT = await ethers.getContractAt(
@@ -23,10 +26,13 @@ async function main() {
 
   // 🔹 NFT 민팅 (배포자가 소유)
   console.log("🚀 NFT 민팅 중...");
-  await (await gifticonNFT.mint(deployer.address, price, amount)).wait(); // 상품 A
-  await (await gifticonNFT.mint(deployer.address, price, amount)).wait(); // 상품 B
-  await (await gifticonNFT.mint(deployer.address, price, 4)).wait(); // 상품 C
-  await (await gifticonNFT.mint(deployer.address, price, 8)).wait(); // 상품 D
+  const mintStartTime = Date.now();
+  for (let i = 0; i < 4; i++) {
+    const serialNumber = mintStartTime + i;
+    await (
+      await gifticonNFT.mint(deployer.address, initialPrice, serialNumber)
+    ).wait(); // 시리얼 넘버를 임의로 설정 (실제 사용 시 의미있는 값으로 변경)
+  }
   console.log("✅ NFTs Minted!");
 
   // 🔹 최신 민팅된 Token ID 가져오기
@@ -36,48 +42,39 @@ async function main() {
 
   // 🔹 배포자가 구매자(수령자)에게 NFT 전송
   console.log("🚀 구매자에게 NFT 소유권 이전 중...");
-  await (
-    await gifticonNFT.safeTransferFrom(
-      deployer.address,
-      recipient,
-      latestTokenId - 3n,
-      amount,
-      "0x"
-    )
-  ).wait(); // 상품 A
-  await (
-    await gifticonNFT.safeTransferFrom(
-      deployer.address,
-      recipient,
-      latestTokenId - 2n,
-      amount,
-      "0x"
-    )
-  ).wait(); // 상품 B
-  await (
-    await gifticonNFT.safeTransferFrom(
-      deployer.address,
-      recipient,
-      latestTokenId - 1n,
-      4,
-      "0x"
-    )
-  ).wait(); // 상품 C
-  await (
-    await gifticonNFT.safeTransferFrom(
-      deployer.address,
-      recipient,
-      latestTokenId,
-      8,
-      "0x"
-    )
-  ).wait(); // 상품 D
+  for (let i = 3n; i >= 0n; i--) {
+    await (
+      await gifticonNFT.safeTransferFrom(
+        deployer.address,
+        recipient,
+        latestTokenId - i,
+        amount,
+        "0x"
+      )
+    ).wait();
+  }
   console.log("✅ NFT 소유권 이전 완료!");
 
-  // 🔹 구매자가 판매 등록 (직접 수행해야 함)
-  console.log(
-    "🛠 구매자는 자신의 지갑에서 직접 `listForSale`을 호출해야 합니다!"
-  );
+  // 🔹 구매자가 NFT를 소유하고 있는지 확인
+  let balance = await gifticonNFT.balanceOf(recipient, latestTokenId);
+  console.log(`🔍 구매자(${recipient})의 NFT 보유 수량: ${balance}`);
+
+  if (balance <= 0) {
+    throw new Error("❌ 구매자가 NFT를 보유하고 있지 않습니다.");
+  }
+
+  // ✅ `listForSale.js` 실행 (최신 tokenId 넘기기)
+  console.log(`🚀 listForSale.js 실행 중 (Token ID: ${latestTokenId})`);
+  try {
+    // Calculate the serial number of the latest minted NFT
+    const serialNumberToSell = mintStartTime + 3; // Assuming 4 NFTs minted (token IDs 1 to 4)
+    execSync(
+      `node scripts/listForSale.js ${serialNumberToSell} ${sellPrice.toString()}`,
+      { stdio: "inherit" }
+    );
+  } catch (error) {
+    console.error(`❌ listForSale.js 실행 중 오류 발생:`, error);
+  }
 }
 
 // 🔹 스크립트 실행 및 오류 처리
