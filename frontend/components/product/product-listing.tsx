@@ -10,6 +10,8 @@ import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 import { CategoryNavigation } from "@/components/product/category-navigation"
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 // 간단한 debounce 유틸리티 함수 구현
 const debounce = <F extends (...args: any[]) => any>(func: F, waitFor: number) => {
   let timeout: ReturnType<typeof setTimeout> | null = null
@@ -22,13 +24,20 @@ const debounce = <F extends (...args: any[]) => any>(func: F, waitFor: number) =
   }
 }
 
+// access_token 가져오기
+const getAccessToken = () => {
+  if (typeof window !== "undefined"){
+    return localStorage.getItem("access_token") || null
+  }
+  return null
+}
+
 // 백엔드 API에서 상품 데이터를 가져오는 함수
 const fetchProducts = async ({
   categories = [],
   sort = "newest",
   page = 0,
   size = 10,
-  userId,
 }: {
   categories?: number[]
   sort?: string
@@ -37,6 +46,8 @@ const fetchProducts = async ({
   userId?: number
 }) => {
   try {
+    const accessToken = getAccessToken()
+
     // URL 쿼리 파라미터 구성
     const params = new URLSearchParams()
 
@@ -47,14 +58,21 @@ const fetchProducts = async ({
     if (sort) params.append("sort", sort)
     params.append("page", page.toString())
     params.append("size", size.toString())
-    if (userId) params.append("userId", userId.toString())
 
     const queryString = params.toString()
-    const url = `http://localhost:8080/api/secondhand/product${queryString ? `?${queryString}` : ""}`
+    const url = `${BASE_URL}/secondhand/product${queryString ? `?${queryString}` : ""}`
 
     console.log("Fetching products from:", url)
 
-    const res = await fetch(url)
+    const headers: HeadersInit = { "Content-Type": "application/json" }
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}` // 로그인한 경우에만 헤더 추가
+    }
+
+    const res = await fetch(url, {
+      method: "GET", headers
+    })
+
     if (!res.ok) throw new Error("Failed to fetch products")
 
     const data = await res.json()

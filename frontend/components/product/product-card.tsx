@@ -3,7 +3,7 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-interface ProductCardProps {
+export interface ProductCardProps {
   productId: number
   title: string
   brandName: string
@@ -23,9 +23,11 @@ export function ProductCard({
   originalPrice,
   discountRate,
   imageUrl,
-  isLiked = false,
+  isLiked,
   className,
 }: ProductCardProps) {
+  // console.log(`🔍 ProductCard - 상품 ID: ${productId}, isLiked: ${isLiked}`);
+
   const formattedCurrentPrice = new Intl.NumberFormat("ko-KR").format(currentPrice)
   const formattedOriginalPrice = new Intl.NumberFormat("ko-KR").format(originalPrice)
 
