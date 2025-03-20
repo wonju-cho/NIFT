@@ -1,5 +1,6 @@
 package com.e101.nift.product.service;
 
+import com.e101.nift.product.entity.Product;
 import com.e101.nift.product.model.dto.response.ProductListDto;
 import com.e101.nift.product.repository.LikeRepository;
 import com.e101.nift.product.repository.ProductRepository;
@@ -39,18 +40,19 @@ public class ProductServiceImpl implements ProductService {
         Page<ProductListDto> products;
         if (categories != null && !categories.isEmpty()) {
             products = productRepository.findByCategoryIds(categories, sortedPageable)
-                    .map(product -> {
-                        boolean isLiked = (userId != null) && likeRepository.existsByProduct_ProductIdAndUser_UserId(product.getProductId(), userId);
-                        return ProductListDto.from(product, isLiked);
-                    });
+                    .map(product -> mapProductToDto(product, userId));
         } else {
             products = productRepository.findAll(sortedPageable)
-                    .map(product -> {
-                        boolean isLiked = (userId != null) && likeRepository.existsByProduct_ProductIdAndUser_UserId(product.getProductId(), userId);
-                        return ProductListDto.from(product, isLiked);
-                    });
+                    .map(product -> mapProductToDto(product, userId));
         }
 
         return products;
+    }
+
+    // 로그인 여부와 관계없이 전체 상품 반환
+    // userId == null 이면 isLiked=false로 설정
+    private ProductListDto mapProductToDto(Product product, Long userId) {
+        boolean isLiked = (userId != null) && likeRepository.existsByProduct_ProductIdAndUser_UserId(product.getProductId(), userId);
+        return ProductListDto.from(product, isLiked);
     }
 }
