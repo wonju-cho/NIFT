@@ -1,9 +1,9 @@
-package com.e101.nift.product.service;
+package com.e101.nift.article.service;
 
-import com.e101.nift.product.entity.Product;
-import com.e101.nift.product.model.dto.response.ProductListDto;
-import com.e101.nift.product.repository.LikeRepository;
-import com.e101.nift.product.repository.ProductRepository;
+import com.e101.nift.article.entity.Article;
+import com.e101.nift.article.model.dto.response.ProductListDto;
+import com.e101.nift.article.repository.LikeRepository;
+import com.e101.nift.article.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,9 +16,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ProductServiceImpl implements ProductService {
+public class ArticleServiceImpl implements ArticleService {
 
-    private final ProductRepository productRepository;
+    private final ArticleRepository productRepository;
     private final LikeRepository likeRepository;
 
     @Override
@@ -51,8 +51,8 @@ public class ProductServiceImpl implements ProductService {
 
     // 로그인 여부와 관계없이 전체 상품 반환
     // userId == null 이면 isLiked=false로 설정
-    private ProductListDto mapProductToDto(Product product, Long userId) {
-        boolean isLiked = (userId != null) && likeRepository.existsByProduct_ProductIdAndUser_UserId(product.getProductId(), userId);
-        return ProductListDto.from(product, isLiked);
+    private ProductListDto mapProductToDto(Article article, Long userId) {
+        boolean isLiked = (userId != null) && likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
+        return ProductListDto.from(article, isLiked);
     }
 }

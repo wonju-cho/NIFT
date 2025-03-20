@@ -1,9 +1,9 @@
-package com.e101.nift.product.service;
+package com.e101.nift.article.service;
 
-import com.e101.nift.product.entity.Like;
-import com.e101.nift.product.entity.Product;
-import com.e101.nift.product.repository.LikeRepository;
-import com.e101.nift.product.repository.ProductRepository;
+import com.e101.nift.article.entity.Like;
+import com.e101.nift.article.entity.Article;
+import com.e101.nift.article.repository.LikeRepository;
+import com.e101.nift.article.repository.ArticleRepository;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.request.ProductLikeDTO;
 import com.e101.nift.user.repository.UserRepository;
@@ -21,30 +21,30 @@ public class LikeServiceImpl implements LikeService{
 
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
+    private final ArticleRepository productRepository;
 
     @Transactional
     @Override
     public void addLike(Long userId, Long productId){
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
-        Product product = productRepository.findByProductId(productId)
+        Article article = productRepository.findByArticleId(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
 
-        Optional<Like> existingLike = likeRepository.findByUserAndProduct(user, product);
+        Optional<Like> existingLike = likeRepository.findByUserAndArticle(user, article);
         if (existingLike.isPresent()){
             // 이미 좋아요가 존재하면 삭제 (좋아요 취소)
             likeRepository.delete(existingLike.get());
-            product.setCountLikes(product.getCountLikes() - 1);
+            article.setCountLikes(article.getCountLikes() - 1);
         } else {
             // 좋아요 추가
             Like like = new Like();
             like.setUser(user);
-            like.setProduct(product);
+            like.setArticle(article);
             likeRepository.save(like);
-            product.setCountLikes(product.getCountLikes() + 1);
+            article.setCountLikes(article.getCountLikes() + 1);
         }
-        productRepository.save(product); // 좋아요 개수 업데이트
+        productRepository.save(article); // 좋아요 개수 업데이트
     }
 
     @Transactional
@@ -53,18 +53,18 @@ public class LikeServiceImpl implements LikeService{
 
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
-        Product product = productRepository.findByProductId(productId)
+        Article article = productRepository.findByArticleId(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
 
-        Optional<Like> existingLike = likeRepository.findByUserAndProduct(user, product);
+        Optional<Like> existingLike = likeRepository.findByUserAndArticle(user, article);
         if (existingLike.isEmpty()) {
             throw new IllegalStateException("좋아요가 존재하지 않습니다.");
         }
 
         // 좋아요 삭제
         likeRepository.delete(existingLike.get());
-        product.setCountLikes(product.getCountLikes() - 1);
-        productRepository.save(product); // 좋아요 개수 업데이트
+        article.setCountLikes(article.getCountLikes() - 1);
+        productRepository.save(article); // 좋아요 개수 업데이트
     }
 
     @Override
@@ -74,10 +74,10 @@ public class LikeServiceImpl implements LikeService{
 
         Page<Like> likes = likeRepository.findByUser(user, pageable);
         return likes.map(like -> new ProductLikeDTO(
-                like.getProduct().getTitle(),
-                like.getProduct().getCountLikes(),
-                like.getProduct().getImageUrl(),
-                like.getProduct().getCurrentPrice()
+                like.getArticle().getTitle(),
+                like.getArticle().getCountLikes(),
+                like.getArticle().getGifticon().getImageUrl(),
+                like.getArticle().getCurrentPrice()
         ));
     }
 }

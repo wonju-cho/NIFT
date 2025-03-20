@@ -1,4 +1,4 @@
-package com.e101.nift.product.service;
+package com.e101.nift.article.service;
 
 import com.e101.nift.user.model.dto.request.ProductLikeDTO;
 import org.springframework.data.domain.Page;

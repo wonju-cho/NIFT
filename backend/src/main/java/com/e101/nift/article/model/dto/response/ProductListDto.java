@@ -1,6 +1,6 @@
-package com.e101.nift.product.model.dto.response;
+package com.e101.nift.article.model.dto.response;
 
-import com.e101.nift.product.entity.Product;
+import com.e101.nift.article.entity.Article;
 import lombok.Builder;
 import lombok.Getter;
 import java.time.LocalDateTime;
@@ -23,24 +23,24 @@ public class ProductListDto {
     private final LocalDateTime createdAt;
     private final boolean isLiked;
 
-    public static ProductListDto from(Product product, boolean isLiked) {
-        int originalPrice = product.getCurrentPrice() + 300; // 임시: 원래 가격이 현재 가격보다 300원 비쌈
-        int discountRate = calculateDiscountRate(originalPrice, product.getCurrentPrice());
+    public static ProductListDto from(Article article, boolean isLiked) {
+        int originalPrice = article.getCurrentPrice() + 300; // 임시: 원래 가격이 현재 가격보다 300원 비쌈
+        int discountRate = calculateDiscountRate(originalPrice, article.getCurrentPrice());
 
         return ProductListDto.builder()
-                .productId(product.getProductId())
-                .brandName(product.getBrand().getBrandName())
-                .categoryId(product.getCategory().getCategoryId())
-                .categoryName(product.getCategory().getCategoryName())
-                .title(product.getTitle())
-                .description(product.getDescription())
-                .currentPrice(product.getCurrentPrice())
+                .productId(article.getArticleId())
+                .brandName(article.getBrand().getBrandName())
+                .categoryId(article.getCategory().getCategoryId())
+                .categoryName(article.getCategory().getCategoryName())
+                .title(article.getTitle())
+                .description(article.getDescription())
+                .currentPrice(article.getCurrentPrice())
                 .originalPrice(originalPrice)
                 .discountRate(discountRate)
-                .imageUrl(product.getImageUrl())
-                .countLikes(product.getCountLikes())
-                .viewCnt(product.getViewCnt())
-                .createdAt(product.getCreatedAt())
+                .imageUrl(article.getGifticon().getImageUrl())
+                .countLikes(article.getCountLikes())
+                .viewCnt(article.getViewCnt())
+                .createdAt(article.getCreatedAt())
                 .isLiked(isLiked)
                 .build();
     }

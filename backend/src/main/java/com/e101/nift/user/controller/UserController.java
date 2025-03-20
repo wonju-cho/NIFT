@@ -1,6 +1,6 @@
 package com.e101.nift.user.controller;
 
-import com.e101.nift.product.service.LikeService;
+import com.e101.nift.article.service.LikeService;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.request.NicknameDTO;
 import com.e101.nift.user.model.dto.request.ProductLikeDTO;
@@ -9,7 +9,6 @@ import com.e101.nift.user.model.dto.response.UserInfoDto;
 import com.e101.nift.user.model.dto.request.WalletAddressDTO;
 import com.e101.nift.user.service.KakaoAuthService;
 import com.e101.nift.user.service.UserService;
-import com.e101.nift.user.service.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

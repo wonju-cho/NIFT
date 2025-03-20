@@ -1,11 +1,10 @@
-package com.e101.nift.product.entity;
+package com.e101.nift.article.entity;
 import com.e101.nift.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "likes", uniqueConstraints = {
@@ -22,7 +21,7 @@ public class Like {
     
     @ManyToOne
     @JoinColumn(name = "products_id", nullable = false)
-    private Product product;
+    private Article article;
     
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

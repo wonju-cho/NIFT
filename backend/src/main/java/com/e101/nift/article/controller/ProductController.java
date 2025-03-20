@@ -1,7 +1,7 @@
-package com.e101.nift.product.controller;
+package com.e101.nift.article.controller;
 
-import com.e101.nift.product.model.dto.response.ProductListDto;
-import com.e101.nift.product.service.ProductService;
+import com.e101.nift.article.model.dto.response.ProductListDto;
+import com.e101.nift.article.service.ArticleService;
 import com.e101.nift.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
     private static final Logger log = LoggerFactory.getLogger(ProductController.class);
-    private final ProductService productService;
+    private final ArticleService productService;
     private final UserService userService;
 
     @GetMapping("/secondhand/product")

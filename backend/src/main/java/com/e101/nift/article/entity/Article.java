@@ -1,5 +1,6 @@
-package com.e101.nift.product.entity;
+package com.e101.nift.article.entity;
 
+import com.e101.nift.gifticon.entity.Gifticon;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,23 +9,25 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "products")
+@Table(name = "articles")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productId;
+    private Long articleId;
     
     private String title;
     private String description;
+    private String author;
+    private Float price;
+    private LocalDateTime expirationDate;
+
     private Integer countLikes;
-    private String imageUrl;
     private Integer currentPrice;
     private LocalDateTime createdAt;
-    private LocalDateTime expirationDate;
     private Integer viewCnt;
     
     @ManyToOne
@@ -34,4 +37,8 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
+
+    @ManyToOne
+    @JoinColumn(name = "gifticon_id", nullable = false)
+    private Gifticon gifticon;
 }

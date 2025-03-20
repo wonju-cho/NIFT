@@ -1,6 +1,6 @@
-package com.e101.nift.product.controller;
+package com.e101.nift.article.controller;
 
-import com.e101.nift.product.service.LikeService;
+import com.e101.nift.article.service.LikeService;
 import com.e101.nift.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
