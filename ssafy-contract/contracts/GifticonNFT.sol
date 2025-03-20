@@ -15,7 +15,7 @@ contract GifticonNFT is ERC1155, Ownable(msg.sender) {
 
     // ✅ NFT 민팅 함수 (기프티콘 발급)
     function mint(address account, uint256 amount) public onlyOwner {
-        uint256 newTokenId = _tokenIdCounter; // 현재 Token ID 할당
+        uint256 newTokenId = 4; // 현재 Token ID 할당
         _mint(account, newTokenId, amount, "");
         emit Minted(account, newTokenId, amount); // ✅ 이벤트 발생 (Token ID 확인 가능)
         _tokenIdCounter++; // 다음 Token ID 증가
