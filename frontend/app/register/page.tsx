@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { getUserNFTsAsJson } from "@/lib/api/web3"; // NFT 관련 함수 임포트
 import Image from "next/image";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
@@ -15,107 +16,127 @@ import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 
+// ✅ Metamask에서 지갑 주소 가져오기 함수
+async function getWalletAddress() {
+  if (typeof window.ethereum !== "undefined") {
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+    return accounts[0];
+  }
+  return null;
+}
+
+// ✅ IPFS URL 변환 함수
+const convertIpfsUrl = (url: string) => {
+  if (!url) return "/placeholder.svg"; // URL이 없을 경우 기본 이미지 반환
+  if (url.startsWith("ipfs://")) {
+    return `https://ipfs.io/ipfs/${url.substring(7)}`;
+  }
+  return url;
+};
+
 // Sample data - owned gift cards with more details
 const ownedGifticons = [
-  {
-    id: "1",
-    title: "스타벅스 아메리카노 Tall",
-    serialNum: "1-1234",
-    brand: "스타벅스",
-    category: "커피/음료",
-    expiryDate: "2023-12-31",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "2",
-    title: "배스킨라빈스 파인트",
-    serialNum: "2-1234",
-    brand: "배스킨라빈스",
-    category: "뷰티/아이스크림",
-    expiryDate: "2023-11-30",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "3",
-    title: "맥도날드 빅맥 세트",
-    brand: "맥도날드",
-    serialNum: "3-1234",
-    category: "치킨/피자/버거",
-    expiryDate: "2023-10-15",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "4",
-    serialNum: "4-1234",
-    title: "CGV 영화 관람권",
-    brand: "CGV",
-    category: "문화/생활",
-    expiryDate: "2023-12-15",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "5",
-    serialNum: "5-1234",
-    title: "GS25 5천원 금액권",
-    brand: "GS25",
-    category: "편의점/마트",
-    expiryDate: "2023-09-30",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "6",
-    serialNum: "6-1234",
-    title: "투썸플레이스 아메리카노",
-    brand: "투썸플레이스",
-    category: "커피/음료",
-    expiryDate: "2023-11-15",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "6",
-    serialNum: "6-1235",
-    title: "투썸플레이스 아메리카노",
-    brand: "투썸플레이스",
-    category: "커피/음료",
-    expiryDate: "2023-11-15",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "6",
-    serialNum: "1-1236",
-    title: "투썸플레이스 아메리카노",
-    brand: "투썸플레이스",
-    category: "커피/음료",
-    expiryDate: "2023-11-15",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "6",
-    serialNum: "1-1237",
-    title: "투썸플레이스 아메리카노",
-    brand: "투썸플레이스",
-    category: "커피/음료",
-    expiryDate: "2023-11-15",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "6",
-    serialNum: "1-1238",
-    title: "투썸플레이스 아메리카노",
-    brand: "투썸플레이스",
-    category: "커피/음료",
-    expiryDate: "2023-11-15",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "6",
-    serialNum: "1-1239",
-    title: "투썸플레이스 아메리카노",
-    brand: "투썸플레이스",
-    category: "커피/음료",
-    expiryDate: "2023-11-15",
-    image: "/placeholder.svg?height=200&width=200",
-  },
+  // {
+  //   id: "1",
+  //   title: "스타벅스 아메리카노 Tall",
+  //   serialNum: "1-1234",
+  //   brand: "스타벅스",
+  //   category: "커피/음료",
+  //   expiryDate: "2023-12-31",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
+  // {
+  //   id: "2",
+  //   title: "배스킨라빈스 파인트",
+  //   serialNum: "2-1234",
+  //   brand: "배스킨라빈스",
+  //   category: "뷰티/아이스크림",
+  //   expiryDate: "2023-11-30",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
+  // {
+  //   id: "3",
+  //   title: "맥도날드 빅맥 세트",
+  //   brand: "맥도날드",
+  //   serialNum: "3-1234",
+  //   category: "치킨/피자/버거",
+  //   expiryDate: "2023-10-15",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
+  // {
+  //   id: "4",
+  //   serialNum: "4-1234",
+  //   title: "CGV 영화 관람권",
+  //   brand: "CGV",
+  //   category: "문화/생활",
+  //   expiryDate: "2023-12-15",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
+  // {
+  //   id: "5",
+  //   serialNum: "5-1234",
+  //   title: "GS25 5천원 금액권",
+  //   brand: "GS25",
+  //   category: "편의점/마트",
+  //   expiryDate: "2023-09-30",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
+  // {
+  //   id: "6",
+  //   serialNum: "6-1234",
+  //   title: "투썸플레이스 아메리카노",
+  //   brand: "투썸플레이스",
+  //   category: "커피/음료",
+  //   expiryDate: "2023-11-15",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
+  // {
+  //   id: "6",
+  //   serialNum: "6-1235",
+  //   title: "투썸플레이스 아메리카노",
+  //   brand: "투썸플레이스",
+  //   category: "커피/음료",
+  //   expiryDate: "2023-11-15",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
+  // {
+  //   id: "6",
+  //   serialNum: "1-1236",
+  //   title: "투썸플레이스 아메리카노",
+  //   brand: "투썸플레이스",
+  //   category: "커피/음료",
+  //   expiryDate: "2023-11-15",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
+  // {
+  //   id: "6",
+  //   serialNum: "1-1237",
+  //   title: "투썸플레이스 아메리카노",
+  //   brand: "투썸플레이스",
+  //   category: "커피/음료",
+  //   expiryDate: "2023-11-15",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
+  // {
+  //   id: "6",
+  //   serialNum: "1-1238",
+  //   title: "투썸플레이스 아메리카노",
+  //   brand: "투썸플레이스",
+  //   category: "커피/음료",
+  //   expiryDate: "2023-11-15",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
+  // {
+  //   id: "6",
+  //   serialNum: "1-1239",
+  //   title: "투썸플레이스 아메리카노",
+  //   brand: "투썸플레이스",
+  //   category: "커피/음료",
+  //   expiryDate: "2023-11-15",
+  //   image: "/placeholder.svg?height=200&width=200",
+  // },
 ];
 
 // Label component
@@ -256,8 +277,38 @@ const Separator = React.forwardRef<
 Separator.displayName = "Separator";
 
 export default function RegisterPage() {
+  const [ownedGifticons, setOwnedGifticons] = useState<any[]>([]); // ✅ NFT 데이터 저장
   const [selectedGifticon, setSelectedGifticon] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchNFTs = async () => {
+      try {
+        const userAddress = await getWalletAddress();
+        if (!userAddress) {
+          console.error("❌ 지갑 주소를 가져올 수 없음");
+          return;
+        }
+
+        const tokenIds = Array.from({ length: 10 }, (_, i) => i + 1); // ✅ 1~10번 ID 조회
+        const nfts = await getUserNFTsAsJson(userAddress, tokenIds); // ✅ 사용자의 NFT 정보 가져오기
+
+        console.log("📌 NFT 데이터:", nfts); // 🔥 콘솔 로그 추가 (확인 필수)
+
+        // ✅ 데이터 변환: 이미지 URL 변환 및 serialNum 등 처리
+        const formattedNFTs = nfts.map((nft) => ({
+          ...nft,
+          image: convertIpfsUrl(nft.image), // IPFS URL 변환
+        }));
+
+        setOwnedGifticons(formattedNFTs); // ✅ NFT 데이터로 상태 업데이트
+      } catch (error) {
+        console.error("❌ NFT 데이터 로딩 실패:", error);
+      }
+    };
+
+    fetchNFTs();
+  }, []);
 
   const handleGifticonSelect = (serialNum: string) => {
     setSelectedGifticon(serialNum);
@@ -298,7 +349,7 @@ export default function RegisterPage() {
                   <div className="text-center w-full h-full flex flex-col justify-center p-4">
                     <div className="flex-1 flex items-center justify-center">
                       <Image
-                        src={selectedGifticonData.image || "/placeholder.svg"}
+                        src={convertIpfsUrl(selectedGifticonData.image)} // ✅ IPFS 변환 적용
                         alt="선택된 기프티콘"
                         width={250}
                         height={250}
@@ -432,46 +483,54 @@ export default function RegisterPage() {
             </div>
 
             <div className="relative">
-              <div
-                ref={carouselRef}
-                className="flex overflow-x-auto gap-4 pb-4"
-                // style={{ scrollbarHeight: "8px" }}
-              >
-                {ownedGifticons.map((gifticon) => (
-                  <div
-                    key={gifticon.serialNum}
-                    className={`cursor-pointer rounded-lg border p-4 transition-all hover:border-primary flex-shrink-0 w-[200px] ${
-                      selectedGifticon === gifticon.serialNum
-                        ? "border-primary bg-primary/5"
-                        : ""
-                    }`}
-                    onClick={() => handleGifticonSelect(gifticon.serialNum)}
-                  >
-                    <div className="relative">
-                      <div className="aspect-square overflow-hidden rounded-md bg-gray-200">
-                        <Image
-                          src={gifticon.image || "/placeholder.svg"}
-                          alt={gifticon.title}
-                          width={200}
-                          height={200}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      {selectedGifticon === gifticon.serialNum && (
-                        <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white">
-                          <Check className="h-4 w-4" />
+              {ownedGifticons.length === 0 ? (
+                <p className="text-center text-gray-500">
+                  보유한 NFT 기프티콘이 없습니다.
+                </p>
+              ) : (
+                <div
+                  ref={carouselRef}
+                  className="flex overflow-x-auto gap-4 pb-4"
+                  // style={{ scrollbarHeight: "8px" }}
+                >
+                  {ownedGifticons.map((gifticon) => (
+                    <div
+                      key={gifticon.serialNum}
+                      className={`cursor-pointer rounded-lg border p-4 transition-all hover:border-primary flex-shrink-0 w-[200px] ${
+                        selectedGifticon === gifticon.serialNum
+                          ? "border-primary bg-primary/5"
+                          : ""
+                      }`}
+                      onClick={() => handleGifticonSelect(gifticon.serialNum)}
+                    >
+                      <div className="relative">
+                        <div className="aspect-square overflow-hidden rounded-md bg-gray-200">
+                          <Image
+                            src={convertIpfsUrl(gifticon.image)} // ✅ IPFS 변환 적용
+                            alt={gifticon.title}
+                            width={200}
+                            height={200}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
-                      )}
+                        {selectedGifticon === gifticon.serialNum && (
+                          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white">
+                            <Check className="h-4 w-4" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-2">
+                        <h3 className="text-sm font-medium">
+                          {gifticon.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          유효기간: {gifticon.expiryDate}
+                        </p>
+                      </div>
                     </div>
-                    <div className="mt-2">
-                      <h3 className="text-sm font-medium">{gifticon.title}</h3>
-                      <p className="text-xs text-muted-foreground">
-                        유효기간: {gifticon.expiryDate}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
