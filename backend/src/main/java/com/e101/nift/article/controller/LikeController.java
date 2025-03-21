@@ -1,5 +1,6 @@
 package com.e101.nift.article.controller;
 
+import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.article.service.LikeService;
 import com.e101.nift.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,13 +14,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/secondhand")
+@RequestMapping("/secondhand-articles")
 @RequiredArgsConstructor
 @Tag(name="Like", description="좋아요 관련 API")
 public class LikeController {
 
     private final LikeService likeService;
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary="좋아요 등록", description = "로그인한 사용자가 특정 상품에 좋아요 표시")
     @ApiResponses(value = {
@@ -27,22 +29,14 @@ public class LikeController {
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
             @ApiResponse(responseCode = "404", description = "사용자 또는 상품을 찾을 수 없음")
     })
-    @PostMapping("/like/{article_id}")
+    @PostMapping("/{article_id}/likes")
     public ResponseEntity<String> addLike(
             @PathVariable("article_id") Long articleId,
             HttpServletRequest request) {
 
         String accessToken = request.getHeader("Authorization");
 
-        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 토큰이 없거나 잘못됨
-        }
-
-        // "Bearer " 부분 제거하여 순수 accessToken만 추출
-        accessToken = accessToken.substring(7);
-
-
-        Long userId = userService.findByAccessToken(accessToken).getUserId();
+        Long userId = jwtTokenProvider.getUserFromToken(accessToken).getUserId();
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
         }
@@ -57,22 +51,12 @@ public class LikeController {
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
             @ApiResponse(responseCode = "404", description = "사용자 또는 상품을 찾을 수 없음")
     })
-    @DeleteMapping("/like/{article_id}")
+    @DeleteMapping("/{article_id}/likes")
     public ResponseEntity<String> removeLike(
             @PathVariable("article_id") Long articleId,
             HttpServletRequest request) {
 
-        String accessToken = request.getHeader("Authorization");
-
-        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 토큰이 없거나 잘못됨
-        }
-
-        // "Bearer " 부분 제거하여 순수 accessToken만 추출
-        accessToken = accessToken.substring(7);
-
-
-        Long userId = userService.findByAccessToken(accessToken).getUserId();
+        Long userId = jwtTokenProvider.getUserFromRequest(request).getUserId();
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
         }

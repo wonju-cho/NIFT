@@ -3,6 +3,7 @@ package com.e101.nift.user.service;
 import com.e101.nift.common.exception.CustomException;
 import com.e101.nift.common.exception.ErrorCode;
 import com.e101.nift.common.security.JwtTokenProvider;
+import com.e101.nift.product.repository.LikeRepository;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.response.UserInfoDto;
 import com.e101.nift.user.model.state.KakaoApiUrl;
@@ -31,6 +32,7 @@ public class UserServiceImpl implements UserService{
     private final KakaoAuthService kakaoAuthService;
     private final RestTemplateBuilder restTemplateBuilder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final LikeRepository likeRepository;
 
     @Override
     @Transactional
@@ -52,8 +54,17 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public void deleteUser(String accessToken) {
-        unlinkedKakaoInfo(accessToken);
+    public void deleteUser(String jwtToken, String kakaoToken) {
+
+        Long userId = jwtTokenProvider.getUserFromToken(jwtToken).getUserId();
+
+        // 좋아요 데이터부터 삭제
+        likeRepository.deleteByUser_UserId(userId);
+
+        kakaoToken = kakaoAuthService.extractKakaoToken(kakaoToken);
+
+        //  카카오 연동 해제
+        unlinkedKakaoInfo(kakaoToken);
     }
 
     @Override
@@ -61,26 +72,9 @@ public class UserServiceImpl implements UserService{
         return "";
     }
 
-    @Override
-    public User findByAccessToken(String accessToken) {
-        // 1. JWT 토큰으로 user_id 추출
-        Long userId = jwtTokenProvider.getUserIdFromToken(accessToken);
-        if (userId == null) {
-            throw new IllegalArgumentException("Invalid access token");
-        }
-
-        // 2. user_id로 user 조회
-        return userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다."));
-    }
-
     @Transactional(readOnly = true)
     @Override
-    public UserInfoDto getUserInfo(String accessToken) {
-        log.info("🔍 [UserService] 사용자 정보 조회 요청: accessToken={}", accessToken);
-
-        // ✅ 2. DB에서 유저 조회 (닉네임 & 지갑 주소)
-        User user = findByAccessToken(accessToken);
+    public UserInfoDto getUserInfoByUser(User user) {
 
         // ✅ 4. 모든 정보를 DTO에 담아 반환
         return UserInfoDto.builder()

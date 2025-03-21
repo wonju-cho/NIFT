@@ -184,16 +184,18 @@ export default function MyPage() {
     try {
       console.log("회원 탈퇴 요청 시작");
       const kakaoAccessToken = getKakaoToken(); // 회원탈퇴시 카카오 토큰이 필요함
+      const accessToken = getAccessToken();
 
-      if (!kakaoAccessToken) {
-        console.error("카카오 토큰이 없습니다.");
+      if (!kakaoAccessToken || !accessToken) {
+        console.error("필요한 토큰이 없습니다.");
         return;
       }
 
       const response = await fetch(`${BASE_URL}/users/me`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${kakaoAccessToken}`, // ✅ kakao_access_token을 Authorization 헤더에 포함
+          "Authorization": `Bearer ${accessToken}`, // JWT로 서버에서 사용자 인증
+          "Kakao-Authorization": `Bearer ${kakaoAccessToken}`, // kakao_access_token을 Authorization 헤더에 포함
           "Content-Type": "application/json",
         },
       });

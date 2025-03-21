@@ -21,8 +21,18 @@ public class KakaoAuthService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final UserRepository userRepository;
 
+    // Bearer 제거하는 메서드
+    public String extractKakaoToken(String token){
+        if (token != null && token.startsWith("Bearer ")) {
+            return token.substring(7);
+        }
+        return token;
+    }
+
     public User getKakaoUserInfo(String accessToken) {
         try {
+            accessToken = extractKakaoToken(accessToken);
+
             // 카카오 API 호출하여 사용자 정보 가져오기
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + accessToken);

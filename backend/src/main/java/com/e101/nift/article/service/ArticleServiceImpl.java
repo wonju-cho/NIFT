@@ -5,6 +5,7 @@ import com.e101.nift.article.model.dto.response.ArticleListDto;
 import com.e101.nift.article.repository.LikeRepository;
 import com.e101.nift.article.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService {
@@ -51,8 +53,10 @@ public class ArticleServiceImpl implements ArticleService {
 
     // 로그인 여부와 관계없이 전체 상품 반환
     // userId == null 이면 isLiked=false로 설정
-    private ArticleListDto mapArticleToDto(Article article, Long userId) {
-        boolean isLiked = (userId != null) && likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
-        return ArticleListDto.from(article, isLiked);
+    private ArticleListDto mapArticleToDto(Article product, Long userId) {
+        boolean isLiked = (userId != null) && likeRepository.existsByArticle_ArticleIdAndUser_UserId(product.getArticleId(), userId);
+        log.info("상품 ID: {}, userId: {}, isLiked: {}", product.getArticleId(), userId, isLiked);
+
+        return ArticleListDto.from(product, isLiked);
     }
 }

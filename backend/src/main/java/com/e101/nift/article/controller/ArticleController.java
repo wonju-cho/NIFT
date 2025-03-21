@@ -1,5 +1,7 @@
 package com.e101.nift.article.controller;
 
+import com.e101.nift.user.entity.User;
+import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.article.model.dto.request.PostArticleDto;
 import com.e101.nift.article.model.dto.response.ArticleListDto;
 import com.e101.nift.article.service.ArticleService;
@@ -13,7 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,13 +25,14 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/secondhand-articles")
 public class ArticleController {
     private static final Logger log = LoggerFactory.getLogger(ArticleController.class);
     private final ArticleService articleService;
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "판매 게시글 조회", description = "기프티콘을 판매하는 게시글을 조회합니다.")
-    @GetMapping("/secondhand/article")
     public ResponseEntity<Page<ArticleListDto>> getArticles(
             @RequestParam(name = "sort", defaultValue = "newest") String sort,  // 정렬 기준
             @RequestParam(name = "category", required = false) List<Long> categories,  // 카테고리 필터링
@@ -36,16 +40,13 @@ public class ArticleController {
             @RequestParam(name = "size", defaultValue = "10") int size,  // 페이지 크기
             HttpServletRequest request
     ) {
-        String accessToken = request.getHeader("Authorization");
         Long userId = null;
 
-        if (accessToken != null && accessToken.startsWith("Bearer ")) {
-            accessToken = accessToken.substring(7);
-            try {
-                userId = userService.findByAccessToken(accessToken).getUserId();
-            } catch (Exception e) {
-                log.warn("Invalid access token: {}", e.getMessage());
-            }
+        try {
+            User user = jwtTokenProvider.getUserFromRequest(request);
+            userId = user.getUserId();
+        } catch (UsernameNotFoundException e){
+            log.warn("유효하지 않은 토큰입니다: {}", e.getMessage());
         }
 
         Pageable pageable = PageRequest.of(page, size);
