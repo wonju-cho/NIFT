@@ -5,6 +5,7 @@ import com.e101.nift.product.model.dto.response.ProductListDto;
 import com.e101.nift.product.repository.LikeRepository;
 import com.e101.nift.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -53,6 +55,8 @@ public class ProductServiceImpl implements ProductService {
     // userId == null 이면 isLiked=false로 설정
     private ProductListDto mapProductToDto(Product product, Long userId) {
         boolean isLiked = (userId != null) && likeRepository.existsByProduct_ProductIdAndUser_UserId(product.getProductId(), userId);
+        log.info("상품 ID: {}, userId: {}, isLiked: {}", product.getProductId(), userId, isLiked);
+
         return ProductListDto.from(product, isLiked);
     }
 }

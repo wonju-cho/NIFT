@@ -18,5 +18,8 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     // 사용자 ID, 페이지 번호로 좋아요 상품 전체 조회
     Page<Like> findByUser(User user, Pageable pageable);
 
+    // 사용자 아이디로 좋아요 데이터 삭제
+    void deleteByUser_UserId(Long userId);
+
 }
 
