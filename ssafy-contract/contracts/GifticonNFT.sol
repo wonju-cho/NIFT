@@ -6,197 +6,258 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title GifticonNFT
- * @dev ERC-1155 기반의 NFT 기프티콘 컨트랙트 (개별 토큰 관리 및 시리얼 넘버 포함, 구조체 사용)
+ * @dev ERC1155 구조에서 시리얼 넘버 단위 NFT를 관리하고, tokenId에 대한 메타 정보도 포함하는 스마트 컨트랙트
  */
-contract GifticonNFT is ERC1155, Ownable(msg.sender) {
-    uint256 private _tokenIdCounter = 1; // 토큰 ID 자동 증가 변수
+contract GifticonNFT is ERC1155, Ownable {
+    // 시리얼 넘버 단위 개별 NFT에 대한 정보
+    struct SerialInfo {
+        uint256 price;              // 판매 가격
+        address seller;             // 판매자 주소
+        address owner;              // 현재 소유자 주소
+        uint256 expirationDate;     // 만료일 (timestamp)
+        bool redeemed;              // 사용 여부
+        uint256 redeemedAt;         // 사용한 시간
+    }
 
-    // 토큰 정보를 담는 구조체
+    // tokenId에 해당하는 메타 정보
     struct TokenInfo {
-        uint256 serialNumber;
-        uint256 price;
-        address seller;
-        uint256 expirationDate;
+        string name;
+        string description;
+        uint256 totalSupply;
+        string metadataURI;
     }
 
-    mapping(uint256 => TokenInfo) private _tokenInfos; // 토큰 ID별 정보 저장
-    mapping(uint256 => bool) public redeemed; // NFT 사용 여부 저장 (tokenId => isRedeemed)
-    mapping(uint256 => uint256) private _serialNumberToTokenId; // 시리얼 넘버로 토큰 ID 찾기
+    // 시리얼 넘버 자동 증가용 변수 (100000번부터 시작)
+    uint256 private _nextSerial = 100000;
 
-    // 이벤트 정의
+    // 시리얼 넘버 → tokenId 매핑
+    mapping(uint256 => uint256) private _serialToTokenId;
+
+    // 시리얼 넘버 → 시리얼 정보
+    mapping(uint256 => SerialInfo) private _serialInfos;
+
+    // tokenId → 메타 정보
+    mapping(uint256 => TokenInfo) private _tokenInfos;
+
+    // 안전한 전송을 위한 허용된 전송자
+    mapping(address => bool) private _authorizedTransfers;
+
+    // 이벤트 선언
     event Minted(address indexed owner, uint256 indexed tokenId, uint256 serialNumber);
-    event PriceUpdated(uint256 indexed tokenId, uint256 newPrice);
-    event ListedForSale(uint256 indexed tokenId, uint256 serialNumber, address indexed seller, uint256 price);
-    event NFTPurchased(address indexed buyer, uint256 indexed tokenId, address indexed seller, uint256 price);
-    event Redeemed(address indexed owner, uint256 indexed tokenId);
-    event SaleCancelled(uint256 indexed tokenId, address indexed seller);
-    event Gifted(address indexed sender, address indexed recipient, uint256 indexed tokenId);
+    event ListedForSale(uint256 indexed serialNumber, uint256 price, address indexed seller);
+    event NFTPurchased(address indexed buyer, uint256 indexed serialNumber, uint256 price);
+    event Redeemed(address indexed owner, uint256 indexed serialNumber);
+    event CancelledSale(uint256 indexed serialNumber);
+    event Gifted(address indexed sender, address indexed recipient, uint256 indexed serialNumber);
+    event SerialOwnershipTransferred(uint256 indexed serialNumber, address indexed from, address indexed to);
+
+    constructor()
+        ERC1155("ipfs://bafkreifj53t5ciradsorecuagrasftt4pfercqvjuhyrhks2piwokho2iy")
+        Ownable()
+    {}
+
+    // 안전한 전송을 위해 함수 실행 전후 authorizedTransfers를 설정
+    modifier onlyAuthorizedTransfer() {
+        _authorizedTransfers[msg.sender] = true;
+        _;
+        _authorizedTransfers[msg.sender] = false;
+    }
+
+    // 토큰 전송 전에 호출되는 훅 함수
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal override(ERC1155) {
+        if (from != address(0) && !_authorizedTransfers[operator]) {
+            revert("Unauthorized transfer. Use serial-based functions.");
+        }
+        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+    }
+
+    // 내부적으로 시리얼 넘버 생성
+    function _generateNextSerial() internal returns (uint256) {
+        _nextSerial += 1;
+        return _nextSerial;
+    }
 
     /**
-     * @dev 생성자: 기본 URI 설정
+     * @dev NFT 여러 개를 민팅하면서 tokenId와 시리얼 정보를 등록하는 함수
      */
-    constructor() ERC1155("ipfs://bafkreifj53t5ciradsorecuagrasftt4pfercqvjuhyrhks2piwokho2iy") {}
+    function mintBatchWithSerials(
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 price,
+        string calldata name,
+        string calldata description,
+        string calldata metadataURI
+    ) public onlyOwner {
+        require(amount > 0, "Amount must be > 0");
 
-    /**
-     * @dev 새로운 NFT 민팅 (관리자만 실행 가능)
-     * @param account 수령할 계정
-     * @param price 초기 판매 가격
-     * @param serialNumber 발행할 시리얼 넘버
-     */
-    function mint(address account, uint256 price, uint256 serialNumber) public onlyOwner {
-        uint256 newTokenId = _tokenIdCounter;
-        require(_tokenInfos[newTokenId].serialNumber == 0, "Token ID already exists"); // 토큰 ID 중복 방지
-        require(_isSerialNumberUnique(serialNumber), "Serial number already exists"); // 시리얼 넘버 중복 방지
-
-        _mint(account, newTokenId, 1, ""); // ERC-1155는 amount를 받아야 하므로 1로 설정
-        _tokenInfos[newTokenId] = TokenInfo({
-            serialNumber: serialNumber,
-            price: price,
-            seller: address(0),
-            expirationDate: block.timestamp + (90 days) // 민팅 후 90일 후 만료 설정
+        // tokenId에 대한 메타 정보 저장
+        _tokenInfos[tokenId] = TokenInfo({
+            name: name,
+            description: description,
+            totalSupply: amount,
+            metadataURI: metadataURI
         });
-        _serialNumberToTokenId[serialNumber] = newTokenId;
-        emit Minted(account, newTokenId, serialNumber);
-        _tokenIdCounter++;
+
+        // 실제 ERC1155 토큰 민팅
+        _mint(to, tokenId, amount, "");
+
+        // 각각에 대해 시리얼 정보 생성
+        for (uint256 i = 0; i < amount; i++) {
+            uint256 serial = _generateNextSerial();
+
+            _serialToTokenId[serial] = tokenId;
+            _serialInfos[serial] = SerialInfo({
+                price: price,
+                seller: address(0),
+                owner: to,
+                expirationDate: block.timestamp + 90 days,
+                redeemed: false,
+                redeemedAt: 0
+            });
+
+            emit Minted(to, tokenId, serial);
+        }
     }
 
-    /**
-     * @dev 시리얼 넘버의 유일성 검증
-     */
-    function _isSerialNumberUnique(uint256 serialNumber) internal view returns (bool) {
-        return _serialNumberToTokenId[serialNumber] == 0;
-    }
-
-    /**
-     * @dev NFT 판매 등록 (시리얼 넘버 사용)
-     * @param serialNumber 판매 등록할 NFT의 시리얼 넘버
-     * @param price 판매 가격
-     */
+    // 특정 시리얼 넘버의 NFT를 판매 목록에 등록
     function listForSale(uint256 serialNumber, uint256 price) public {
-        uint256 tokenId = _serialNumberToTokenId[serialNumber];
-        require(tokenId > 0, "Serial number does not exist");
-        require(balanceOf(msg.sender, tokenId) == 1, "You do not own this NFT or own more than one");
-        require(price > 0, "Price must be greater than zero");
-        require(_tokenInfos[tokenId].seller == address(0), "This NFT is already listed for sale by someone else"); // 이미 판매 등록된 경우 방지
+        SerialInfo storage info = _serialInfos[serialNumber];
+        require(info.owner == msg.sender, "Not the owner");
+        require(!info.redeemed, "Already redeemed");
+        require(price > 0, "Price must be > 0");
 
-        _tokenInfos[tokenId].seller = msg.sender;
-        _tokenInfos[tokenId].price = price;
+        info.price = price;
+        info.seller = msg.sender;
 
-        emit ListedForSale(tokenId, serialNumber, msg.sender, price);
+        emit ListedForSale(serialNumber, price, msg.sender);
     }
 
-    /**
-     * @dev NFT 구매
-     */
-    function purchaseNFT(uint256 tokenId) public payable {
-        require(_tokenInfos[tokenId].seller != address(0), "This NFT is not listed for sale");
-        address currentSeller = _tokenInfos[tokenId].seller;
-        uint256 currentPrice = _tokenInfos[tokenId].price;
-        require(msg.value >= currentPrice, "Insufficient payment");
+    // 시리얼 넘버 기반으로 NFT 구매
+    function purchaseBySerial(uint256 serialNumber) public payable onlyAuthorizedTransfer {
+        SerialInfo storage info = _serialInfos[serialNumber];
+        require(info.seller != address(0), "Not listed");
+        require(!info.redeemed, "Already redeemed");
+        require(msg.value >= info.price, "Insufficient payment");
 
-        delete _tokenInfos[tokenId].seller; // 판매자 정보 삭제 (구조체 전체를 삭제하거나 특정 필드만 초기화)
-        delete _tokenInfos[tokenId].price; // 가격 정보 삭제
+        uint256 tokenId = _serialToTokenId[serialNumber];
+        address seller = info.seller;
 
-        safeTransferFrom(currentSeller, msg.sender, tokenId, 1, "");
+        require(balanceOf(seller, tokenId) >= 1, "Seller doesn't own the token");
 
-        (bool success, ) = payable(currentSeller).call{value: msg.value}("");
-        require(success, "Transfer failed");
-        emit NFTPurchased(msg.sender, tokenId, currentSeller, currentPrice);
+        // 안전한 전송
+        safeTransferFrom(seller, msg.sender, tokenId, 1, "");
+
+        // 소유자 정보 업데이트
+        info.owner = msg.sender;
+        info.seller = address(0);
+        info.price = 0;
+
+        emit SerialOwnershipTransferred(serialNumber, seller, msg.sender);
+        emit NFTPurchased(msg.sender, serialNumber, msg.value);
+
+        // 판매자에게 금액 전송
+        (bool success, ) = payable(seller).call{value: msg.value}("");
+        require(success, "Payment failed");
     }
 
-    /**
-     * @dev 특정 토큰 ID의 시리얼 넘버 조회
-     */
-    function getSerialNumber(uint256 tokenId) public view returns (uint256) {
-        return _tokenInfos[tokenId].serialNumber;
+    // 기프티콘 사용 처리
+    function redeem(uint256 serialNumber) public {
+        SerialInfo storage info = _serialInfos[serialNumber];
+        require(info.owner == msg.sender, "Not owner");
+        require(!info.redeemed, "Already redeemed");
+        require(block.timestamp < info.expirationDate, "Expired");
+
+        info.redeemed = true;
+        info.redeemedAt = block.timestamp;
+
+        emit Redeemed(msg.sender, serialNumber);
     }
 
-    /**
-     * @dev NFT 판매 가격 조회
-     */
-    function getPrice(uint256 tokenId) public view returns (uint256) {
-        return _tokenInfos[tokenId].price;
+    // 판매 취소 처리
+    function cancelSale(uint256 serialNumber) public {
+        SerialInfo storage info = _serialInfos[serialNumber];
+        require(info.owner == msg.sender, "Not the owner");
+        info.price = 0;
+        info.seller = address(0);
+
+        emit CancelledSale(serialNumber);
     }
 
-    /**
-     * @dev NFT 판매자 조회
-     */
-    function getSeller(uint256 tokenId) public view returns (address) {
-        return _tokenInfos[tokenId].seller;
+    // 다른 사용자에게 NFT 선물
+    function giftNFT(address to, uint256 serialNumber) public onlyAuthorizedTransfer {
+        SerialInfo storage info = _serialInfos[serialNumber];
+        require(info.owner == msg.sender, "Not owner");
+        require(!info.redeemed, "Already redeemed");
+
+        uint256 tokenId = _serialToTokenId[serialNumber];
+        safeTransferFrom(msg.sender, to, tokenId, 1, "");
+
+        info.owner = to;
+        info.seller = address(0);
+        info.price = 0;
+
+        emit SerialOwnershipTransferred(serialNumber, msg.sender, to);
+        emit Gifted(msg.sender, to, serialNumber);
     }
 
-    /**
-     * @dev NFT 만료 날짜 조회
-     */
-    function getExpiration(uint256 tokenId) public view returns (uint256) {
-        return _tokenInfos[tokenId].expirationDate;
+    // 🔍 조회 함수들
+
+    // 시리얼 넘버로부터 tokenId 조회
+    function getTokenIdBySerial(uint256 serialNumber) public view returns (uint256) {
+        return _serialToTokenId[serialNumber];
     }
 
-    /**
-     * @dev NFT 만료 날짜 설정 (관리자만 가능)
-     */
-    function setExpiration(uint256 tokenId, uint256 timestamp) public onlyOwner {
-        require(_tokenInfos[tokenId].expirationDate > 0, "Token does not exist");
-        _tokenInfos[tokenId].expirationDate = timestamp;
+    // 시리얼 넘버 소유자 조회
+    function getOwnerOfSerial(uint256 serialNumber) public view returns (address) {
+        return _serialInfos[serialNumber].owner;
     }
 
-    /**
-     * @dev NFT 사용 (한 번만 사용 가능)
-     */
-    function redeem(uint256 tokenId) public {
-        require(balanceOf(msg.sender, tokenId) == 1, "You do not own this NFT");
-        require(!redeemed[tokenId], "This NFT has already been redeemed");
-        require(block.timestamp < _tokenInfos[tokenId].expirationDate, "This NFT has expired");
-
-        redeemed[tokenId] = true;
-        emit Redeemed(msg.sender, tokenId);
+    // 시리얼 넘버 상세 정보 조회
+    function getSerialInfo(uint256 serialNumber) public view returns (
+        uint256 price,
+        address seller,
+        address owner,
+        uint256 expirationDate,
+        bool isRedeemed,
+        uint256 redeemedAt
+    ) {
+        SerialInfo memory info = _serialInfos[serialNumber];
+        return (
+            info.price,
+            info.seller,
+            info.owner,
+            info.expirationDate,
+            info.redeemed,
+            info.redeemedAt
+        );
     }
 
-    /**
-     * @dev NFT 사용 여부 확인
-     */
-    function isRedeemed(uint256 tokenId) public view returns (bool) {
-        return redeemed[tokenId];
+    // tokenId 기반 메타 정보 조회
+    function getTokenInfo(uint256 tokenId) public view returns (
+        string memory name,
+        string memory description,
+        uint256 totalSupply,
+        string memory metadataURI
+    ) {
+        TokenInfo memory info = _tokenInfos[tokenId];
+        return (
+            info.name,
+            info.description,
+            info.totalSupply,
+            info.metadataURI
+        );
     }
 
-    /**
-     * @dev 현재 생성된 마지막 토큰 ID 반환
-     */
-    function getCurrentTokenId() public view returns (uint256) {
-        return _tokenIdCounter - 1;
-    }
-
-    /**
-     * @dev 특정 시리얼 넘버의 토큰 ID 조회
-     */
-    function getTokenIdBySerialNumber(uint256 serialNumber) public view returns (uint256) {
-        return _serialNumberToTokenId[serialNumber];
-    }
-
-    /**
-     * @dev NFT 판매 등록 취소
-     */
-    function cancelSale(uint256 tokenId) public {
-        require(_tokenInfos[tokenId].seller == msg.sender, "You are not the seller of this NFT");
-        delete _tokenInfos[tokenId].seller;
-        delete _tokenInfos[tokenId].price;
-        emit SaleCancelled(tokenId, msg.sender);
-    }
-
-    /**
-     * @dev NFT 선물 기능
-     */
-    function giftNFT(address recipient, uint256 tokenId) public {
-        require(balanceOf(msg.sender, tokenId) == 1, "Insufficient NFT balance");
-        safeTransferFrom(msg.sender, recipient, tokenId, 1, "");
-        emit Gifted(msg.sender, recipient, tokenId);
-    }
-
-    /**
-     * @dev 토큰 URI 설정 (관리자만 가능)
-     * @param uri 새로운 기본 URI
-     */
-    function setURI(string memory uri) public onlyOwner {
-        _setURI(uri);
+    // URI 변경 함수 (owner만 가능)
+    function setURI(string memory newuri) public onlyOwner {
+        _setURI(newuri);
     }
 }
