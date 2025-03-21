@@ -2,10 +2,10 @@ package com.e101.nift.product.service;
 
 import com.e101.nift.product.entity.Like;
 import com.e101.nift.product.entity.Product;
+import com.e101.nift.product.model.dto.request.ProductLikeDTO;
 import com.e101.nift.product.repository.LikeRepository;
 import com.e101.nift.product.repository.ProductRepository;
 import com.e101.nift.user.entity.User;
-import com.e101.nift.user.model.dto.request.ProductLikeDTO;
 import com.e101.nift.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

@@ -1,15 +1,15 @@
 package com.e101.nift.user.controller;
 
+import com.e101.nift.common.security.JwtTokenProvider;
+import com.e101.nift.product.model.dto.request.ProductLikeDTO;
+import com.e101.nift.product.model.dto.response.ProductLikeDto;
 import com.e101.nift.product.service.LikeService;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.request.NicknameDTO;
-import com.e101.nift.user.model.dto.request.ProductLikeDTO;
-import com.e101.nift.user.model.dto.response.ProductLikeDto;
 import com.e101.nift.user.model.dto.response.UserInfoDto;
 import com.e101.nift.user.model.dto.request.WalletAddressDTO;
 import com.e101.nift.user.service.KakaoAuthService;
 import com.e101.nift.user.service.UserService;
-import com.e101.nift.user.service.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,20 +35,13 @@ public class UserController {
     private final KakaoAuthService kakaoAuthService;
     private final UserService userService;
     private final LikeService likeService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PatchMapping("/nickname")
     public ResponseEntity<Void> updateNickname(HttpServletRequest request,
                                                @RequestBody @Valid NicknameDTO nicknameDTO){
-        String accessToken = request.getHeader("Authorization");
+        User user = jwtTokenProvider.getUserFromRequest(request);
 
-        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 토큰이 없거나 잘못됨
-        }
-
-        // "Bearer " 부분 제거하여 순수 accessToken만 추출
-        accessToken = accessToken.substring(7);
-
-        User user = userService.findByAccessToken(accessToken);
         userService.updateNickname(user.getKakaoId(), nicknameDTO.getNickname());
 
         return ResponseEntity.noContent().build();
@@ -57,49 +50,26 @@ public class UserController {
     @PatchMapping("/wallet")
     public ResponseEntity<Void> updateWalletAddress(HttpServletRequest request,
                                                     @RequestBody @Valid WalletAddressDTO walletAddressDTO) {
-        String accessToken = request.getHeader("Authorization");
+        User user = jwtTokenProvider.getUserFromRequest(request);
 
-        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 토큰이 없거나 잘못됨
-        }
-
-        // "Bearer " 부분 제거하여 순수 accessToken만 추출
-        accessToken = accessToken.substring(7);
-
-        User user = userService.findByAccessToken(accessToken);
         userService.updateWalletAddress(user.getKakaoId(), walletAddressDTO.getWalletAddress());
 
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/me")
     public ResponseEntity<UserInfoDto> getMyInfo(HttpServletRequest request) {
-        String accessToken = request.getHeader("Authorization");
+        User user = jwtTokenProvider.getUserFromRequest(request);
 
-        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 토큰이 없거나 잘못됨
-        }
-
-        // "Bearer " 부분 제거하여 순수 accessToken만 추출
-        accessToken = accessToken.substring(7);
-
-        log.info("[UserController] getMyInfo accessToken 추출: {}", accessToken);
-
-        UserInfoDto userResponse = userService.getUserInfo(accessToken);
+        UserInfoDto userResponse = userService.getUserInfoByUser(user);
         return ResponseEntity.ok(userResponse);
     }
 
     @DeleteMapping("/me")
-    public  ResponseEntity<Void> deleteUser(HttpServletRequest request) { // kakaoAccessToken 전달 받음
-        String accessToken = request.getHeader("Authorization");
-
-        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 토큰이 없거나 잘못됨
-        }
-
-        // "Bearer " 부분 제거하여 순수 accessToken만 추출
-        accessToken = accessToken.substring(7);
-
-        userService.deleteUser(accessToken);
+    public  ResponseEntity<Void> deleteUser(
+            @RequestHeader("Authorization") String jwtToken,
+            @RequestHeader("Kakao-Authorization") String kakaoToken
+    ) {
+        userService.deleteUser(jwtToken, kakaoToken);
 
         return ResponseEntity.noContent().build();
     }
@@ -115,16 +85,7 @@ public class UserController {
             HttpServletRequest request,
             @RequestParam(name = "page", defaultValue = "0") int page) { // 기본값을 1로 변경
 
-        String accessToken = request.getHeader("Authorization");
-        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
-        accessToken = accessToken.substring(7);
-
-        Long userId = userService.findByAccessToken(accessToken).getUserId();
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+        Long userId = jwtTokenProvider.getUserFromRequest(request).getUserId();
 
         // 좋아요한 상품 목록 조회 (페이지당 6개, 기본 페이지 1부터 시작)
         Pageable pageable = PageRequest.of(page, 6);

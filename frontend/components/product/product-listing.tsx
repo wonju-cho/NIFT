@@ -60,7 +60,7 @@ const fetchProducts = async ({
     params.append("size", size.toString())
 
     const queryString = params.toString()
-    const url = `${BASE_URL}/secondhand/product${queryString ? `?${queryString}` : ""}`
+    const url = `${BASE_URL}/secondhand-products${queryString ? `?${queryString}` : ""}`
 
     console.log("Fetching products from:", url)
 
@@ -408,7 +408,13 @@ export function ProductListing() {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : filteredProducts.length > 0 ? (
-        <ProductGrid products={filteredProducts} className="mb-8" />
+          <ProductGrid
+              products={filteredProducts.map(product => ({
+                ...product,
+                isLiked: product.liked, // liked 값을 isLiked로 변환하여 전달
+              }))}
+              className="mb-8"
+          />
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="mb-4 rounded-full bg-gray-100 p-6">

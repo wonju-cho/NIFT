@@ -1,0 +1,17 @@
+package com.e101.nift.product.model.dto.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class ProductLikeDTO {
+    private String title;
+    private int countLikes;
+    private String imageUrl;
+    private int currentPrice;
+}
