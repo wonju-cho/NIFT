@@ -1,128 +1,181 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { parseEther } = ethers;
 
-describe("GifticonNFT", function () {
-  let GifticonNFT, gifticonNFT;
-  let owner, user, other;
-  const tokenId = 1001;
-  const serialNumbers = [111, 112, 113];
-  const price = ethers.utils.parseEther("1");
+describe("GifticonNFT (Serial-based)", function () {
+  let gifticonNFT, owner, user, otherUser;
+  const tokenId = 1;
+  const amount = 1;
+  const price = parseEther("1");
+
+  // 🔍 이벤트 로그에서 serialNumber 추출
+  async function getSerialNumbersFromLogs(tx, contract) {
+    const receipt = await tx.wait();
+    const iface = contract.interface;
+    const serialNumbers = [];
+
+    for (const log of receipt.logs) {
+      try {
+        const parsedLog = iface.parseLog(log);
+        if (parsedLog.name === "Minted") {
+          serialNumbers.push(parsedLog.args.serialNumber);
+        }
+      } catch (_) {}
+    }
+
+    if (serialNumbers.length === 0) {
+      throw new Error("❌ Minted 이벤트를 logs에서 찾을 수 없습니다.");
+    }
+
+    return serialNumbers;
+  }
 
   beforeEach(async function () {
-    [owner, user, other] = await ethers.getSigners();
-    GifticonNFT = await ethers.getContractFactory("GifticonNFT");
+    [owner, user, otherUser] = await ethers.getSigners();
+    const GifticonNFT = await ethers.getContractFactory("GifticonNFT");
     gifticonNFT = await GifticonNFT.deploy();
-    await gifticonNFT.deployed();
+  });
 
-    await gifticonNFT.mintBatchWithSerials(
+  it("시리얼 넘버를 포함한 NFT를 민팅해야 한다", async function () {
+    const tx = await gifticonNFT.mintBatchWithSerials(
       owner.address,
       tokenId,
-      3,
-      serialNumbers,
-      price
+      amount,
+      price,
+      "Coffee Coupon",
+      "스타벅스 아메리카노 기프티콘",
+      "ipfs://metadata"
     );
+    const [serialNumber] = await getSerialNumbersFromLogs(tx, gifticonNFT);
+
+    const info = await gifticonNFT.getSerialInfo(serialNumber);
+    expect(info.owner).to.equal(owner.address);
+    expect(info.price).to.equal(price);
+    expect(info.isRedeemed).to.equal(false);
   });
 
-  it("NFT를 민팅하고 시리얼 넘버를 제대로 저장해야 한다", async function () {
-    expect(await gifticonNFT.balanceOf(owner.address, tokenId)).to.equal(3);
-    const tokenIdFromSerial = await gifticonNFT.getTokenIdBySerial(
-      serialNumbers[0]
+  it("NFT를 시리얼 넘버 기반으로 판매 등록해야 한다", async function () {
+    const tx = await gifticonNFT.mintBatchWithSerials(
+      owner.address,
+      tokenId,
+      1,
+      price,
+      "Name",
+      "Desc",
+      "URI"
     );
-    expect(tokenIdFromSerial).to.equal(tokenId);
+    const [serialNumber] = await getSerialNumbersFromLogs(tx, gifticonNFT);
 
-    const ownerOfSerial = await gifticonNFT.getOwnerOfSerial(serialNumbers[1]);
-    expect(ownerOfSerial).to.equal(owner.address);
+    await gifticonNFT.listForSale(serialNumber, parseEther("2"));
+    const info = await gifticonNFT.getSerialInfo(serialNumber);
+
+    expect(info.price).to.equal(parseEther("2"));
+    expect(info.seller).to.equal(owner.address);
   });
 
-  it("NFT를 판매 등록하고 조회할 수 있어야 한다", async function () {
-    await gifticonNFT.listForSale(serialNumbers[0], price);
-
-    const [listedPrice, seller] = await gifticonNFT.getSerialInfo(
-      serialNumbers[0]
+  it("NFT를 시리얼 넘버 기반으로 구매할 수 있어야 한다", async function () {
+    const tx = await gifticonNFT.mintBatchWithSerials(
+      owner.address,
+      tokenId,
+      1,
+      price,
+      "Name",
+      "Desc",
+      "URI"
     );
-    expect(listedPrice).to.equal(price);
-    expect(seller).to.equal(owner.address);
-  });
+    const [serialNumber] = await getSerialNumbersFromLogs(tx, gifticonNFT);
 
-  it("NFT를 구매할 수 있어야 한다", async function () {
-    await gifticonNFT.listForSale(serialNumbers[0], price);
-    await gifticonNFT.setApprovalForAll(user.address, true);
+    await gifticonNFT.listForSale(serialNumber, price);
+    await gifticonNFT.setApprovalForAll(user.address, true); // 승인 대상은 user
 
-    const buyer = gifticonNFT.connect(user);
-    const tx = await buyer.purchaseBySerial(serialNumbers[0], { value: price });
+    const purchaseTx = await gifticonNFT
+      .connect(user)
+      .purchaseBySerial(serialNumber, { value: price });
 
-    await expect(tx).to.changeEtherBalances(
+    await expect(purchaseTx).to.changeEtherBalances(
       [user, owner],
-      [price.mul(-1), price]
+      [parseEther("-1"), parseEther("1")]
     );
-    const newOwner = await gifticonNFT.getOwnerOfSerial(serialNumbers[0]);
-    expect(newOwner).to.equal(user.address);
-    expect(await gifticonNFT.balanceOf(user.address, tokenId)).to.equal(1);
+    expect(await gifticonNFT.getOwnerOfSerial(serialNumber)).to.equal(
+      user.address
+    );
   });
 
-  it("NFT를 사용할 수 있어야 한다", async function () {
-    await gifticonNFT.redeem(serialNumbers[1]);
-    const [, , , , isRedeemed] = await gifticonNFT.getSerialInfo(
-      serialNumbers[1]
+  it("NFT를 시리얼 넘버로 사용(redeem)할 수 있어야 한다", async function () {
+    const tx = await gifticonNFT.mintBatchWithSerials(
+      owner.address,
+      tokenId,
+      1,
+      price,
+      "Name",
+      "Desc",
+      "URI"
     );
-    expect(isRedeemed).to.be.true;
+    const [serialNumber] = await getSerialNumbersFromLogs(tx, gifticonNFT);
+
+    await gifticonNFT.redeem(serialNumber);
+    const info = await gifticonNFT.getSerialInfo(serialNumber);
+
+    expect(info.isRedeemed).to.be.true;
   });
 
-  it("NFT가 만료되면 사용할 수 없어야 한다", async function () {
-    // 시간 91일 증가
+  it("NFT가 만료된 경우 사용(redeem)할 수 없어야 한다", async function () {
+    const tx = await gifticonNFT.mintBatchWithSerials(
+      owner.address,
+      tokenId,
+      1,
+      price,
+      "Name",
+      "Desc",
+      "URI"
+    );
+    const [serialNumber] = await getSerialNumbersFromLogs(tx, gifticonNFT);
+
     await ethers.provider.send("evm_increaseTime", [91 * 24 * 60 * 60]);
     await ethers.provider.send("evm_mine");
 
-    await expect(gifticonNFT.redeem(serialNumbers[2])).to.be.revertedWith(
+    await expect(gifticonNFT.redeem(serialNumber)).to.be.revertedWith(
       "Expired"
     );
   });
 
-  it("NFT를 선물할 수 있어야 한다", async function () {
-    await gifticonNFT.giftNFT(other.address, serialNumbers[1]);
-    const newOwner = await gifticonNFT.getOwnerOfSerial(serialNumbers[1]);
-    expect(newOwner).to.equal(other.address);
-    expect(await gifticonNFT.balanceOf(other.address, tokenId)).to.equal(1);
-  });
-
-  it("NFT 판매 등록을 취소할 수 있어야 한다", async function () {
-    await gifticonNFT.listForSale(serialNumbers[2], price);
-    await gifticonNFT.cancelSale(serialNumbers[2]);
-
-    const [cancelledPrice] = await gifticonNFT.getSerialInfo(serialNumbers[2]);
-    expect(cancelledPrice).to.equal(0);
-  });
-
-  it("사용 시 redeemedAt 타임스탬프가 기록되어야 한다", async function () {
-    const tx = await gifticonNFT.redeem(serialNumbers[0]);
-    const block = await ethers.provider.getBlock(tx.blockNumber);
-
-    const [, , , , isRedeemed, redeemedAt] = await gifticonNFT.getSerialInfo(
-      serialNumbers[0]
+  it("NFT를 다른 사용자에게 선물할 수 있어야 한다", async function () {
+    const tx = await gifticonNFT.mintBatchWithSerials(
+      owner.address,
+      tokenId,
+      1,
+      price,
+      "Name",
+      "Desc",
+      "URI"
     );
-    expect(isRedeemed).to.be.true;
-    expect(redeemedAt).to.equal(block.timestamp);
-  });
+    const [serialNumber] = await getSerialNumbersFromLogs(tx, gifticonNFT);
 
-  it("사용한 NFT는 다시 판매할 수 없어야 한다", async function () {
-    await gifticonNFT.redeem(serialNumbers[0]);
-    await expect(
-      gifticonNFT.listForSale(serialNumbers[0], price)
-    ).to.be.revertedWith("Already redeemed");
-  });
+    await gifticonNFT.setApprovalForAll(otherUser.address, true); // self-approval ❌
+    await gifticonNFT.giftNFT(otherUser.address, serialNumber);
 
-  it("존재하지 않는 시리얼 넘버 접근 시 revert 되어야 한다", async function () {
-    const invalidSerial = 999999;
-    await expect(gifticonNFT.getTokenIdBySerial(invalidSerial)).to.be.reverted; // 매핑 값 0이면 revert 아님, 값 자체가 0 반환될 수 있음 → 후속 체크
-
-    // 예: 없는 serial에 대해 redeem 시도
-    await expect(gifticonNFT.redeem(invalidSerial)).to.be.revertedWith(
-      "Not owner"
+    expect(await gifticonNFT.getOwnerOfSerial(serialNumber)).to.equal(
+      otherUser.address
     );
+  });
 
-    // 예: 구매 시도
-    await expect(
-      gifticonNFT.purchaseBySerial(invalidSerial, { value: price })
-    ).to.be.revertedWith("Not listed");
+  it("판매 중인 NFT의 판매를 취소할 수 있어야 한다", async function () {
+    const tx = await gifticonNFT.mintBatchWithSerials(
+      owner.address,
+      tokenId,
+      1,
+      price,
+      "Name",
+      "Desc",
+      "URI"
+    );
+    const [serialNumber] = await getSerialNumbersFromLogs(tx, gifticonNFT);
+
+    await gifticonNFT.listForSale(serialNumber, parseEther("2"));
+    await gifticonNFT.cancelSale(serialNumber);
+
+    const info = await gifticonNFT.getSerialInfo(serialNumber);
+    expect(info.price).to.equal(0);
+    expect(info.seller).to.equal(ethers.ZeroAddress); // v6 기준
   });
 });

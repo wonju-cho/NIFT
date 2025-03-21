@@ -1,4 +1,4 @@
-// listForSale.js (수정된 버전)
+//TODO: 현재 버전에 맞게 수정 예정
 require("dotenv").config();
 const { ethers } = require("hardhat");
 
