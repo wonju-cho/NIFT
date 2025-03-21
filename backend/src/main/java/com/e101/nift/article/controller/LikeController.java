@@ -27,9 +27,9 @@ public class LikeController {
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
             @ApiResponse(responseCode = "404", description = "사용자 또는 상품을 찾을 수 없음")
     })
-    @PostMapping("/like/{product_id}")
+    @PostMapping("/like/{article_id}")
     public ResponseEntity<String> addLike(
-            @PathVariable("product_id") Long productId,
+            @PathVariable("article_id") Long articleId,
             HttpServletRequest request) {
 
         String accessToken = request.getHeader("Authorization");
@@ -47,7 +47,7 @@ public class LikeController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
         }
 
-        likeService.addLike(userId, productId);
+        likeService.addLike(userId, articleId);
         return ResponseEntity.ok("좋아요 등록 완료");
     }
 
@@ -57,9 +57,9 @@ public class LikeController {
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
             @ApiResponse(responseCode = "404", description = "사용자 또는 상품을 찾을 수 없음")
     })
-    @DeleteMapping("/like/{product_id}")
+    @DeleteMapping("/like/{article_id}")
     public ResponseEntity<String> removeLike(
-            @PathVariable("product_id") Long productId,
+            @PathVariable("article_id") Long articleId,
             HttpServletRequest request) {
 
         String accessToken = request.getHeader("Authorization");
@@ -77,7 +77,7 @@ public class LikeController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
         }
 
-        likeService.removeLike(userId, productId);
+        likeService.removeLike(userId, articleId);
         return ResponseEntity.ok("좋아요 취소 완료");
     }
 }

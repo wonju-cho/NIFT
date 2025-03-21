@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface LikeRepository extends JpaRepository<Like, Long> {
-    boolean existsByArticle_ArticleIdAndUser_UserId(Long productId, Long userId);
+    boolean existsByArticle_ArticleIdAndUser_UserId(Long articleId, Long userId);
 
     // 상품ID와 사용자ID로 좋아요 상품 조회
     Optional<Like> findByUserAndArticle(User user, Article article);

@@ -1,7 +1,7 @@
 package com.e101.nift.article.service;
 
 import com.e101.nift.article.entity.Article;
-import com.e101.nift.article.model.dto.response.ProductListDto;
+import com.e101.nift.article.model.dto.response.ArticleListDto;
 import com.e101.nift.article.repository.LikeRepository;
 import com.e101.nift.article.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +18,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService {
 
-    private final ArticleRepository productRepository;
+    private final ArticleRepository articleRepository;
     private final LikeRepository likeRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductListDto> getProductList(String sort, List<Long> categories, Pageable pageable, Long userId) {
+    public Page<ArticleListDto> getArticleList(String sort, List<Long> categories, Pageable pageable, Long userId) {
         // 정렬 기준
         Sort sortBy = switch (sort) {
             case "highest" -> Sort.by(Sort.Direction.DESC, "currentPrice"); // 높은 가격순
@@ -37,22 +37,22 @@ public class ArticleServiceImpl implements ArticleService {
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortBy);
 
         // 다중 카테고리 필터링
-        Page<ProductListDto> products;
+        Page<ArticleListDto> articles;
         if (categories != null && !categories.isEmpty()) {
-            products = productRepository.findByCategoryIds(categories, sortedPageable)
-                    .map(product -> mapProductToDto(product, userId));
+            articles = articleRepository.findByCategoryIds(categories, sortedPageable)
+                    .map(article -> mapArticleToDto(article, userId));
         } else {
-            products = productRepository.findAll(sortedPageable)
-                    .map(product -> mapProductToDto(product, userId));
+            articles = articleRepository.findAll(sortedPageable)
+                    .map(article -> mapArticleToDto(article, userId));
         }
 
-        return products;
+        return articles;
     }
 
     // 로그인 여부와 관계없이 전체 상품 반환
     // userId == null 이면 isLiked=false로 설정
-    private ProductListDto mapProductToDto(Article article, Long userId) {
+    private ArticleListDto mapArticleToDto(Article article, Long userId) {
         boolean isLiked = (userId != null) && likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
-        return ProductListDto.from(article, isLiked);
+        return ArticleListDto.from(article, isLiked);
     }
 }

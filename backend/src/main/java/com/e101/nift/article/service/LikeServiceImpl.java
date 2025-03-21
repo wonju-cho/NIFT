@@ -5,7 +5,7 @@ import com.e101.nift.article.entity.Article;
 import com.e101.nift.article.repository.LikeRepository;
 import com.e101.nift.article.repository.ArticleRepository;
 import com.e101.nift.user.entity.User;
-import com.e101.nift.user.model.dto.request.ProductLikeDTO;
+import com.e101.nift.user.model.dto.request.ArticleLikeDTO;
 import com.e101.nift.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,14 +21,14 @@ public class LikeServiceImpl implements LikeService{
 
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
-    private final ArticleRepository productRepository;
+    private final ArticleRepository articleRepository;
 
     @Transactional
     @Override
-    public void addLike(Long userId, Long productId){
+    public void addLike(Long userId, Long articleId){
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
-        Article article = productRepository.findByArticleId(productId)
+        Article article = articleRepository.findByArticleId(articleId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
 
         Optional<Like> existingLike = likeRepository.findByUserAndArticle(user, article);
@@ -44,16 +44,16 @@ public class LikeServiceImpl implements LikeService{
             likeRepository.save(like);
             article.setCountLikes(article.getCountLikes() + 1);
         }
-        productRepository.save(article); // 좋아요 개수 업데이트
+        articleRepository.save(article); // 좋아요 개수 업데이트
     }
 
     @Transactional
     @Override
-    public void removeLike(Long userId, Long productId) {
+    public void removeLike(Long userId, Long articleId) {
 
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
-        Article article = productRepository.findByArticleId(productId)
+        Article article = articleRepository.findByArticleId(articleId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
 
         Optional<Like> existingLike = likeRepository.findByUserAndArticle(user, article);
@@ -64,16 +64,16 @@ public class LikeServiceImpl implements LikeService{
         // 좋아요 삭제
         likeRepository.delete(existingLike.get());
         article.setCountLikes(article.getCountLikes() - 1);
-        productRepository.save(article); // 좋아요 개수 업데이트
+        articleRepository.save(article); // 좋아요 개수 업데이트
     }
 
     @Override
-    public Page<ProductLikeDTO> getLikedProducts(Long userId, Pageable pageable) {
+    public Page<ArticleLikeDTO> getLikedArticles(Long userId, Pageable pageable) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
 
         Page<Like> likes = likeRepository.findByUser(user, pageable);
-        return likes.map(like -> new ProductLikeDTO(
+        return likes.map(like -> new ArticleLikeDTO(
                 like.getArticle().getTitle(),
                 like.getArticle().getCountLikes(),
                 like.getArticle().getGifticon().getImageUrl(),

@@ -1,7 +1,7 @@
 package com.e101.nift.article.controller;
 
 import com.e101.nift.article.model.dto.request.PostArticleDto;
-import com.e101.nift.article.model.dto.response.ProductListDto;
+import com.e101.nift.article.model.dto.response.ArticleListDto;
 import com.e101.nift.article.service.ArticleService;
 import com.e101.nift.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,12 +24,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArticleController {
     private static final Logger log = LoggerFactory.getLogger(ArticleController.class);
-    private final ArticleService productService;
+    private final ArticleService articleService;
     private final UserService userService;
 
     @Operation(summary = "판매 게시글 조회", description = "기프티콘을 판매하는 게시글을 조회합니다.")
     @GetMapping("/secondhand/article")
-    public ResponseEntity<Page<ProductListDto>> getArticles(
+    public ResponseEntity<Page<ArticleListDto>> getArticles(
             @RequestParam(name = "sort", defaultValue = "newest") String sort,  // 정렬 기준
             @RequestParam(name = "category", required = false) List<Long> categories,  // 카테고리 필터링
             @RequestParam(name = "page", defaultValue = "0") int page,  // 기본 페이지 번호
@@ -49,8 +49,8 @@ public class ArticleController {
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<ProductListDto> products = productService.getProductList(sort, categories, pageable, userId);
-        return ResponseEntity.ok(products);
+        Page<ArticleListDto> articles = articleService.getArticleList(sort, categories, pageable, userId);
+        return ResponseEntity.ok(articles);
     }
 
     @Operation(summary = "게시글 쓰기", description = "기프티콘 판매 게시글을 작성합니다.")

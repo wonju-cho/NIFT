@@ -3,8 +3,8 @@ package com.e101.nift.user.controller;
 import com.e101.nift.article.service.LikeService;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.request.NicknameDTO;
-import com.e101.nift.user.model.dto.request.ProductLikeDTO;
-import com.e101.nift.user.model.dto.response.ProductLikeDto;
+import com.e101.nift.user.model.dto.request.ArticleLikeDTO;
+import com.e101.nift.user.model.dto.response.ArticleLikeDto;
 import com.e101.nift.user.model.dto.response.UserInfoDto;
 import com.e101.nift.user.model.dto.request.WalletAddressDTO;
 import com.e101.nift.user.service.KakaoAuthService;
@@ -106,11 +106,11 @@ public class UserController {
     @Operation(summary = "좋아요한 상품 목록 조회", description = "마이페이지의 찜한 목록에서 사용자가 좋아요한 중고거래 상품 목록을 페이징하여 가져옵니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "좋아요한 상품 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = ProductLikeDto.class))),
+                    content = @Content(schema = @Schema(implementation = ArticleLikeDto.class))),
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰")
     })
     @GetMapping("/likes")
-    public ResponseEntity<ProductLikeDto> getLikedProducts(
+    public ResponseEntity<ArticleLikeDto> getLikedArticles(
             HttpServletRequest request,
             @RequestParam(name = "page", defaultValue = "0") int page) { // 기본값을 1로 변경
 
@@ -127,9 +127,9 @@ public class UserController {
 
         // 좋아요한 상품 목록 조회 (페이지당 6개, 기본 페이지 1부터 시작)
         Pageable pageable = PageRequest.of(page, 6);
-        Page<ProductLikeDTO> likedProducts = likeService.getLikedProducts(userId, pageable);
+        Page<ArticleLikeDTO> likedArticles = likeService.getLikedArticles(userId, pageable);
 
-        ProductLikeDto response = new ProductLikeDto(likedProducts.getTotalPages(), likedProducts.getContent());
+        ArticleLikeDto response = new ArticleLikeDto(likedArticles.getTotalPages(), likedArticles.getContent());
         return ResponseEntity.ok(response);
     }
 }

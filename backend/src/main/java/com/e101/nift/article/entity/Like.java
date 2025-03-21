@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "likes", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "products_id"})
+        @UniqueConstraint(columnNames = {"user_id", "articles_id"})
 })
 @Getter
 @Setter
@@ -20,7 +20,7 @@ public class Like {
     private Long likeId;
     
     @ManyToOne
-    @JoinColumn(name = "products_id", nullable = false)
+    @JoinColumn(name = "articles_id", nullable = false)
     private Article article;
     
     @ManyToOne

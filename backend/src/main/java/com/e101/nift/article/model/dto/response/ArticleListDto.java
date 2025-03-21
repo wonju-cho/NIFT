@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class ProductListDto {
-    private final Long productId;
+public class ArticleListDto {
+    private final Long articleId;
     private final Long categoryId;
     private final String categoryName;
     private final String brandName;
@@ -23,12 +23,12 @@ public class ProductListDto {
     private final LocalDateTime createdAt;
     private final boolean isLiked;
 
-    public static ProductListDto from(Article article, boolean isLiked) {
+    public static ArticleListDto from(Article article, boolean isLiked) {
         int originalPrice = article.getCurrentPrice() + 300; // 임시: 원래 가격이 현재 가격보다 300원 비쌈
         int discountRate = calculateDiscountRate(originalPrice, article.getCurrentPrice());
 
-        return ProductListDto.builder()
-                .productId(article.getArticleId())
+        return ArticleListDto.builder()
+                .articleId(article.getArticleId())
                 .brandName(article.getBrand().getBrandName())
                 .categoryId(article.getCategory().getCategoryId())
                 .categoryName(article.getCategory().getCategoryName())

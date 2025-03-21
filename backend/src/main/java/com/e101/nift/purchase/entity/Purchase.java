@@ -27,6 +27,6 @@ public class Purchase {
     private User user;
     
     @ManyToOne
-    @JoinColumn(name = "products_id", nullable = false)
+    @JoinColumn(name = "articles_id", nullable = false)
     private Article article;
 }
