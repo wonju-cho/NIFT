@@ -78,7 +78,7 @@ export function RecentlyListed() {
             </svg>
           </Link>
         </div>
-        <ProductGrid products={recentlyListedProducts} />
+        {/* <ProductGrid products={recentlyListedProducts} /> */}
       </div>
     </section>
   )

@@ -61,7 +61,7 @@ export function PopularProducts() {
             </svg>
           </Link>
         </div>
-        <ProductGrid products={popularProducts} />
+        {/* <ProductGrid products={popularProducts} /> */}
       </div>
     </section>
   )

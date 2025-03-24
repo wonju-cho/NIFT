@@ -62,7 +62,7 @@ export function SpecialOffers() {
             더 보기 <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        <ProductGrid products={specialOffers} />
+        {/* <ProductGrid products={specialOffers} /> */}
       </div>
     </section>
   )
