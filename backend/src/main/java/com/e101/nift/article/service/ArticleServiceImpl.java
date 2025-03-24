@@ -53,10 +53,10 @@ public class ArticleServiceImpl implements ArticleService {
 
     // 로그인 여부와 관계없이 전체 상품 반환
     // userId == null 이면 isLiked=false로 설정
-    private ArticleListDto mapArticleToDto(Article product, Long userId) {
-        boolean isLiked = (userId != null) && likeRepository.existsByArticle_ArticleIdAndUser_UserId(product.getArticleId(), userId);
-        log.info("상품 ID: {}, userId: {}, isLiked: {}", product.getArticleId(), userId, isLiked);
+    private ArticleListDto mapArticleToDto(Article article, Long userId) {
+        boolean isLiked = (userId != null) && likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
+        log.info("상품 ID: {}, userId: {}, isLiked: {}", article.getArticleId(), userId, isLiked);
 
-        return ArticleListDto.from(product, isLiked);
+        return ArticleListDto.from(article, isLiked);
     }
 }
