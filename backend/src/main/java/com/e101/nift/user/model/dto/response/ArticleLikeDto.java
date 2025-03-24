@@ -1,6 +1,6 @@
 package com.e101.nift.user.model.dto.response;
 
-import com.e101.nift.user.model.dto.request.ProductLikeDTO;
+import com.e101.nift.user.model.dto.request.ArticleLikeDTO;
 import lombok.*;
 
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductLikeDto {
+public class ArticleLikeDto {
     private int totalPage;
-    private List<ProductLikeDTO> likes;
+    private List<ArticleLikeDTO> likes;
 }

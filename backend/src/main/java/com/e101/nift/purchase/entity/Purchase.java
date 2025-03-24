@@ -1,13 +1,12 @@
 package com.e101.nift.purchase.entity;
 
-import com.e101.nift.product.entity.Product;
+import com.e101.nift.article.entity.Article;
 import com.e101.nift.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "purchases")
@@ -28,6 +27,6 @@ public class Purchase {
     private User user;
     
     @ManyToOne
-    @JoinColumn(name = "products_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "articles_id", nullable = false)
+    private Article article;
 }

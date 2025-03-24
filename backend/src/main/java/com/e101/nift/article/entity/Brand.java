@@ -1,22 +1,22 @@
-package com.e101.nift.product.entity;
+package com.e101.nift.article.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
+
 
 @Entity
-@Table(name = "categories")
+@Table(name = "brands")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Category {
+public class Brand {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long categoryId;
-    
-    private String categoryName;
+    private Long brandId;
+
+    private String brandName;
 }

@@ -1,7 +1,7 @@
-package com.e101.nift.product.controller;
+package com.e101.nift.article.controller;
 
 import com.e101.nift.common.security.JwtTokenProvider;
-import com.e101.nift.product.service.LikeService;
+import com.e101.nift.article.service.LikeService;
 import com.e101.nift.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/secondhand-products")
+@RequestMapping("/secondhand-articles")
 @RequiredArgsConstructor
 @Tag(name="Like", description="좋아요 관련 API")
 public class LikeController {
@@ -29,9 +29,9 @@ public class LikeController {
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
             @ApiResponse(responseCode = "404", description = "사용자 또는 상품을 찾을 수 없음")
     })
-    @PostMapping("/{product_id}/likes")
+    @PostMapping("/{article_id}/likes")
     public ResponseEntity<String> addLike(
-            @PathVariable("product_id") Long productId,
+            @PathVariable("article_id") Long articleId,
             HttpServletRequest request) {
 
         String accessToken = request.getHeader("Authorization");
@@ -41,7 +41,7 @@ public class LikeController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
         }
 
-        likeService.addLike(userId, productId);
+        likeService.addLike(userId, articleId);
         return ResponseEntity.ok("좋아요 등록 완료");
     }
 
@@ -51,9 +51,9 @@ public class LikeController {
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
             @ApiResponse(responseCode = "404", description = "사용자 또는 상품을 찾을 수 없음")
     })
-    @DeleteMapping("/{product_id}/likes")
+    @DeleteMapping("/{article_id}/likes")
     public ResponseEntity<String> removeLike(
-            @PathVariable("product_id") Long productId,
+            @PathVariable("article_id") Long articleId,
             HttpServletRequest request) {
 
         Long userId = jwtTokenProvider.getUserFromRequest(request).getUserId();
@@ -61,7 +61,7 @@ public class LikeController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
         }
 
-        likeService.removeLike(userId, productId);
+        likeService.removeLike(userId, articleId);
         return ResponseEntity.ok("좋아요 취소 완료");
     }
 }

@@ -1,4 +1,4 @@
-package com.e101.nift.product.model.dto.request;
+package com.e101.nift.article.model.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductLikeDTO {
+public class ArticleLikeDTO {
     private String title;
     private int countLikes;
     private String imageUrl;

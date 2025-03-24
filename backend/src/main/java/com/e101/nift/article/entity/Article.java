@@ -1,4 +1,4 @@
-package com.e101.nift.product.entity;
+package com.e101.nift.article.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,15 +8,15 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "products")
+@Table(name = "articles")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productId;
+    private Long articleId;
     
     private String title;
     private String description;

@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductLikeDTO {
+public class ArticleLikeDTO {
     private String title;
     private int countLikes;
     private String imageUrl;

@@ -1,8 +1,8 @@
-package com.e101.nift.product.controller;
+package com.e101.nift.article.controller;
 
 import com.e101.nift.common.security.JwtTokenProvider;
-import com.e101.nift.product.model.dto.response.ProductListDto;
-import com.e101.nift.product.service.ProductService;
+import com.e101.nift.article.model.dto.response.ArticleListDto;
+import com.e101.nift.article.service.ArticleService;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,15 +23,15 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/secondhand-products")
-public class ProductController {
-    private static final Logger log = LoggerFactory.getLogger(ProductController.class);
-    private final ProductService productService;
+@RequestMapping("/secondhand-articles")
+public class ArticleController {
+    private static final Logger log = LoggerFactory.getLogger(ArticleController.class);
+    private final ArticleService articleService;
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
-    public ResponseEntity<Page<ProductListDto>> getProducts(
+    public ResponseEntity<Page<ArticleListDto>> getArticles(
             @RequestParam(name = "sort", defaultValue = "newest") String sort,  // 정렬 기준
             @RequestParam(name = "category", required = false) List<Long> categories,  // 카테고리 필터링
             @RequestParam(name = "page", defaultValue = "0") int page,  // 기본 페이지 번호
@@ -48,8 +48,8 @@ public class ProductController {
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<ProductListDto> products = productService.getProductList(sort, categories, pageable, userId);
-        return ResponseEntity.ok(products);
+        Page<ArticleListDto> articles = articleService.getArticleList(sort, categories, pageable, userId);
+        return ResponseEntity.ok(articles);
     }
 
 }
