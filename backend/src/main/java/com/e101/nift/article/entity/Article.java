@@ -21,22 +21,14 @@ public class Article {
     
     private String title;
     private String description;
-    private String author;
-    private Float price;
+    private String userId;
     private LocalDateTime expirationDate;
+    private String imageUrl;
 
     private Integer countLikes;
-    private Integer currentPrice;
+    private Float currentPrice;
     private LocalDateTime createdAt;
     private Integer viewCnt;
-    
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-    
-    @ManyToOne
-    @JoinColumn(name = "brand_id", nullable = false)
-    private Brand brand;
 
     @ManyToOne
     @JoinColumn(name = "gifticon_id", nullable = false)
