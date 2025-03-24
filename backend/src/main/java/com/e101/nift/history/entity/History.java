@@ -1,30 +1,32 @@
-package com.e101.nift.product.entity;
+package com.e101.nift.history.entity;
+
+import com.e101.nift.article.entity.Article;
 import com.e101.nift.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "likes", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "products_id"})
-})
+@Table(name = "histories")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Like {
+public class History {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long likeId;
+    private Long historyId;
     
-    @ManyToOne
-    @JoinColumn(name = "products_id", nullable = false)
-    private Product product;
+    private Boolean isUsed;
+    private String createdAt;
     
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    
+    @ManyToOne
+    @JoinColumn(name = "articles_id", nullable = false)
+    private Article article;
 }
