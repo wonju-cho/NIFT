@@ -99,7 +99,7 @@ export function NearbyItems() {
             </svg>
           </Link>
         </div>
-        <ProductGrid products={nearbyItems} />
+        {/* <ProductGrid products={nearbyItems} /> */}
       </div>
     </section>
   )

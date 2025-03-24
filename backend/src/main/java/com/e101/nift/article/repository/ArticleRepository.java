@@ -19,6 +19,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     // 상품 id 로 조회
     Optional<Article> findByArticleId(Long articleId);
 
-    @Query("SELECT a FROM Article a WHERE a.category.categoryId IN :categories")
+    // 다중 카테고리 필터링
+    @Query("SELECT p FROM Article p WHERE p.gifticon.category.categoryId IN :categories")
     Page<Article> findByCategoryIds(@Param("categories") List<Long> categories, Pageable pageable);
 }

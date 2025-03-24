@@ -16,17 +16,17 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#EE7141",
-          50: "#FEF3EE",
-          100: "#FDE7DD",
-          200: "#FBCFBB",
-          300: "#F9B799",
-          400: "#F69F77",
-          500: "#F48755",
-          600: "#F26F33",
-          700: "#EE7141",
-          800: "#D85520",
-          900: "#B1451A",
+          DEFAULT: "#dd5851",  // 메인 포인트
+          50: "#fff5f4",       // 가장 밝은 배경용
+          100: "#ffe8e6",      // 약한 강조 배경
+          200: "#ffcfcf",      // 조금 더 채도 있는 배경
+          300: "#fca3a0",      // 살짝 코랄 느낌
+          400: "#f3766e",      // 연한 포인트 강조
+          500: "#ea5d56",      // 기본 강조
+          600: "#dd5851",      // 메인 포인트
+          700: "#c64f48",      // 살짝 어두운 강조
+          800: "#a9413c",      // 버튼 hover 등 진한 느낌
+          900: "#7d2e29",      // 텍스트, 포커스 강조
         },
         secondary: {
           DEFAULT: "#1F2937",
@@ -48,7 +48,7 @@ module.exports = {
         border: "#E2E8F0",
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
+        sans: ["var(--font-noto)", "Noto Sans", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

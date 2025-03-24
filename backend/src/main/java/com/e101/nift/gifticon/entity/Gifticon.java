@@ -35,6 +35,6 @@ public class Gifticon {
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
 
-    @OneToMany(mappedBy = "gifticon_id", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Article> articles;
+    @OneToMany(mappedBy = "gifticon", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Article> articles_id;
 }

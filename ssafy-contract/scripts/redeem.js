@@ -1,3 +1,5 @@
+//TODO: 현재 버전에 맞게 수정 예정
+
 const { ethers } = require("hardhat");
 
 async function main() {

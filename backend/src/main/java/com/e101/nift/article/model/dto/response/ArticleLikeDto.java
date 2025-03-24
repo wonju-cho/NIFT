@@ -1,6 +1,6 @@
 package com.e101.nift.article.model.dto.response;
 
-import com.e101.nift.user.model.dto.request.ArticleLikeDTO;
+import com.e101.nift.article.model.dto.request.ArticleLikeDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

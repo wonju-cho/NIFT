@@ -1,4 +1,4 @@
-package com.e101.nift.purchase.entity;
+package com.e101.nift.history.entity;
 
 import com.e101.nift.article.entity.Article;
 import com.e101.nift.user.entity.User;
@@ -9,15 +9,15 @@ import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "purchases")
+@Table(name = "histories")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Purchase {
+public class History {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long purchaseId;
+    private Long historyId;
     
     private Boolean isUsed;
     private String createdAt;

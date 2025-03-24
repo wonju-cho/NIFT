@@ -2,10 +2,10 @@ package com.e101.nift.article.service;
 
 import com.e101.nift.article.entity.Like;
 import com.e101.nift.article.entity.Article;
+import com.e101.nift.article.model.dto.request.ArticleLikeDTO;
 import com.e101.nift.article.repository.LikeRepository;
 import com.e101.nift.article.repository.ArticleRepository;
 import com.e101.nift.user.entity.User;
-import com.e101.nift.user.model.dto.request.ArticleLikeDTO;
 import com.e101.nift.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +76,7 @@ public class LikeServiceImpl implements LikeService{
         return likes.map(like -> new ArticleLikeDTO(
                 like.getArticle().getTitle(),
                 like.getArticle().getCountLikes(),
-                like.getArticle().getGifticon().getImageUrl(),
+                like.getArticle().getImageUrl(),
                 like.getArticle().getCurrentPrice()
         ));
     }

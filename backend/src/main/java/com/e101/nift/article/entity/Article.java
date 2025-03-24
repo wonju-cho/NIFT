@@ -31,6 +31,6 @@ public class Article {
     private Integer viewCnt;
 
     @ManyToOne
-    @JoinColumn(name = "gifticon_id", nullable = false)
+    @JoinColumn(name = "gifticon", nullable = false)
     private Gifticon gifticon;
 }

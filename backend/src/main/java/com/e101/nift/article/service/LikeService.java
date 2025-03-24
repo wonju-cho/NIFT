@@ -1,6 +1,7 @@
 package com.e101.nift.article.service;
 
-import com.e101.nift.user.model.dto.request.ArticleLikeDTO;
+
+import com.e101.nift.article.model.dto.request.ArticleLikeDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
