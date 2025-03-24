@@ -22,9 +22,9 @@ INSERT INTO users (kakaoId, nickName, walletAddress, profileImage) VALUES
 (105, '희진', '0xlmn654', 'https://example.com/profiles/heejin.jpg'),
 (106, '미서', '0xopq321', 'https://example.com/profiles/miseo.jpg');
 
-INSERT INTO products (title, description, category_id, brand_id, imageUrl, currentPrice, createdAt, expirationDate, viewCnt, countLikes) VALUES
+INSERT INTO articles (title, description, category_id, brand_id, imageUrl, currentPrice, createdAt, expirationDate, viewCnt, countLikes) VALUES
 -- 카페 (스타벅스, 투썸플레이스)
-('아메리카노', '스타벅스 베스트셀러', 1, 1, 'https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg', 4500, '2024-03-17 08:00:00', DATE_ADD(NOW(), INTERVAL 30 DAY), 120, 10),
+('아메리카노', '스타벅스 베스트셀러', 1, 1, 'https://static.megamart.com/article/image/1326/13264314/13264314_1_960.jpg', 4500, '2024-03-17 08:00:00', DATE_ADD(NOW(), INTERVAL 30 DAY), 120, 10),
 ('카페라떼', '스타벅스 라떼', 1, 1, 'https://sitem.ssgcdn.com/11/78/03/item/1000291037811_i1_750.jpg', 5000, '2024-03-17 09:00:00', DATE_ADD(NOW(), INTERVAL 30 DAY), 80, 8),
 
 ('아메리카노', '투썸플레이스 베스트셀러', 1, 2, 'https://sitem.ssgcdn.com/75/10/35/item/1000298351075_i1_750.jpg', 4000, '2024-03-17 10:00:00', DATE_ADD(NOW(), INTERVAL 30 DAY), 60, 5),
@@ -83,7 +83,7 @@ INSERT INTO products (title, description, category_id, brand_id, imageUrl, curre
 ('즉석밥 햇반', '이마트 인기 상품', 6, 18, 'https://sitem.ssgcdn.com/69/86/21/item/0000008218669_i1_750.jpg', 4500, '2024-03-18 06:00:00', DATE_ADD(NOW(), INTERVAL 30 DAY), 180, 15),
 ('이마트 PB 감자칩', '이마트 자체 브랜드', 6, 18, 'https://sitem.ssgcdn.com/54/13/19/item/1000012191354_i1_750.jpg', 3000, '2024-03-18 07:00:00', DATE_ADD(NOW(), INTERVAL 30 DAY), 170, 13);
 
-INSERT INTO likes (products_id, user_id) VALUES
+INSERT INTO likes (articles_id, user_id) VALUES
 (1, 1), (1, 3), (1, 4), (1, 6),
 (2, 2), (2, 3), (2, 5), (2, 6),
 (3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6),
