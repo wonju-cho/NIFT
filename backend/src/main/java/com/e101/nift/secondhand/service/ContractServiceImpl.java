@@ -24,7 +24,7 @@ public class ContractServiceImpl implements ContractService {
         articleHistoryRepository.save(
                 ArticleHistory.builder()
                         .articleId(articleId)
-                        .contractType(ContractType.PURCHASE.getType())
+                        .historyType(ContractType.PURCHASE.getType())
                         .userId(userId)
                         .build()
         );

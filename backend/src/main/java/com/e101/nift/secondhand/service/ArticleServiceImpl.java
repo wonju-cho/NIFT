@@ -1,6 +1,7 @@
 package com.e101.nift.secondhand.service;
 
 import com.e101.nift.secondhand.entity.Article;
+import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
 import com.e101.nift.secondhand.repository.LikeRepository;
 import com.e101.nift.secondhand.repository.ArticleRepository;
@@ -98,7 +99,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public void createArticle(com.e101.nift.article.model.dto.request.PostArticleDto postArticleDto, User user) {
+    public void createArticle(PostArticleDto postArticleDto, User user) {
         Gifticon gifticon = gifticonRepository.findById(postArticleDto.getGifticonId())
                 .orElseThrow(() -> new IllegalArgumentException("기프티콘이 존재하지 않습니다."));
 

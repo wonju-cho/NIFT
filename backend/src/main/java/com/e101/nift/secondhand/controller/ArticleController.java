@@ -1,6 +1,7 @@
 package com.e101.nift.secondhand.controller;
 
 import com.e101.nift.common.security.JwtTokenProvider;
+import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
 import com.e101.nift.secondhand.service.ArticleService;
 import com.e101.nift.secondhand.service.ArticleServiceImpl;
@@ -58,7 +59,7 @@ public class ArticleController {
     @PostMapping
     public ResponseEntity<Void> PostArticles(
         HttpServletRequest request,
-        @RequestBody com.e101.nift.article.model.dto.request.PostArticleDto postArticleDto
+        @RequestBody PostArticleDto postArticleDto
     ) {
         User user = jwtTokenProvider.getUserFromRequest(request);
         articleService.createArticle(postArticleDto, user);

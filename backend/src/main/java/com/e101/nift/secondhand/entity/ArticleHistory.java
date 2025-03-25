@@ -16,13 +16,13 @@ import java.time.LocalDateTime;
 public class ArticleHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long historyId;
+    private Long articleHistoryId;
     
     private LocalDateTime createdAt;
 
     private Long userId;
     private Long articleId;
-    private short contractType;
+    private short historyType;
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

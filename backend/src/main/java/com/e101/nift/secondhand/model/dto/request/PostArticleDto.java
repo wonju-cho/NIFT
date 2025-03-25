@@ -1,4 +1,4 @@
-package com.e101.nift.article.model.dto.request;
+package com.e101.nift.secondhand.model.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +15,7 @@ public class PostArticleDto {
     private String description;
     private String author;
     private Float currentPrice;
-    private Integer imageUrl;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private Long serialNum;
     private LocalDateTime expirationDate;

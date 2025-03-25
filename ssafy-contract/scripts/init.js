@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0xEAc580119cad82b6ffB63A58269F1A66A97EB590";
+  const contractAddress = "0x40A3b2E3B597b881B9D5e40FE25dE15dBDa2BB45";
   const recipient = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F"; // 구매자 주소
   const amount = 1;
   const initialPrice = ethers.parseEther("0.01"); // 초기 판매 가격 설정 (예시)
