@@ -109,6 +109,7 @@ public class ArticleServiceImpl implements ArticleService {
         article.setUserId(user.getUserId());
         article.setCurrentPrice(postArticleDto.getCurrentPrice());
         article.setExpirationDate(postArticleDto.getExpirationDate());
+        article.setSerialNum(postArticleDto.getSerialNum());
         article.setCreatedAt(LocalDateTime.now());
         article.setCountLikes(0);
         article.setViewCnt(0);
