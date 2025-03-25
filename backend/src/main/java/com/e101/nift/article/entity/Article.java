@@ -25,10 +25,10 @@ public class Article {
     private LocalDateTime expirationDate;
     private String imageUrl;
 
-    private Integer countLikes;
+    private Integer countLikes = 0;
     private Float currentPrice;
     private LocalDateTime createdAt;
-    private Integer viewCnt;
+    private Integer viewCnt = 0;
 
     @ManyToOne
     @JoinColumn(name = "gifticon", nullable = false)
