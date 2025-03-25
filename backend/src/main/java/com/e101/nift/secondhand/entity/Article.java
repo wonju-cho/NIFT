@@ -34,4 +34,9 @@ public class Article {
     @ManyToOne
     @JoinColumn(name = "gifticon", nullable = false)
     private Gifticon gifticon;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

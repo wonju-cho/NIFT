@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface ArticleService {
     Page<ArticleListDto> getArticleList(String sort, List<Long> categories, Pageable pageable, Long userId, Integer minPrice, Integer maxPrice);
-    void createArticle(PostArticleDto postArticleDto, User user);
+    void createArticle(PostArticleDto postArticleDto, Long userId);
 
 }

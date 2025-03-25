@@ -99,18 +99,17 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public void createArticle(PostArticleDto postArticleDto, User user) {
+    public void createArticle(PostArticleDto postArticleDto, Long userId) {
         Gifticon gifticon = gifticonRepository.findById(postArticleDto.getGifticonId())
                 .orElseThrow(() -> new IllegalArgumentException("기프티콘이 존재하지 않습니다."));
 
         Article article = new Article();
         article.setTitle(postArticleDto.getTitle());
         article.setDescription(postArticleDto.getDescription());
-        article.setUserId(user.getUserId());
+        article.setUserId(userId);
         article.setCurrentPrice(postArticleDto.getCurrentPrice());
         article.setExpirationDate(postArticleDto.getExpirationDate());
         article.setSerialNum(postArticleDto.getSerialNum());
-        article.setCreatedAt(LocalDateTime.now());
         article.setCountLikes(0);
         article.setViewCnt(0);
         article.setImageUrl(gifticon.getImageUrl());

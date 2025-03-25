@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,6 @@ import java.util.List;
 public class ArticleController {
     private static final Logger log = LoggerFactory.getLogger(ArticleController.class);
     private final ArticleServiceImpl articleService;
-    private final UserServiceImpl userService;
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
@@ -57,12 +57,16 @@ public class ArticleController {
 
     @Operation(summary = "게시글 쓰기", description = "기프티콘 판매 게시글을 작성합니다.")
     @PostMapping
-    public ResponseEntity<Void> PostArticles(
-        HttpServletRequest request,
-        @RequestBody PostArticleDto postArticleDto
+    public ResponseEntity<?> PostArticles(
+            HttpServletRequest request,
+            @RequestBody PostArticleDto postArticleDto
     ) {
-        User user = jwtTokenProvider.getUserFromRequest(request);
-        articleService.createArticle(postArticleDto, user);
+        Long userId = jwtTokenProvider.getUserFromRequest(request).getUserId();
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
+        }
+
+        articleService.createArticle(postArticleDto, userId);
         return ResponseEntity.status(201).build();
     }
 }
