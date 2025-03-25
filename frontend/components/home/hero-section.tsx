@@ -25,7 +25,7 @@ const slides = [
     image: "/placeholder.svg?height=600&width=1200",
     cta: {
       text: "주변 상품 보기",
-      link: "/products/nearby",
+      link: "/articles/nearby",
     },
     color: "bg-gradient-to-r from-blue-500/80 to-blue-600",
   },

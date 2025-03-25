@@ -1,8 +1,8 @@
 import Link from "next/link"
-import { ProductGrid } from "@/components/article/article-grid"
+import { ArticleGrid } from "@/components/article/article-grid"
 
 // 샘플 데이터 - 중고거래 특성에 맞게 수정
-const recentlyListedProducts = [
+const recentlyListedArticles = [
   {
     id: "1",
     title: "스타벅스 아메리카노 Tall",
@@ -63,7 +63,7 @@ export function RecentlyListed() {
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">최근 등록된 상품</h2>
           <Link
-            href="/products/recent"
+            href="/articles/recent"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
             더 보기{" "}
@@ -78,7 +78,7 @@ export function RecentlyListed() {
             </svg>
           </Link>
         </div>
-        {/* <ProductGrid products={recentlyListedProducts} /> */}
+        {/* <ArticleGrid articles={recentlyListedArticles} /> */}
       </div>
     </section>
   )

@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
-import { ProductGrid } from "@/components/article/article-grid"
+import { ArticleGrid } from "@/components/article/article-grid"
 
 // 샘플 데이터
 const specialOffers = [
@@ -56,13 +56,13 @@ export function SpecialOffers() {
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">특별 할인</h2>
           <Link
-            href="/products/special"
+            href="/articles/special"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
             더 보기 <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        {/* <ProductGrid products={specialOffers} /> */}
+        {/* <ArticleGrid articles={specialOffers} /> */}
       </div>
     </section>
   )

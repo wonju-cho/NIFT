@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ProductGrid } from "@/components/article/article-grid"
+import { ArticleGrid } from "@/components/article/article-grid"
 
 // 샘플 데이터 - 중고거래 특성에 맞게 위치 정보 추가
 const nearbyItems = [
@@ -84,7 +84,7 @@ export function NearbyItems() {
             <h2 className="text-2xl font-bold tracking-tight md:text-3xl">내 주변 상품</h2>
           </div>
           <Link
-            href="/products/nearby"
+            href="/articles/nearby"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
             더 보기{" "}
@@ -99,7 +99,7 @@ export function NearbyItems() {
             </svg>
           </Link>
         </div>
-        {/* <ProductGrid products={nearbyItems} /> */}
+        {/* <ArticleGrid articles={nearbyItems} /> */}
       </div>
     </section>
   )
