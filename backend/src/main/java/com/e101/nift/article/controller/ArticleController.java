@@ -34,8 +34,10 @@ public class ArticleController {
     public ResponseEntity<Page<ArticleListDto>> getArticles(
             @RequestParam(name = "sort", defaultValue = "newest") String sort,  // 정렬 기준
             @RequestParam(name = "category", required = false) List<Long> categories,  // 카테고리 필터링
-            @RequestParam(name = "page", defaultValue = "0") int page,  // 기본 페이지 번호
+            @RequestParam(name = "page", defaultValue = "1") int page,  // 기본 페이지 번호
             @RequestParam(name = "size", defaultValue = "10") int size,  // 페이지 크기
+            @RequestParam(name = "minPrice", required = false) Integer minPrice,    // 최소 가격
+            @RequestParam(name = "maxPrice", required = false) Integer maxPrice,     // 최대 가격
             HttpServletRequest request
     ) {
         Long userId = null;
@@ -47,8 +49,8 @@ public class ArticleController {
             log.warn("유효하지 않은 토큰입니다: {}", e.getMessage());
         }
 
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ArticleListDto> articles = articleService.getArticleList(sort, categories, pageable, userId);
+        Pageable pageable = PageRequest.of(page-1, size);
+        Page<ArticleListDto> articles = articleService.getArticleList(sort, categories, pageable, userId, minPrice, maxPrice);
         return ResponseEntity.ok(articles);
     }
 
