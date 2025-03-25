@@ -25,29 +25,61 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ArticleListDto> getArticleList(String sort, List<Long> categories, Pageable pageable, Long userId) {
+    public Page<ArticleListDto> getArticleList(String sort, List<Long> categories, Pageable pageable, Long userId, Integer minPrice, Integer maxPrice) {
         // 정렬 기준
         Sort sortBy = switch (sort) {
-            case "highest" -> Sort.by(Sort.Direction.DESC, "currentPrice"); // 높은 가격순
-            case "lowest" -> Sort.by(Sort.Direction.ASC, "currentPrice"); // 낮은 가격순
-            case "likes" -> Sort.by(Sort.Direction.DESC, "countLikes"); // 좋아요순
-            case "views" -> Sort.by(Sort.Direction.DESC, "viewCnt"); // 조회수순
-            default -> Sort.by(Sort.Direction.DESC, "createdAt"); // 최신순
+            case "highest" -> Sort.by(Sort.Direction.DESC, "currentPrice").and(Sort.by("articleId"));
+            case "lowest" -> Sort.by(Sort.Direction.ASC, "currentPrice").and(Sort.by("articleId"));
+            case "likes" -> Sort.by(Sort.Direction.DESC, "countLikes").and(Sort.by("articleId"));
+            case "views" -> Sort.by(Sort.Direction.DESC, "viewCnt").and(Sort.by("articleId"));
+            default -> Sort.by(Sort.Direction.DESC, "createdAt").and(Sort.by("articleId"));
         };
 
-        // Pageable (정렬)
+        // 정렬이 적용된 Pageable 생성
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortBy);
 
-        // 다중 카테고리 필터링
         Page<ArticleListDto> articles;
-        if (categories != null && !categories.isEmpty()) {
-            articles = articleRepository.findByCategoryIds(categories, sortedPageable)
-                    .map(article -> mapArticleToDto(article, userId));
-        } else {
-            articles = articleRepository.findAll(sortedPageable)
-                    .map(article -> mapArticleToDto(article, userId));
-        }
 
+        // 필터
+        if (categories != null && !categories.isEmpty()) {
+            // 카테고리 필터가 적용된 경우
+            if (minPrice != null || maxPrice != null) {
+                // 카테고리 + 가격 조건 모두 적용
+                articles = articleRepository.findByCategoryAndPriceRange(categories, minPrice, maxPrice, sortedPageable)
+                        .map(article -> {
+                            boolean isLiked = (userId != null) &&
+                                    likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
+                            return ArticleListDto.from(article, isLiked);
+                        });
+            } else {
+                // 카테고리만 적용
+                articles = articleRepository.findByCategoryIds(categories, sortedPageable)
+                        .map(article -> {
+                            boolean isLiked = (userId != null) &&
+                                    likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
+                            return ArticleListDto.from(article, isLiked);
+                        });
+            }
+        } else {
+            // 카테고리 필터가 없는 경우
+            if (minPrice != null || maxPrice != null) {
+                // 가격 조건만 적용
+                articles = articleRepository.findByPriceRange(minPrice, maxPrice, sortedPageable)
+                        .map(article -> {
+                            boolean isLiked = (userId != null) &&
+                                    likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
+                            return ArticleListDto.from(article, isLiked);
+                        });
+            } else {
+                // 아무 필터도 없는 경우 전체 조회
+                articles = articleRepository.findAll(sortedPageable)
+                        .map(article -> {
+                            boolean isLiked = (userId != null) &&
+                                    likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
+                            return ArticleListDto.from(article, isLiked);
+                        });
+            }
+        }
         return articles;
     }
 

@@ -22,4 +22,22 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     // 다중 카테고리 필터링
     @Query("SELECT p FROM Article p WHERE p.gifticon.category.categoryId IN :categories")
     Page<Article> findByCategoryIds(@Param("categories") List<Long> categories, Pageable pageable);
+
+    // 가격 범위 필터링
+    @Query("SELECT p FROM Article p " +
+            "WHERE (:minPrice IS NULL OR p.currentPrice >= :minPrice) " +
+            "AND (:maxPrice IS NULL OR p.currentPrice <= :maxPrice)")
+    Page<Article> findByPriceRange(@Param("minPrice") Integer minPrice,
+                                   @Param("maxPrice") Integer maxPrice,
+                                   Pageable pageable);
+
+    // 카테고리와 가격 조건 모두 적용
+    @Query("SELECT p FROM Article p " +
+            "WHERE p.category.categoryId IN :categories " +
+            "AND (:minPrice IS NULL OR p.currentPrice >= :minPrice) " +
+            "AND (:maxPrice IS NULL OR p.currentPrice <= :maxPrice)")
+    Page<Article> findByCategoryAndPriceRange(@Param("categories") List<Long> categories,
+                                              @Param("minPrice") Integer minPrice,
+                                              @Param("maxPrice") Integer maxPrice,
+                                              Pageable pageable);
 }
