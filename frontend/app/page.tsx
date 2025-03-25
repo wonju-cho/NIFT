@@ -6,7 +6,7 @@ import { Footer } from "@/components/layout/footer"
 import { HeroSection } from "@/components/home/hero-section"
 import { FeaturedCategories } from "@/components/home/featured-categories"
 import { RecentlyListed } from "@/components/home/recently-listed"
-import { PopularProducts } from "@/components/home/popular-products"
+import { PopularArticles } from "@/components/home/popular-articles"
 import { NearbyItems } from "@/components/home/nearby-items"
 
 
@@ -27,7 +27,7 @@ export default function Home() {
         <HeroSection />
         <FeaturedCategories />
         <RecentlyListed />
-        <PopularProducts />
+        <PopularArticles />
         <NearbyItems />
       </main>
       <Footer />

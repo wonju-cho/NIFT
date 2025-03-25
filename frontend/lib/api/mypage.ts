@@ -2,8 +2,8 @@ import { apiClient } from "./CustomAxios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export interface LikedProduct {
-  productId: number;
+export interface LikedArticle {
+  articleId: number;
   title: string;
   imageUrl: string;
   countLikes: number;
@@ -29,9 +29,9 @@ export const updateWallet = async (walletAddress: string) => {
   return response;
 };
 
-export async function fetchLikedProducts(
+export async function fetchLikedArticles(
   page: number
-): Promise<{ totalPage: number; likes: LikedProduct[] }> {
+): Promise<{ totalPage: number; likes: LikedArticle[] }> {
   const accessToken = localStorage.getItem("access_token");
 
   if (!accessToken) {

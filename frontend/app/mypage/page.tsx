@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  ProductCard,
-  ProductCardProps,
-} from "@/components/product/product-card";
+  ArticleCard,
+  ArticleCardProps,
+} from "@/components/article/article-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -47,7 +47,7 @@ import {
   deleteUser,
   updateUserNickname,
   updateWallet,
-  fetchLikedProducts,
+  fetchLikedArticles,
 } from "@/lib/api/mypage";
 import { useRouter } from "next/navigation";
 
@@ -80,7 +80,7 @@ export default function MyPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [ssfBalance, setSsfBalance] = useState<string>("0");
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [likedProducts, setLikedProducts] = useState<ProductCardProps[]>([]);
+  const [likedArticles, setLikedArticles] = useState<ArticleCardProps[]>([]);
   const [totalPage, setTotalPage] = useState(1);
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -262,23 +262,23 @@ export default function MyPage() {
 
   // 찜한 상품 목록 불러오기
   useEffect(() => {
-    const loadLikeProducts = async () => {
+    const loadLikeArticles = async () => {
       setIsLoading(true);
       try {
-        const data = await fetchLikedProducts(currentPage);
+        const data = await fetchLikedArticles(currentPage);
 
-        const transformedProducts = data.likes.map((product) => ({
-          productId: product.productId,
-          title: product.title,
+        const transformedArticles = data.likes.map((article) => ({
+          articleId: article.articleId,
+          title: article.title,
           brandName: "", // 브랜드 정보가 없을 경우 빈 문자열
-          currentPrice: product.currentPrice,
-          originalPrice: product.currentPrice, // 원래 가격이 없으면 현재 가격으로 설정
+          currentPrice: article.currentPrice,
+          originalPrice: article.currentPrice, // 원래 가격이 없으면 현재 가격으로 설정
           discountRate: 0, // 할인율 기본값 설정
-          imageUrl: product.imageUrl,
+          imageUrl: article.imageUrl,
           isLiked: true, // 찜한 상품이므로 true
         }));
 
-        setLikedProducts(transformedProducts);
+        setLikedArticles(transformedArticles);
         setTotalPage(data?.totalPage || 1);
       } catch (error) {
         console.error("찜한 상품 목록 가져오는데 에러 생김!! : ", error);
@@ -286,11 +286,11 @@ export default function MyPage() {
         setIsLoading(false);
       }
     };
-    loadLikeProducts();
+    loadLikeArticles();
   }, [currentPage]);
 
-  // Sample product data
-  const myProducts = [
+  // Sample article data
+  const myArticles = [
     {
       id: "1",
       title: "스타벅스 아메리카노 Tall",
@@ -545,8 +545,8 @@ export default function MyPage() {
                             </p>
                           </div>
                           {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                          {myProducts.slice(0, 3).map((product) => (
-                            <ProductCard key={product.id} {...product} />
+                          {myArticles.slice(0, 3).map((article) => (
+                            <ArticleCard key={article.id} {...article} />
                           ))}
                         </div> */}
                         </TabsContent>
@@ -562,8 +562,8 @@ export default function MyPage() {
                             </p>
                           </div>
                           {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                          {myProducts.slice(1, 4).map((product) => (
-                            <ProductCard key={product.id} {...product} />
+                          {myArticles.slice(1, 4).map((article) => (
+                            <ArticleCard key={article.id} {...article} />
                           ))}
                         </div> */}
                         </TabsContent>
@@ -580,11 +580,11 @@ export default function MyPage() {
 
                           {/* 찜한 상품 목록 표시 */}
                           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                            {likedProducts?.length > 0 ? (
-                              likedProducts.map((product) => (
-                                <ProductCard
-                                  key={product.productId}
-                                  {...product}
+                            {likedArticles?.length > 0 ? (
+                              likedArticles.map((article) => (
+                                <ArticleCard
+                                  key={article.articleId}
+                                  {...article}
                                 />
                               ))
                             ) : (

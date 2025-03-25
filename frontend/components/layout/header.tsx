@@ -18,18 +18,18 @@ const navigation = [
 ]
 
 const categories = [
-  { name: "전체상품보기", href: "/products" },
-  { name: "내 주변", href: "/products/nearby", highlight: true },
-  { name: "커피/음료", href: "/products/coffee" },
-  { name: "상품권", href: "/products/vouchers" },
-  { name: "배달/배송", href: "/products/delivery" },
-  { name: "편의점/마트", href: "/products/convenience" },
-  { name: "치킨/피자/버거", href: "/products/food" },
-  { name: "뷰티/아이스크림", href: "/products/beauty" },
-  { name: "주유", href: "/products/gas" },
-  { name: "문화/생활", href: "/products/culture" },
-  { name: "외식", href: "/products/dining" },
-  { name: "이벤트", href: "/products/events", highlight: true },
+  { name: "전체상품보기", href: "/articles" },
+  { name: "내 주변", href: "/articles/nearby", highlight: true },
+  { name: "커피/음료", href: "/articles/coffee" },
+  { name: "상품권", href: "/articles/vouchers" },
+  { name: "배달/배송", href: "/articles/delivery" },
+  { name: "편의점/마트", href: "/articles/convenience" },
+  { name: "치킨/피자/버거", href: "/articles/food" },
+  { name: "뷰티/아이스크림", href: "/articles/beauty" },
+  { name: "주유", href: "/articles/gas" },
+  { name: "문화/생활", href: "/articles/culture" },
+  { name: "외식", href: "/articles/dining" },
+  { name: "이벤트", href: "/articles/events", highlight: true },
 ]
 
 export function Header() {
