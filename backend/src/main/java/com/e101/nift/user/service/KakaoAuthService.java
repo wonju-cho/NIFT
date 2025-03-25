@@ -40,10 +40,13 @@ public class KakaoAuthService {
 
             HttpEntity<String> request = new HttpEntity<>(headers);
             ResponseEntity<String> response = restTemplate.exchange(KakaoApiUrl.KAKAO_USER_ME.getUrl(), HttpMethod.GET, request, String.class);
+            log.info("😎Kakao response: {}", response);
 
             JsonNode jsonResponse = objectMapper.readTree(response.getBody());
             Long kakaoId = jsonResponse.get("id").asLong();
             String nickname = jsonResponse.get("kakao_account").get("profile").get("nickname").asText();
+            String gender = jsonResponse.path("kakao_account").path("gender").asText(null);
+            String age = jsonResponse.path("kakao_account").path("age_range").asText(null);
 
             JsonNode profileNode = jsonResponse.path("kakao_account").path("profile"); // `path()` 사용하여 null 방지
             // 프로필 이미지 가져오기 (기본 이미지 처리 포함)
@@ -65,6 +68,8 @@ public class KakaoAuthService {
             newUser.setNickName(nickname);
             newUser.setProfileImage(profileImg);
             newUser.setWalletAddress(null); // 최초에는 NULL
+            newUser.setAge(age);
+            newUser.setGender(gender);
 
             userRepository.save(newUser);
 
