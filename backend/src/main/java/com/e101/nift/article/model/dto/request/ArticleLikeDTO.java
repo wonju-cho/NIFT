@@ -13,5 +13,5 @@ public class ArticleLikeDTO {
     private String title;
     private int countLikes;
     private String imageUrl;
-    private int currentPrice;
+    private Float currentPrice;
 }

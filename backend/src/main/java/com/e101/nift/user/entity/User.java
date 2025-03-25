@@ -22,5 +22,7 @@ public class User {
     private String nickName;
     private String walletAddress;
     private String profileImage;
+    private String gender;
+    private String age;
 
 }

@@ -1,5 +1,6 @@
 package com.e101.nift.article.entity;
 
+import com.e101.nift.gifticon.entity.Gifticon;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,18 +21,16 @@ public class Article {
     
     private String title;
     private String description;
-    private Integer countLikes;
-    private String imageUrl;
-    private Integer currentPrice;
-    private LocalDateTime createdAt;
+    private String userId;
     private LocalDateTime expirationDate;
-    private Integer viewCnt;
-    
+    private String imageUrl;
+
+    private Integer countLikes = 0;
+    private Float currentPrice;
+    private LocalDateTime createdAt;
+    private Integer viewCnt = 0;
+
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-    
-    @ManyToOne
-    @JoinColumn(name = "brand_id", nullable = false)
-    private Brand brand;
+    @JoinColumn(name = "gifticon", nullable = false)
+    private Gifticon gifticon;
 }

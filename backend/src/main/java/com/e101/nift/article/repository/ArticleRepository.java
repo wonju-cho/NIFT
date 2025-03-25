@@ -1,6 +1,7 @@
 package com.e101.nift.article.repository;
 
 import com.e101.nift.article.entity.Article;
+import com.e101.nift.gifticon.entity.Gifticon;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,7 +20,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     Optional<Article> findByArticleId(Long articleId);
 
     // 다중 카테고리 필터링
-    @Query("SELECT p FROM Article p WHERE p.category.categoryId IN :categories")
+    @Query("SELECT p FROM Article p WHERE p.gifticon.category.categoryId IN :categories")
     Page<Article> findByCategoryIds(@Param("categories") List<Long> categories, Pageable pageable);
 
     // 가격 범위 필터링
