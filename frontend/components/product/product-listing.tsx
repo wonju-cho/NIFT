@@ -60,7 +60,7 @@ const fetchProducts = async ({
     params.append("size", size.toString())
 
     const queryString = params.toString()
-    const url = `${BASE_URL}/secondhand-products${queryString ? `?${queryString}` : ""}`
+    const url = `${BASE_URL}/secondhand-articles${queryString ? `?${queryString}` : ""}`
 
     console.log("Fetching products from:", url)
 
