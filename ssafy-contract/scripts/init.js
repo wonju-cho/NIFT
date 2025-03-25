@@ -1,84 +1,74 @@
-//TODO: 현재 버전에 맞게 수정 예정
 const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0xEAc580119cad82b6ffB63A58269F1A66A97EB590";
-  const recipient = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F"; // 구매자 주소
-  const amount = 1;
-  const initialPrice = ethers.parseEther("0.01"); // 초기 판매 가격 설정 (예시)
-  const sellPrice = ethers.parseEther("1"); // 판매 가격 설정
+  const contractAddress = "0xf7A8d75aF63fb1412CdC03519fD4d3463E088EBf";
+  const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
 
-  console.log("🚀 컨트랙트 연결 중...");
+  const tokenId = 1;
+  const mintAmount = 4;
+  const price = ethers.parseEther("0.01");
+  const name = "스타벅스 기프티콘";
+  const description = "아메리카노 T size";
+  const metadataURI =
+    "ipfs://bafkreifj53t5ciradsorecuagrasftt4pfercqvjuhyrhks2piwokho2iy";
+
   const gifticonNFT = await ethers.getContractAt(
     "GifticonNFT",
     contractAddress
   );
-
-  if (!gifticonNFT) {
-    throw new Error("❌ 컨트랙트 연결 실패: 주소 확인 필요");
-  }
-  console.log("✅ GifticonNFT 컨트랙트 연결됨:", contractAddress);
-
-  // 🔹 배포자의 지갑 주소 가져오기
   const [deployer] = await ethers.getSigners();
-  console.log("🛠 Deployer address:", deployer.address);
 
-  // 🔹 NFT 민팅 (배포자가 소유)
   console.log("🚀 NFT 민팅 중...");
-  const mintStartTime = Date.now();
-  for (let i = 0; i < 4; i++) {
-    const serialNumber = mintStartTime + i;
-    await (
-      await gifticonNFT.mint(deployer.address, initialPrice, serialNumber)
-    ).wait(); // 시리얼 넘버를 임의로 설정 (실제 사용 시 의미있는 값으로 변경)
-  }
-  console.log("✅ NFTs Minted!");
+  const tx = await gifticonNFT.mintBatchWithSerials(
+    deployer.address, // 배포자 주소로 민팅
+    tokenId,
+    mintAmount,
+    price,
+    name,
+    description,
+    metadataURI
+  );
+  const receipt = await tx.wait();
+  console.log("✅ 민팅 완료");
 
-  // 🔹 최신 민팅된 Token ID 가져오기
-  let latestTokenId = await gifticonNFT.getCurrentTokenId();
-  latestTokenId = BigInt(latestTokenId.toString());
-  console.log(`🎉 최신 발행된 NFT Token ID: ${latestTokenId}`);
+  // Minted 이벤트로부터 시리얼 넘버 추출
+  console.log("🔍 시리얼 넘버 추출 중...");
+  const topicMinted = ethers.id("Minted(address,uint256,uint256)");
+  const logs = receipt.logs.filter((log) => log.topics[0] === topicMinted);
 
-  // 🔹 배포자가 구매자(수령자)에게 NFT 전송
-  console.log("🚀 구매자에게 NFT 소유권 이전 중...");
-  for (let i = 3n; i >= 0n; i--) {
-    await (
-      await gifticonNFT.safeTransferFrom(
-        deployer.address,
-        recipient,
-        latestTokenId - i,
-        amount,
-        "0x"
-      )
-    ).wait();
-  }
-  console.log("✅ NFT 소유권 이전 완료!");
+  const serials = logs.map((log) => {
+    const parsed = gifticonNFT.interface.parseLog(log);
+    return parsed.args.serialNumber.toString();
+  });
 
-  // 🔹 구매자가 NFT를 소유하고 있는지 확인
-  let balance = await gifticonNFT.balanceOf(recipient, latestTokenId);
-  console.log(`🔍 구매자(${recipient})의 NFT 보유 수량: ${balance}`);
+  console.log("✅ 추출된 시리얼 넘버:", serials);
 
-  if (balance <= 0) {
-    throw new Error("❌ 구매자가 NFT를 보유하고 있지 않습니다.");
+  // 판매자에게 NFT 전송
+  console.log("🚚 판매자에게 NFT 전송 중...");
+  for (const serial of serials) {
+    const tx = await gifticonNFT.giftNFT(sellerAddress, serial);
+    await tx.wait();
+    console.log(`🔄 전송 완료: Serial ${serial}`);
   }
 
-  // ✅ `listForSale.js` 실행 (최신 tokenId 넘기기)
-  console.log(`🚀 listForSale.js 실행 중 (Token ID: ${latestTokenId})`);
-  try {
-    // Calculate the serial number of the latest minted NFT
-    const serialNumberToSell = mintStartTime + 3; // Assuming 4 NFTs minted (token IDs 1 to 4)
-    execSync(
-      `node scripts/listForSale.js ${serialNumberToSell} ${sellPrice.toString()}`,
-      { stdio: "inherit" }
-    );
-  } catch (error) {
-    console.error(`❌ listForSale.js 실행 중 오류 발생:`, error);
+  console.log("🎉 전송 완료! 이제 전부 자동 판매 등록 시작");
+  const sellPrice = ethers.parseUnits("1", 0);
+
+  for (const serial of serials) {
+    console.log(`🚀 listForSale.js 실행 중 (Serial: ${serial})`);
+    try {
+      execSync(
+        `node scripts/listForSale.js ${serial} ${sellPrice.toString()}`,
+        { stdio: "inherit" }
+      );
+    } catch (error) {
+      console.error(`❌ listForSale.js 실행 중 오류 발생:`, error.message);
+    }
   }
 }
 
-// 🔹 스크립트 실행 및 오류 처리
-main().catch((error) => {
-  console.error("❌ 오류 발생:", error);
-  process.exitCode = 1;
+main().catch((err) => {
+  console.error("❌ 실행 오류:", err.message);
+  process.exit(1);
 });
