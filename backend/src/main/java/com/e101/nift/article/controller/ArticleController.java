@@ -52,7 +52,7 @@ public class ArticleController {
     }
 
     @Operation(summary = "게시글 쓰기", description = "기프티콘 판매 게시글을 작성합니다.")
-    @PostMapping("/secondhand-articles")
+    @PostMapping
     public ResponseEntity<Void> PostArticles(
 
     ) {

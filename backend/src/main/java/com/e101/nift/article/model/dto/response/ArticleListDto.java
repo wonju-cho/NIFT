@@ -1,31 +1,39 @@
 package com.e101.nift.article.model.dto.response;
 
 import com.e101.nift.article.entity.Article;
+import com.e101.nift.article.model.vo.PriceInfo;
 import lombok.Builder;
 import lombok.Getter;
+
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
 public class ArticleListDto {
+
     private final Long articleId;
     private final Long categoryId;
     private final String categoryName;
     private final String brandName;
     private final String title;
     private final String description;
-    private final Float currentPrice;
-    private final Float originalPrice;
-    private final Integer discountRate;
+    private final PriceInfo priceInfo;
     private final String imageUrl;
     private final Integer countLikes;
     private final Integer viewCnt;
     private final LocalDateTime createdAt;
     private final boolean isLiked;
 
+    // 👇 할인율은 VO에서 계산하고 여기서 Getter만 제공
+    public int getDiscountRate() {
+        return priceInfo.calculateDiscountRate();
+    }
+
     public static ArticleListDto from(Article article, boolean isLiked) {
-        float originalPrice = article.getCurrentPrice() + 300; // 임시: 원래 가격이 현재 가격보다 300원 비쌈
-        int discountRate = calculateDiscountRate(originalPrice, article.getCurrentPrice());
+        Float current = article.getCurrentPrice();
+        Float original = current != null ? current + 300 : 0f;
+
+        PriceInfo priceInfo = new PriceInfo(original, current);
 
         return ArticleListDto.builder()
                 .articleId(article.getArticleId())
@@ -34,9 +42,7 @@ public class ArticleListDto {
                 .categoryName(article.getGifticon().getCategory().getCategoryName())
                 .title(article.getTitle())
                 .description(article.getDescription())
-                .currentPrice(article.getCurrentPrice())
-                .originalPrice(originalPrice)
-                .discountRate(discountRate)
+                .priceInfo(priceInfo)
                 .imageUrl(article.getImageUrl())
                 .countLikes(article.getCountLikes())
                 .viewCnt(article.getViewCnt())
@@ -44,10 +50,4 @@ public class ArticleListDto {
                 .isLiked(isLiked)
                 .build();
     }
-
-    private static int calculateDiscountRate(float originalPrice, float currentPrice) {
-        if (originalPrice <= 0) return 0; // 원래 가격이 0 이하일 경우 할인율 0%
-        return (int) ((1 - (double) currentPrice / originalPrice) * 100);
-    }
-
 }
