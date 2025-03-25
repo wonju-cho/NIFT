@@ -24,5 +24,6 @@ public class User {
     private String profileImage;
     private String gender;
     private String age;
+    private int role = 0; // 사용자 0, 매장 관리자 1, 전체 관리자 2
 
 }
