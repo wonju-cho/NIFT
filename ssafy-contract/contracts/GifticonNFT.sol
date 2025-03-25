@@ -260,4 +260,26 @@ contract GifticonNFT is ERC1155, Ownable {
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
     }
+
+
+    function getSerialsByOwner(address owner) public view returns (uint256[] memory) {
+        uint256 totalSerials = _nextSerial - 100000;
+        uint256[] memory temp = new uint256[](totalSerials);
+        uint256 count = 0;
+
+        for (uint256 serial = 100001; serial <= _nextSerial; serial++) {
+            if (_serialInfos[serial].owner == owner) {
+                temp[count] = serial;
+                count++;
+            }
+        }
+
+        // 정확한 길이의 배열로 반환
+        uint256[] memory result = new uint256[](count);
+        for (uint256 i = 0; i < count; i++) {
+            result[i] = temp[i];
+        }
+
+        return result;
+    }
 }
