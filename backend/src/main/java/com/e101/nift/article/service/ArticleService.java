@@ -7,5 +7,5 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface ArticleService {
-    Page<ArticleListDto> getArticleList(String sort, List<Long> categories, Pageable pageable, Long userId);
+    Page<ArticleListDto> getArticleList(String sort, List<Long> categories, Pageable pageable, Long userId, Integer minPrice, Integer maxPrice);
 }
