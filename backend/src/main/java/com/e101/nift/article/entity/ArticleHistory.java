@@ -1,6 +1,5 @@
-package com.e101.nift.history.entity;
+package com.e101.nift.article.entity;
 
-import com.e101.nift.article.entity.Article;
 import com.e101.nift.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,18 +8,17 @@ import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "histories")
+@Table(name = "article_histories")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class History {
+public class ArticleHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long historyId;
-    
-    private Boolean isUsed;
+    private Long articleHistoryId;
     private String createdAt;
+    private int historyType;
     
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

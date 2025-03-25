@@ -12,7 +12,7 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(name = "gifticon")
+@Table(name = "gifticons")
 @Getter
 @Setter
 @NoArgsConstructor
