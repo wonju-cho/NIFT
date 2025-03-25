@@ -21,7 +21,7 @@ public class Article {
     
     private String title;
     private String description;
-    private String userId;
+    private Long userId;
     private LocalDateTime expirationDate;
     private String imageUrl;
 
