@@ -1,12 +1,13 @@
 package com.e101.nift.common.security;
 
+import com.e101.nift.common.exception.CustomException;
+import com.e101.nift.common.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -28,11 +29,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = resolveToken(request);
             if (token != null && jwtTokenProvider.validateToken(token)) {
                 Long userId = jwtTokenProvider.getUserFromToken(token).getUserId();
-                UserDetails userDetails = userDetailsService.loadUserById(userId);
+                CustomUserDetails userDetails = userDetailsService.loadUserById(userId);
                 SecurityContextHolder.getContext().setAuthentication(jwtTokenProvider.getAuthentication(token, userDetails));
             }
         } catch (Exception e) {
             logger.error("Cannot set user authentication", e);
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
         filterChain.doFilter(request, response);
 

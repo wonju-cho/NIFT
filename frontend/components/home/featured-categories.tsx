@@ -14,7 +14,7 @@ const categories = [
         />
       </svg>
     ),
-    href: "/products/coffee",
+    href: "/articles/coffee",
     color: "bg-amber-100 text-amber-700",
   },
   {
@@ -29,7 +29,7 @@ const categories = [
         />
       </svg>
     ),
-    href: "/products/vouchers",
+    href: "/articles/vouchers",
     color: "bg-blue-100 text-blue-700",
   },
   {
@@ -45,7 +45,7 @@ const categories = [
         />
       </svg>
     ),
-    href: "/products/delivery",
+    href: "/articles/delivery",
     color: "bg-green-100 text-green-700",
   },
   {
@@ -60,7 +60,7 @@ const categories = [
         />
       </svg>
     ),
-    href: "/products/convenience",
+    href: "/articles/convenience",
     color: "bg-indigo-100 text-indigo-700",
   },
   {
@@ -75,7 +75,7 @@ const categories = [
         />
       </svg>
     ),
-    href: "/products/food",
+    href: "/articles/food",
     color: "bg-red-100 text-red-700",
   },
   {
@@ -90,7 +90,7 @@ const categories = [
         />
       </svg>
     ),
-    href: "/products/beauty",
+    href: "/articles/beauty",
     color: "bg-pink-100 text-pink-700",
   },
   {
@@ -105,7 +105,7 @@ const categories = [
         />
       </svg>
     ),
-    href: "/products/gas",
+    href: "/articles/gas",
     color: "bg-yellow-100 text-yellow-700",
   },
   {
@@ -120,7 +120,7 @@ const categories = [
         />
       </svg>
     ),
-    href: "/products/culture",
+    href: "/articles/culture",
     color: "bg-purple-100 text-purple-700",
   },
   {
@@ -135,7 +135,7 @@ const categories = [
         />
       </svg>
     ),
-    href: "/products/dining",
+    href: "/articles/dining",
     color: "bg-orange-100 text-orange-700",
   },
 ]

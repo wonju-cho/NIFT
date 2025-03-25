@@ -1,12 +1,12 @@
 package com.e101.nift.gifticon.entity;
 
-import com.e101.nift.article.entity.Article;
-import com.e101.nift.article.entity.Brand;
-import com.e101.nift.article.entity.Category;
+import com.e101.nift.secondhand.entity.Article;
+import com.e101.nift.secondhand.entity.Brand;
+import com.e101.nift.secondhand.entity.Category;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;

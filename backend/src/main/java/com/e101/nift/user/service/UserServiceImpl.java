@@ -3,7 +3,7 @@ package com.e101.nift.user.service;
 import com.e101.nift.common.exception.CustomException;
 import com.e101.nift.common.exception.ErrorCode;
 import com.e101.nift.common.security.JwtTokenProvider;
-import com.e101.nift.article.repository.LikeRepository;
+import com.e101.nift.secondhand.repository.LikeRepository;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.response.UserInfoDto;
 import com.e101.nift.user.model.state.KakaoApiUrl;
