@@ -1,5 +1,7 @@
 package com.e101.nift.article.controller;
 
+import com.e101.nift.article.model.dto.request.PostArticleDto;
+import com.e101.nift.article.service.ArticleServiceImpl;
 import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.article.model.dto.response.ArticleListDto;
 import com.e101.nift.article.service.ArticleService;
@@ -24,7 +26,7 @@ import java.util.List;
 @RequestMapping("/secondhand-articles")
 public class ArticleController {
     private static final Logger log = LoggerFactory.getLogger(ArticleController.class);
-    private final ArticleService articleService;
+    private final ArticleServiceImpl articleService;
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -56,12 +58,11 @@ public class ArticleController {
     @Operation(summary = "게시글 쓰기", description = "기프티콘 판매 게시글을 작성합니다.")
     @PostMapping
     public ResponseEntity<Void> PostArticles(
-
+        HttpServletRequest request,
+        @RequestBody PostArticleDto postArticleDto
     ) {
-
-
-        return null;
+        User user = jwtTokenProvider.getUserFromRequest(request);
+        articleService.createArticle(postArticleDto, user);
+        return ResponseEntity.status(201).build();
     }
-
-
 }

@@ -1,9 +1,13 @@
 package com.e101.nift.article.service;
 
 import com.e101.nift.article.entity.Article;
+import com.e101.nift.article.model.dto.request.PostArticleDto;
 import com.e101.nift.article.model.dto.response.ArticleListDto;
 import com.e101.nift.article.repository.LikeRepository;
 import com.e101.nift.article.repository.ArticleRepository;
+import com.e101.nift.gifticon.entity.Gifticon;
+import com.e101.nift.gifticon.repository.GifticonRepository;
+import com.e101.nift.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -13,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -22,6 +27,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     private final ArticleRepository articleRepository;
     private final LikeRepository likeRepository;
+    private final GifticonRepository gifticonRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -90,5 +96,25 @@ public class ArticleServiceImpl implements ArticleService {
         log.info("상품 ID: {}, userId: {}, isLiked: {}", article.getArticleId(), userId, isLiked);
 
         return ArticleListDto.from(article, isLiked);
+    }
+
+    @Override
+    public void createArticle(PostArticleDto postArticleDto, User user) {
+        Gifticon gifticon = gifticonRepository.findById(postArticleDto.getGifticonId())
+                .orElseThrow(() -> new IllegalArgumentException("기프티콘이 존재하지 않습니다."));
+
+        Article article = new Article();
+        article.setTitle(postArticleDto.getTitle());
+        article.setDescription(postArticleDto.getDescription());
+        article.setUserId(user.getUserId());
+        article.setCurrentPrice(postArticleDto.getCurrentPrice());
+        article.setExpirationDate(postArticleDto.getExpirationDate());
+        article.setCreatedAt(LocalDateTime.now());
+        article.setCountLikes(0);
+        article.setViewCnt(0);
+        article.setImageUrl(gifticon.getImageUrl());
+        article.setGifticon(gifticon);
+
+        articleRepository.save(article);
     }
 }
