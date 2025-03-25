@@ -33,7 +33,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     // 카테고리와 가격 조건 모두 적용
     @Query("SELECT p FROM Article p " +
-            "WHERE p.category.categoryId IN :categories " +
+            "WHERE p.gifticon.category IN :categories " +
             "AND (:minPrice IS NULL OR p.currentPrice >= :minPrice) " +
             "AND (:maxPrice IS NULL OR p.currentPrice <= :maxPrice)")
     Page<Article> findByCategoryAndPriceRange(@Param("categories") List<Long> categories,
