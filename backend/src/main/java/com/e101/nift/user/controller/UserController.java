@@ -1,9 +1,9 @@
 package com.e101.nift.user.controller;
 
 import com.e101.nift.common.security.JwtTokenProvider;
-import com.e101.nift.article.model.dto.request.ArticleLikeDTO;
-import com.e101.nift.article.model.dto.response.ArticleLikeDto;
-import com.e101.nift.article.service.LikeService;
+import com.e101.nift.secondhand.model.dto.request.ArticleLikeDTO;
+import com.e101.nift.secondhand.model.dto.response.ArticleLikeDto;
+import com.e101.nift.secondhand.service.LikeService;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.model.dto.request.NicknameDTO;
 import com.e101.nift.user.model.dto.response.UserInfoDto;

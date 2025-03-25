@@ -1,5 +1,6 @@
 package com.e101.nift.common.exception;
 
+import com.e101.nift.secondhand.exception.ArticleException;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,15 @@ public class GlobalExceptionHandler {
     // ✅ CustomException 처리
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ApiErrorResponse> handleCustomException(CustomException ex) {
+        log.error("[Common Error] {}", ex.getMessage());
+
+        return new ResponseEntity<>(new ApiErrorResponse(ex.getErrorCode()), ex.getErrorCode().getStatus());
+    }
+
+    @ExceptionHandler(ArticleException.class)
+    public ResponseEntity<ErrorResponse> handleArticleException(ArticleException ex) {
+        log.error("[ArticleException Error] {}", ex.getMessage());
+
         return new ResponseEntity<>(new ApiErrorResponse(ex.getErrorCode()), ex.getErrorCode().getStatus());
     }
 

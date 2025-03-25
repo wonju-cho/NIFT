@@ -1,0 +1,32 @@
+package com.e101.nift.secondhand.service;
+
+import com.e101.nift.secondhand.entity.ArticleHistory;
+import com.e101.nift.secondhand.exception.ArticleErrorCode;
+import com.e101.nift.secondhand.exception.ArticleException;
+import com.e101.nift.secondhand.model.state.ContractType;
+import com.e101.nift.secondhand.repository.ArticleHistoryRepository;
+import com.e101.nift.secondhand.repository.ArticleRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ContractServiceImpl implements ContractService {
+    private final ArticleHistoryRepository articleHistoryRepository;
+    private final ArticleRepository articleRepository;
+
+    @Override
+    public void addArticleHistory(Long articleId, Long userId) {
+        articleRepository.findById(articleId).orElseThrow(() -> new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND));
+
+        articleHistoryRepository.save(
+                ArticleHistory.builder()
+                        .articleId(articleId)
+                        .contractType(ContractType.PURCHASE.getType())
+                        .userId(userId)
+                        .build()
+        );
+    }
+}
