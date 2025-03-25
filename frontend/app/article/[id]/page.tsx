@@ -10,7 +10,7 @@ import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PopularProducts } from "@/components/home/popular-products"
+import { PopularArticles } from "@/components/home/popular-articles"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SSF_CONTRACT_ADDRESS } from "@/lib/api/web3"
 import {
@@ -25,9 +25,9 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ArticlePage({ params }: { params: { id: string } }) {
   // 실제 구현에서는 params.id를 사용하여 상품 데이터를 가져옵니다
-  const product = {
+  const article = {
     id: params.id,
     title: "스타벅스 아메리카노 Tall",
     price: 4000,
@@ -149,29 +149,29 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <div className="grid gap-8 md:grid-cols-2">
             <div className="relative aspect-square overflow-hidden rounded-lg bg-white shadow-sm">
               <Image
-                src={product.image || "/placeholder.svg"}
-                alt={product.title}
+                src={article.image || "/placeholder.svg"}
+                alt={article.title}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
-              {product.isNew && <Badge className="absolute left-4 top-4 bg-blue-500 hover:bg-blue-600">NEW</Badge>}
+              {article.isNew && <Badge className="absolute left-4 top-4 bg-blue-500 hover:bg-blue-600">NEW</Badge>}
             </div>
 
             <div className="flex flex-col rounded-lg bg-white p-6 shadow-sm">
-              <div className="mb-2 text-sm text-muted-foreground">{product.category}</div>
-              <h1 className="mb-4 text-2xl font-bold md:text-3xl">{product.title}</h1>
+              <div className="mb-2 text-sm text-muted-foreground">{article.category}</div>
+              <h1 className="mb-4 text-2xl font-bold md:text-3xl">{article.title}</h1>
 
               <div className="mb-6">
-                <span className="text-3xl font-bold">{product.price.toLocaleString()}원</span>
-                {product.originalPrice > product.price && (
+                <span className="text-3xl font-bold">{article.price.toLocaleString()}원</span>
+                {article.originalPrice > article.price && (
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="text-sm line-through text-muted-foreground">
-                      {product.originalPrice.toLocaleString()}원
+                      {article.originalPrice.toLocaleString()}원
                     </span>
                     <span className="text-sm text-primary">
-                      {Math.round((1 - product.price / product.originalPrice) * 100)}% 할인
+                      {Math.round((1 - article.price / article.originalPrice) * 100)}% 할인
                     </span>
                   </div>
                 )}
@@ -180,27 +180,27 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
                 <span>
-                  {product.location} {product.distance && `· ${product.distance}`}
+                  {article.location} {article.distance && `· ${article.distance}`}
                 </span>
               </div>
 
               <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 <span>
-                  등록일: {product.listedAt} · 조회 {product.views}회
+                  등록일: {article.listedAt} · 조회 {article.views}회
                 </span>
               </div>
 
               <div className="mb-6 rounded-lg bg-gray-50 p-4">
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src={product.seller.avatar} alt={product.seller.name} />
-                    <AvatarFallback>{product.seller.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={article.seller.avatar} alt={article.seller.name} />
+                    <AvatarFallback>{article.seller.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="font-medium">{product.seller.name}</div>
+                    <div className="font-medium">{article.seller.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      거래 {product.seller.transactions}회 · 평점 {product.seller.rating}
+                      거래 {article.seller.transactions}회 · 평점 {article.seller.rating}
                     </div>
                   </div>
                 </div>
@@ -241,7 +241,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                         <DialogHeader>
                           <DialogTitle>NFT 기프티콘 구매</DialogTitle>
                           <DialogDescription>
-                            {product.title} {amount}개를 구매합니다.
+                            {article.title} {amount}개를 구매합니다.
                           </DialogDescription>
                         </DialogHeader>
 
@@ -249,7 +249,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                           <div className="mb-4 rounded-lg bg-gray-50 p-4">
                             <div className="flex justify-between mb-2">
                               <span className="text-sm text-muted-foreground">상품명</span>
-                              <span className="font-medium">{product.title}</span>
+                              <span className="font-medium">{article.title}</span>
                             </div>
                             <div className="flex justify-between mb-2">
                               <span className="text-sm text-muted-foreground">수량</span>
@@ -257,12 +257,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                             </div>
                             <div className="flex justify-between mb-2">
                               <span className="text-sm text-muted-foreground">가격</span>
-                              <span className="font-medium">{(product.price * amount).toLocaleString()}원</span>
+                              <span className="font-medium">{(article.price * amount).toLocaleString()}원</span>
                             </div>
                             <div className="flex justify-between pt-2 border-t">
                               <span className="font-medium">총 결제금액</span>
                               <span className="text-lg font-bold text-primary">
-                                {(product.price * amount).toLocaleString()}원
+                                {(article.price * amount).toLocaleString()}원
                               </span>
                             </div>
                           </div>
@@ -325,9 +325,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                       variant="outline"
                       size="icon"
                       className="h-12 w-full"
-                      aria-label={product.isFavorite ? "찜 해제하기" : "찜하기"}
+                      aria-label={article.isFavorite ? "찜 해제하기" : "찜하기"}
                     >
-                      <Heart className={`h-5 w-5 ${product.isFavorite ? "fill-primary text-primary" : ""}`} />
+                      <Heart className={`h-5 w-5 ${article.isFavorite ? "fill-primary text-primary" : ""}`} />
                     </Button>
                   </div>
 
@@ -366,9 +366,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
               <TabsContent value="description" className="mt-6 rounded-lg bg-white p-6 shadow-sm">
                 <div className="prose max-w-none">
-                  <p>{product.description}</p>
+                  <p>{article.description}</p>
                   <ul>
-                    <li>유효기간: {product.expiryDate}</li>
+                    <li>유효기간: {article.expiryDate}</li>
                     <li>사용 가능 매장: 전국 스타벅스 매장</li>
                     <li>교환 및 환불: 구매 후 7일 이내 가능</li>
                   </ul>
@@ -379,13 +379,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarImage src={product.seller.avatar} alt={product.seller.name} />
-                      <AvatarFallback>{product.seller.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={article.seller.avatar} alt={article.seller.name} />
+                      <AvatarFallback>{article.seller.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="text-lg font-medium">{product.seller.name}</h3>
+                      <h3 className="text-lg font-medium">{article.seller.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        거래 {product.seller.transactions}회 · 평점 {product.seller.rating}
+                        거래 {article.seller.transactions}회 · 평점 {article.seller.rating}
                       </p>
                     </div>
                   </div>
@@ -408,7 +408,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
           <div className="mt-16">
             <h2 className="mb-8 text-2xl font-bold">비슷한 상품</h2>
-            <PopularProducts />
+            <PopularArticles />
           </div>
         </div>
       </main>

@@ -18,7 +18,7 @@ import { CreditCard, Wallet, Gift } from "lucide-react"
 
 export default function GiftPaymentPage({ params }: { params: { id: string } }) {
   const router = useRouter()
-  const [product, setProduct] = useState<any>(null)
+  const [article, setArticle] = useState<any>(null)
   const [cardData, setCardData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [paymentMethod, setPaymentMethod] = useState("card")
@@ -30,10 +30,10 @@ export default function GiftPaymentPage({ params }: { params: { id: string } }) 
   // 페이지 로드 시 상품 정보와 카드 데이터 가져오기
   useEffect(() => {
     // 실제 환경에서는 API 호출로 상품 정보를 가져옵니다
-    const fetchProductData = async () => {
+    const fetchArticleData = async () => {
       try {
         // 임시 데이터 - 실제로는 API에서 가져옵니다
-        const mockProduct = {
+        const mockArticle = {
           id: params.id,
           title: "스타벅스 아메리카노 Tall",
           price: 4000,
@@ -44,7 +44,7 @@ export default function GiftPaymentPage({ params }: { params: { id: string } }) 
           expiryDate: "2023-12-31",
         }
 
-        setProduct(mockProduct)
+        setArticle(mockArticle)
 
         // 로컬 스토리지에서 카드 데이터 가져오기
         const savedCardData = localStorage.getItem(`card-data-${params.id}`)
@@ -59,7 +59,7 @@ export default function GiftPaymentPage({ params }: { params: { id: string } }) 
       }
     }
 
-    fetchProductData()
+    fetchArticleData()
   }, [params.id])
 
   // 결제 처리
@@ -107,7 +107,7 @@ export default function GiftPaymentPage({ params }: { params: { id: string } }) 
     )
   }
 
-  if (!product || !cardData) {
+  if (!article || !cardData) {
     return (
       <div className="flex min-h-screen flex-col">
         <Header />
@@ -115,7 +115,7 @@ export default function GiftPaymentPage({ params }: { params: { id: string } }) 
           <div className="container text-center">
             <h1 className="text-2xl font-bold mb-4">정보를 불러올 수 없습니다</h1>
             <p className="text-gray-500 mb-6">상품 정보 또는 카드 데이터를 찾을 수 없습니다.</p>
-            <Button onClick={() => router.push(`/product/${params.id}`)}>상품 페이지로 돌아가기</Button>
+            <Button onClick={() => router.push(`/article/${params.id}`)}>상품 페이지로 돌아가기</Button>
           </div>
         </main>
         <Footer />
@@ -140,23 +140,23 @@ export default function GiftPaymentPage({ params }: { params: { id: string } }) 
                   <div className="flex gap-4">
                     <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border bg-gray-100">
                       <Image
-                        src={product.image || "/placeholder.svg"}
-                        alt={product.title}
+                        src={article.image || "/placeholder.svg"}
+                        alt={article.title}
                         fill
                         className="object-cover"
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-medium">{product.title}</h3>
+                      <h3 className="font-medium">{article.title}</h3>
                       <div className="mt-1 flex items-baseline gap-2">
-                        <span className="text-lg font-bold">{product.price.toLocaleString()}원</span>
-                        {product.originalPrice > product.price && (
+                        <span className="text-lg font-bold">{article.price.toLocaleString()}원</span>
+                        {article.originalPrice > article.price && (
                           <span className="text-sm text-gray-500 line-through">
-                            {product.originalPrice.toLocaleString()}원
+                            {article.originalPrice.toLocaleString()}원
                           </span>
                         )}
                       </div>
-                      <p className="mt-2 text-sm text-gray-500">{product.description}</p>
+                      <p className="mt-2 text-sm text-gray-500">{article.description}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -236,13 +236,13 @@ export default function GiftPaymentPage({ params }: { params: { id: string } }) 
                   <div className="space-y-4">
                     <div className="flex justify-between py-2">
                       <span className="text-gray-600">상품 금액</span>
-                      <span className="font-medium">{product.price.toLocaleString()}원</span>
+                      <span className="font-medium">{article.price.toLocaleString()}원</span>
                     </div>
 
-                    {product.originalPrice > product.price && (
+                    {article.originalPrice > article.price && (
                       <div className="flex justify-between py-2 text-primary">
                         <span>할인 금액</span>
-                        <span>-{(product.originalPrice - product.price).toLocaleString()}원</span>
+                        <span>-{(article.originalPrice - article.price).toLocaleString()}원</span>
                       </div>
                     )}
 
@@ -255,7 +255,7 @@ export default function GiftPaymentPage({ params }: { params: { id: string } }) 
 
                     <div className="flex justify-between py-2">
                       <span className="font-medium">최종 결제 금액</span>
-                      <span className="text-lg font-bold text-primary">{product.price.toLocaleString()}원</span>
+                      <span className="text-lg font-bold text-primary">{article.price.toLocaleString()}원</span>
                     </div>
 
                     <div className="pt-4">
@@ -325,7 +325,7 @@ export default function GiftPaymentPage({ params }: { params: { id: string } }) 
                       ) : (
                         <span className="flex items-center gap-2">
                           <Gift className="h-5 w-5" />
-                          {product.price.toLocaleString()}원 결제하기
+                          {article.price.toLocaleString()}원 결제하기
                         </span>
                       )}
                     </Button>

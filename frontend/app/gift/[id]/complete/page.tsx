@@ -14,7 +14,7 @@ import { Check, Copy, Home, ShoppingBag } from "lucide-react"
 export default function GiftCompletePage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [cardData, setCardData] = useState<any>(null)
-  const [product, setProduct] = useState<any>(null)
+  const [article, setArticle] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [copied, setCopied] = useState(false)
 
@@ -25,7 +25,7 @@ export default function GiftCompletePage({ params }: { params: { id: string } })
   useEffect(() => {
     try {
       // 임시 데이터 - 실제로는 API에서 가져옵니다
-      const mockProduct = {
+      const mockArticle = {
         id: params.id,
         title: "스타벅스 아메리카노 Tall",
         price: 4000,
@@ -36,7 +36,7 @@ export default function GiftCompletePage({ params }: { params: { id: string } })
         expiryDate: "2023-12-31",
       }
 
-      setProduct(mockProduct)
+      setArticle(mockArticle)
 
       // 로컬 스토리지에서 카드 데이터 가져오기
       const savedCardData = localStorage.getItem(`card-data-${params.id}`)
@@ -105,26 +105,26 @@ export default function GiftCompletePage({ params }: { params: { id: string } })
                 <div className="flex gap-4 items-start">
                   <div className="relative h-24 w-24 overflow-hidden rounded-md border bg-gray-100 flex-shrink-0">
                     <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.title}
+                      src={article.image || "/placeholder.svg"}
+                      alt={article.title}
                       fill
                       className="object-cover"
                     />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-medium">{product.title}</h3>
+                    <h3 className="font-medium">{article.title}</h3>
                     <div className="mt-1 flex items-baseline gap-2">
-                      <span className="text-lg font-bold">{product.price.toLocaleString()}원</span>
-                      {product.originalPrice > product.price && (
+                      <span className="text-lg font-bold">{article.price.toLocaleString()}원</span>
+                      {article.originalPrice > article.price && (
                         <span className="text-sm text-gray-500 line-through">
-                          {product.originalPrice.toLocaleString()}원
+                          {article.originalPrice.toLocaleString()}원
                         </span>
                       )}
                     </div>
-                    <p className="mt-2 text-sm text-gray-500">{product.description}</p>
+                    <p className="mt-2 text-sm text-gray-500">{article.description}</p>
 
                     <div className="mt-3 text-sm">
-                      <span className="font-medium">유효기간:</span> {product.expiryDate}
+                      <span className="font-medium">유효기간:</span> {article.expiryDate}
                     </div>
                   </div>
                 </div>

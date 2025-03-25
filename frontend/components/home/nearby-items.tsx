@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ProductGrid } from "@/components/product/product-grid"
+import { ProductGrid } from "@/components/article/article-grid"
 
 // 샘플 데이터 - 중고거래 특성에 맞게 위치 정보 추가
 const nearbyItems = [

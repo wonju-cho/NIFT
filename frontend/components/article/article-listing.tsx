@@ -3,12 +3,12 @@
 import type React from "react"
 
 import { useState, useEffect, useCallback } from "react"
-import { ProductGrid } from "@/components/product/product-grid"
+import { ArticleGrid } from "@/components/article/article-grid"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
-import { CategoryNavigation } from "@/components/product/category-navigation"
+import { CategoryNavigation } from "@/components/article/category-navigation"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -33,7 +33,7 @@ const getAccessToken = () => {
 }
 
 // 백엔드 API에서 상품 데이터를 가져오는 함수
-const fetchProducts = async ({
+const fetchArticles = async ({
   categories = [],
   sort = "newest",
   page = 0,
@@ -62,7 +62,7 @@ const fetchProducts = async ({
     const queryString = params.toString()
     const url = `${BASE_URL}/secondhand-articles${queryString ? `?${queryString}` : ""}`
 
-    console.log("Fetching products from:", url)
+    console.log("Fetching articles from:", url)
 
     const headers: HeadersInit = { "Content-Type": "application/json" }
     if (accessToken) {
@@ -73,27 +73,27 @@ const fetchProducts = async ({
       method: "GET", headers
     })
 
-    if (!res.ok) throw new Error("Failed to fetch products")
+    if (!res.ok) throw new Error("Failed to fetch articles")
 
     const data = await res.json()
     console.log("API Response:", data)
     return data
   } catch (error) {
-    console.error("Error fetching products:", error)
+    console.error("Error fetching articles:", error)
     return { content: [], totalPages: 1, totalElements: 0 }
   }
 }
 
 // 클라이언트 측 필터링 함수
-const filterProducts = (products: any[], searchQuery: string, priceRange: number[]) => {
-  return products.filter((product) => {
+const filterArticles = (articles: any[], searchQuery: string, priceRange: number[]) => {
+  return articles.filter((article) => {
     // 검색어 필터링
-    if (searchQuery && !product.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+    if (searchQuery && !article.title.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false
     }
 
     // 가격 범위 필터링
-    if (product.currentPrice < priceRange[0] || product.currentPrice > priceRange[1]) {
+    if (article.currentPrice < priceRange[0] || article.currentPrice > priceRange[1]) {
       return false
     }
 
@@ -101,10 +101,10 @@ const filterProducts = (products: any[], searchQuery: string, priceRange: number
   })
 }
 
-export function ProductListing() {
+export function ArticleListing() {
   // 상품 데이터 및 로딩 상태
-  const [products, setProducts] = useState<any[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<any[]>([])
+  const [articles, setArticles] = useState<any[]>([])
+  const [filteredArticles, setFilteredArticles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [totalItems, setTotalItems] = useState(0)
 
@@ -124,10 +124,10 @@ export function ProductListing() {
   const [userId, setUserId] = useState<number | undefined>(undefined)
 
   // 상품 데이터 가져오기
-  const loadProducts = useCallback(async () => {
+  const loadArticles = useCallback(async () => {
     setLoading(true)
 
-    const fetchedData = await fetchProducts({
+    const fetchedData = await fetchArticles({
       categories: selectedCategories.map(Number),
       sort: sortOption,
       page,
@@ -135,11 +135,11 @@ export function ProductListing() {
       userId,
     })
 
-    const productsData = fetchedData.content || []
-    console.log("Products data:", productsData)
+    const articlesData = fetchedData.content || []
+    console.log("Articles data:", articlesData)
 
-    setProducts(productsData)
-    setFilteredProducts(productsData) // 초기에는 필터링 없이 모든 상품 표시
+    setArticles(articlesData)
+    setFilteredArticles(articlesData) // 초기에는 필터링 없이 모든 상품 표시
     setTotalPages(fetchedData.totalPages || 1)
     setTotalItems(fetchedData.totalElements || 0)
     setLoading(false)
@@ -147,24 +147,24 @@ export function ProductListing() {
 
   // 컴포넌트 마운트 시 상품 데이터 로드
   useEffect(() => {
-    loadProducts()
-  }, [loadProducts])
+    loadArticles()
+  }, [loadArticles])
 
   // 클라이언트 측 필터링 적용 (검색어와 가격 범위)
   useEffect(() => {
-    if (products.length > 0) {
+    if (articles.length > 0) {
       if (searchQuery || priceRange[0] > 0 || priceRange[1] < 20000) {
         // 필터가 적용된 경우에만 필터링
-        const filtered = filterProducts(products, searchQuery, priceRange)
-        setFilteredProducts(filtered)
+        const filtered = filterArticles(articles, searchQuery, priceRange)
+        setFilteredArticles(filtered)
       } else {
         // 필터가 없으면 모든 상품 표시
-        setFilteredProducts(products)
+        setFilteredArticles(articles)
       }
     } else {
-      setFilteredProducts([])
+      setFilteredArticles([])
     }
-  }, [products, searchQuery, priceRange])
+  }, [articles, searchQuery, priceRange])
 
   // 디바운스된 가격 범위 변경 핸들러
   const debouncedPriceChange = useCallback(
@@ -181,7 +181,7 @@ export function ProductListing() {
     setSearchQuery("")
     setSortOption("newest")
     setPage(0)
-    loadProducts() // 필터 초기화 후 상품 다시 로드
+    loadArticles() // 필터 초기화 후 상품 다시 로드
   }
 
   // 카테고리 필터 제거
@@ -407,11 +407,11 @@ export function ProductListing() {
         <div className="flex justify-center items-center py-16">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
-      ) : filteredProducts.length > 0 ? (
-          <ProductGrid
-              products={filteredProducts.map(product => ({
-                ...product,
-                isLiked: product.liked, // liked 값을 isLiked로 변환하여 전달
+      ) : filteredArticles.length > 0 ? (
+          <ArticleGrid
+              articles={filteredArticles.map(article => ({
+                ...article,
+                isLiked: article.liked, // liked 값을 isLiked로 변환하여 전달
               }))}
               className="mb-8"
           />
@@ -440,7 +440,7 @@ export function ProductListing() {
       )}
 
       {/* 페이지네이션 */}
-      {filteredProducts.length > 0 && totalPages > 1 && (
+      {filteredArticles.length > 0 && totalPages > 1 && (
         <div className="flex justify-center mt-8">
           <nav className="flex items-center gap-1">
             <Button

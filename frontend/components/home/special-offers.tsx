@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
-import { ProductGrid } from "@/components/product/product-grid"
+import { ProductGrid } from "@/components/article/article-grid"
 
 // 샘플 데이터
 const specialOffers = [

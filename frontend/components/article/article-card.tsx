@@ -2,11 +2,11 @@ import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ProductService } from "@/lib/api/ProductService";
+import { ArticleService } from "@/lib/api/ArticleService";
 import {useState} from "react";
 
-export interface ProductCardProps {
-  productId: number
+export interface ArticleCardProps {
+  articleId: number
   title: string
   brandName: string
   currentPrice: number
@@ -17,8 +17,8 @@ export interface ProductCardProps {
   className?: string
 }
 
-export function ProductCard({
-  productId,
+export function ArticleCard({
+  articleId,
   title,
   brandName,
   currentPrice,
@@ -27,8 +27,8 @@ export function ProductCard({
   imageUrl,
   isLiked: initialIsLiked,
   className,
-}: ProductCardProps) {
-  // console.log(`🔍 ProductCard - 상품 ID: ${productId}, isLiked: ${isLiked}`);
+}: ArticleCardProps) {
+  // console.log(`🔍 ArticleCard - 상품 ID: ${articleId}, isLiked: ${isLiked}`);
 
   const formattedCurrentPrice = new Intl.NumberFormat("ko-KR").format(currentPrice)
   const formattedOriginalPrice = new Intl.NumberFormat("ko-KR").format(originalPrice)
@@ -43,7 +43,7 @@ export function ProductCard({
     event.preventDefault(); // 링크 이동 방지
     setIsLiked((prev) => !prev); // UI 즉시 변경
 
-    const success = await ProductService.toggleLike(productId, isLiked);
+    const success = await ArticleService.toggleLike(articleId, isLiked);
     if (!success) {
       setIsLiked((prev) => !prev); // 요청 실패 시 롤백
     }
@@ -56,7 +56,7 @@ export function ProductCard({
         className,
       )}
     >
-      <Link href={`/product/${productId}`} className="block">
+      <Link href={`/article/${articleId}`} className="block">
         <div className="relative aspect-square overflow-hidden">
           <Image
             src={imageSrc}

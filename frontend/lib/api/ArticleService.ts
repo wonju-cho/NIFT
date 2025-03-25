@@ -2,8 +2,8 @@ import axios from "axios"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL // 백엔드 API 주소
 
-export const ProductService = {
-  async getProducts(
+export const ArticleService = {
+  async getArticles(
     sort: string = "newest",
     category?: number,
     page: number = 0,
@@ -11,7 +11,7 @@ export const ProductService = {
     userId?: number
   ) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/secondhand-products`, {
+      const response = await axios.get(`${API_BASE_URL}/secondhand-articles`, {
         params: {
           sort,
           category,
@@ -28,7 +28,7 @@ export const ProductService = {
   },
 
   // 좋아요 추가 또는 삭제
-  async toggleLike(productId: number, isLiked: boolean) {
+  async toggleLike(articleId: number, isLiked: boolean) {
     const accessToken = typeof window !== "undefined" ?
         localStorage.getItem("access_token") : null;
 
@@ -37,7 +37,7 @@ export const ProductService = {
       return false;
     }
 
-    const url = `${API_BASE_URL}/secondhand-products/${productId}/likes`;
+    const url = `${API_BASE_URL}/secondhand-articles/${articleId}/likes`;
     const method = isLiked ? "DELETE" : "POST";
 
     try {
