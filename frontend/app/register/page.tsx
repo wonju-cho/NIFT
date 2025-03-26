@@ -9,6 +9,8 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { listGifticonForSale } from "@/lib/api/web3";
 import { useLoading } from "@/components/LoadingContext";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 // 지갑 주소 가져오기
 async function getWalletAddress() {
@@ -35,6 +37,14 @@ export default function RegisterPage() {
   const [selectedGifticon, setSelectedGifticon] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const [accessToken, setAccessToken] = useState<null | string | "loading">(
+    "loading"
+  );
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    setAccessToken(token || null);
+  }, []);
 
   useEffect(() => {
     const fetchNFTs = async () => {
@@ -50,9 +60,11 @@ export default function RegisterPage() {
           .map((nft) => ({
             ...nft,
             image: convertIpfsUrl(nft.image),
+            isSelling:
+              Number(nft.price) > 0 &&
+              nft.seller !== "0x0000000000000000000000000000000000000000",
           }))
           .sort((a, b) => {
-            // 판매중이면 뒤로 정렬
             if (a.isSelling && !b.isSelling) return 1;
             if (!a.isSelling && b.isSelling) return -1;
             return 0;
@@ -64,8 +76,8 @@ export default function RegisterPage() {
       }
     };
 
-    fetchNFTs();
-  }, []);
+    if (accessToken) fetchNFTs();
+  }, [accessToken]);
 
   const selectedGifticonData = selectedGifticon
     ? ownedGifticons.find((g) => g.serialNum === selectedGifticon)
@@ -103,8 +115,7 @@ export default function RegisterPage() {
     };
 
     console.log("🟢 등록 요청 데이터:", payload);
-
-    setIsLoading(true); // 로딩 시작
+    setIsLoading(true);
 
     try {
       const token = localStorage.getItem("access_token");
@@ -127,30 +138,41 @@ export default function RegisterPage() {
       );
 
       alert("게시글이 성공적으로 등록되었습니다!");
-
       router.push("/articles");
       console.log("📌 응답:", response.data);
     } catch (error) {
       console.error("❌ 게시글 등록 실패:", error);
       alert("게시글 등록에 실패했습니다.");
     } finally {
-      setIsLoading(false); // 로딩 시작
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 py-8">
-        <RegisterPageLayout
-          gifticons={ownedGifticons}
-          selected={selectedGifticon}
-          selectedData={selectedGifticonData}
-          onSelect={setSelectedGifticon}
-          onSubmit={handleFormSubmit}
-          carouselRef={carouselRef}
-          onScroll={handleScroll}
-        />
+      <main className="flex-1 py-12">
+        <div className="container">
+          {accessToken === "loading" ? null : !accessToken ? (
+            <div className="flex flex-col items-center justify-center h-[70vh]">
+              <Image src="/1.svg" alt="로그인 필요" width={120} height={120} />
+              <p className="mt-4 text-lg font-semibold">로그인이 필요합니다!</p>
+              <Button className="mt-4" onClick={() => router.push("/signin")}>
+                로그인 하러 가기
+              </Button>
+            </div>
+          ) : (
+            <RegisterPageLayout
+              gifticons={ownedGifticons}
+              selected={selectedGifticon}
+              selectedData={selectedGifticonData}
+              onSelect={setSelectedGifticon}
+              onSubmit={handleFormSubmit}
+              carouselRef={carouselRef}
+              onScroll={handleScroll}
+            />
+          )}
+        </div>
       </main>
       <Footer />
     </div>
