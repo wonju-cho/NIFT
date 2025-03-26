@@ -11,6 +11,13 @@ module.exports = {
         initialBalance: "10000000000000000000000", // 10,000 ETH
       },
     },
+    ganache: {
+      url: "http://127.0.0.1:7545", // Ganache GUI의 기본 URL
+      accounts: [
+        // Ganache에서 제공하는 첫 번째 계정의 private key
+        "0xb008e23b2ee3ebfc7d21c808b588bc358106613152039be271d9a8c76cbd8d1f",
+      ],
+    },
     ssafy: {
       url: "https://rpc.ssafy-blockchain.com", // SSAFY 네트워크 RPC URL
       accounts: [process.env.PRIVATE_KEY], // Metamask Private Key
