@@ -11,10 +11,14 @@ COPY package*.json ./
 RUN npm ci
 
 # 전체 프로젝트 복사
-COPY . . 
+COPY . .
 
-# Next.js 빌드
-RUN NODE_ENV=production npm run build --verbose
+# NODE_ENV에 따라 build 분기
+RUN if [ "$BUILD_MODE" = "dev" ]; then \
+    npm run build:dev --verbose; \
+  else \
+    npm run build; \
+  fi
 
 # 컨테이너 실행 시 Next.js 실행
 CMD ["npm", "run", "start"]

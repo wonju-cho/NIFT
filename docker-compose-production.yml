@@ -1,0 +1,103 @@
+networks:
+  backend-tier:
+  frontend-tier:
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    container_name: mysql
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./backend/src/main/resources/prod_init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3307:3306"
+    networks:
+      - backend-tier
+
+  mongo:
+    image: mongo
+    restart: always
+    container_name: mongo
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    networks:
+      - backend-tier
+
+  ipfs:
+    image: ipfs/go-ipfs
+    container_name: ipfs_node
+    ports: 
+      - "5001:5001"
+    volumes:
+      - ./ipfs_data:/data/ipfs
+    networks:
+      - backend-tier
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        BUILD_MODE: production
+    restart: always
+    container_name: backend
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+      - mongo
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_DATA_MONGODB_URI: ${SPRING_DATA_MONGODB_URI}
+    ports:
+        - "8081:8081"
+    networks:
+      - backend-tier
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        BUILD_MODE: production
+    restart: always
+    container_name: frontend
+    depends_on: 
+      - backend
+    ports:
+      - "3000:3000"
+    networks:
+      - frontend-tier
+      - backend-tier
+
+  nginx:
+    image: nginx
+    restart: always
+    container_name: nginx
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/nginx.conf.template
+      - ./nginx/entrypoint.sh:/entrypoint.sh
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    networks:
+      - frontend-tier
+      - backend-tier
