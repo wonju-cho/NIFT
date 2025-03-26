@@ -39,4 +39,12 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                                               @Param("minPrice") Integer minPrice,
                                               @Param("maxPrice") Integer maxPrice,
                                               Pageable pageable);
+
+    // 중고 기프티콘의 상세 정보 조회
+    @Query("SELECT a FROM Article a " +
+            "JOIN FETCH a.gifticon g " +
+            "JOIN FETCH g.brand b " +
+            "JOIN FETCH g.category c " +
+            "WHERE a.articleId = :articleId")
+    Optional<Article> findByIdWithGifticonBrandCategory(@Param("articleId") Long articleId);
 }

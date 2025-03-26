@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 import { CategoryNavigation } from "@/components/article/category-navigation"
+import { useLoading } from "@/components/LoadingContext"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -107,7 +108,7 @@ export function ArticleListing() {
   // 상품 데이터 및 로딩 상태
   const [articles, setArticles] = useState<any[]>([])
   const [filteredArticles, setFilteredArticles] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const { isLoading, setIsLoading } = useLoading()
   const [totalItems, setTotalItems] = useState(0)
 
   // 필터링 및 정렬 상태
@@ -127,7 +128,7 @@ export function ArticleListing() {
 
   // 상품 데이터 가져오기
   const loadArticles = useCallback(async () => {
-    setLoading(true)
+    setIsLoading(true)
 
     const fetchedData = await fetchArticles({
       categories: selectedCategories.map(Number),
@@ -145,7 +146,7 @@ export function ArticleListing() {
     setFilteredArticles(articlesData) // 초기에는 필터링 없이 모든 상품 표시
     setTotalPages(fetchedData.totalPages || 1)
     setTotalItems(fetchedData.totalElements || 0)
-    setLoading(false)
+    setIsLoading(false)
   }, [selectedCategories, sortOption, page, pageSize, userId, priceRange]) // Add priceRange to dependency array
 
   // 컴포넌트 마운트 시 상품 데이터 로드
@@ -447,7 +448,7 @@ export function ArticleListing() {
         </div>
 
         {/* 로딩 상태 및 상품 목록 */}
-        {loading ? (
+        {isLoading ? (
             <div className="flex justify-center items-center py-16">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>

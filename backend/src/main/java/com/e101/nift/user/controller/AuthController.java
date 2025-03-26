@@ -52,6 +52,8 @@ public class AuthController {
         return ResponseEntity.ok(userLoginDto);
     }
 
+
+
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "회원가입 성공"),
