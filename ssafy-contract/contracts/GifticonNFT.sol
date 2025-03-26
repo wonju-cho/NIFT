@@ -52,7 +52,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     event SerialOwnershipTransferred(uint256 indexed serialNumber, address indexed from, address indexed to);
 
     // 🏗️ 생성자
-    constructor(address _ssfToken) ERC1155("ipfs://bafkreifj53t5ciradsorecuagrasftt4pfercqvjuhyrhks2piwokho2iy") Ownable() {
+    constructor(address _ssfToken) ERC1155("ipfs://bafkreidpioogd7mj4t5sovbw2nkn3tavw3zrq4qmqwvkxptm52scasxfl4") Ownable() {
         ssfToken = IERC20(_ssfToken);
     }
 
@@ -119,18 +119,13 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         require(!info.redeemed, "Already redeemed");
         require(price > 0, "Price must be > 0");
 
-        uint256 tokenId = _serialToTokenId[serialNumber];
+        // 컨트랙트에 대한 전체 토큰 전송 승인
+        _setApprovalForAll(msg.sender, address(this), true);
 
-        // 소유자 → 컨트랙트로 NFT 전송
-        _authorizedTransfers[msg.sender] = true;
-        safeTransferFrom(msg.sender, address(this), tokenId, 1, "");
-        _authorizedTransfers[msg.sender] = false;
-
-        // 정보 업데이트
+        // NFT 전송 생략: 판매자가 계속 보유
         info.price = price;
         info.seller = msg.sender;
-        info.owner = address(this); // 소유자는 컨트랙트로 변경
-
+        
         emit ListedForSale(serialNumber, price, msg.sender);
     }
 
@@ -143,23 +138,26 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
         uint256 tokenId = _serialToTokenId[serialNumber];
         address seller = info.seller;
+        uint256 purchasePrice = info.price;
 
-        require(balanceOf(address(this), tokenId) >= 1, "NFT not held by contract");
+        // 판매자가 실제 NFT를 가지고 있는지 확인
+        require(balanceOf(seller, tokenId) >= 1, "Seller doesn't own the token");
 
-        // SSF 토큰 결제
+        // SSF 토큰 결제: 구매자가 판매자에게 직접 송금
         bool success = ssfToken.transferFrom(msg.sender, seller, info.price);
-        require(success, "ERC20 transfer failed");
+        require(success, "ERC20 payment failed");
+
+        // 판매자로부터 구매자에게 직접 NFT 전송
+        safeTransferFrom(seller, address(this), tokenId, 1, "");
+        _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
 
         // 상태 업데이트
         info.owner = msg.sender;
         info.seller = address(0);
         info.price = 0;
 
-        // 토큰 전송
-        _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
-
+        emit NFTPurchased(msg.sender, serialNumber, purchasePrice);
         emit SerialOwnershipTransferred(serialNumber, seller, msg.sender);
-        emit NFTPurchased(msg.sender, serialNumber, info.price);
     }
 
     // 기프티콘 사용 처리
@@ -194,7 +192,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.seller = address(0);
 
         // 토큰 전송
-        _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
+        // _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
 
         emit CancelledSale(serialNumber);
     }
