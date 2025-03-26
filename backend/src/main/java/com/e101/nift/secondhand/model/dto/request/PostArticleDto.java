@@ -16,7 +16,7 @@ public class PostArticleDto {
     private Float currentPrice;
     private String imageUrl;
     private Long serialNum;
-    private LocalDateTime expirationDate;
+    private String expirationDate;
     private Long gifticonId;
 
 }
