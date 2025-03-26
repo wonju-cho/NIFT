@@ -18,7 +18,11 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PopularArticles } from "@/components/home/popular-articles";
-import { SSF_CONTRACT_ADDRESS } from "@/lib/api/web3";
+import {
+  buyNFT,
+  fetchTokenInfoBySerial,
+  SSF_CONTRACT_ADDRESS,
+} from "@/lib/api/web3";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +38,7 @@ import { useLoading } from "@/components/LoadingContext";
 
 type ArticleDetail = {
   articleId: number;
+  serialNum: number;
   title: string;
   description: string;
   userId: number;
@@ -63,8 +68,6 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [countLikes, setLikeCount] = useState<number>(0);
   const { isLoading, setIsLoading } = useLoading();
-
-  const contractABI = ["function buyToken(uint256 amount) external payable"];
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -130,371 +133,353 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       setIsLiked((prev) => !prev);
       setLikeCount((prev) => (isLiked ? prev + 1 : prev - 1)); // 롤백도 같이
     }
-  };
 
-  const buyNFT = async () => {
-    if (!window.ethereum) {
-      setErrorMessage("MetaMask가 필요합니다.");
-      setPurchaseStatus("error");
-      return;
-    }
+    const incrementAmount = () => {
+      setAmount((prev) => prev + 1);
+    };
 
-    setPurchaseStatus("loading");
-    setLoading(true);
+    const decrementAmount = () => {
+      if (amount > 1) {
+        setAmount((prev) => prev - 1);
+      }
+    };
 
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      await window.ethereum.request({ method: "eth_requestAccounts" });
-
-      const signer = await provider.getSigner();
-      console.log("Connected Address:", await signer.getAddress());
-
-      // 스마트 컨트랙트 인스턴스 생성
-      const contract = new ethers.Contract(
-        SSF_CONTRACT_ADDRESS,
-        contractABI,
-        signer
-      );
-
-      const pricePerToken = ethers.parseEther("0.000001");
-      const totalPrice = pricePerToken * BigInt(amount);
-      console.log("Sending ETH:", totalPrice.toString());
-
-      // estimateGas를 사용하여 가스비를 계산
-      let gasLimit;
-      try {
-        gasLimit = await contract.buyToken.estimateGas(amount, {
-          value: totalPrice,
-        });
-        console.log("Estimated Gas:", gasLimit.toString());
-      } catch (error) {
-        console.error("estimateGas 실패:", error);
-        setErrorMessage("가스비 계산 중 오류가 발생했습니다.");
+    const handleBuyNFT = async (serialNumber: number) => {
+      if (!window.ethereum) {
+        setErrorMessage("MetaMask가 필요합니다.");
         setPurchaseStatus("error");
-        setLoading(false);
         return;
       }
 
-      // `gasLimit`이 예상보다 낮게 설정되는 경우 대비하여 여유롭게 증가
-      const gasBuffer = BigInt(50000);
-      const finalGasLimit = gasLimit + gasBuffer;
+      setPurchaseStatus("loading");
+      setLoading(true);
 
-      // 트랜잭션 실행
       try {
-        const tx = await contract.buyToken(amount, {
-          value: totalPrice,
-          gasLimit: finalGasLimit,
-        });
-        await tx.wait();
-        setPurchaseStatus("success");
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        const success = await buyNFT(100007);
+
+        if (success) {
+          setPurchaseStatus("success");
+          const tokenInfo = await fetchTokenInfoBySerial(100007);
+          if (tokenInfo) {
+            console.log("🧾 [Token Info]");
+            console.log("🎯 Token ID:", tokenInfo.tokenId.toString());
+            console.log("📛 이름:", tokenInfo.name);
+            console.log("📝 설명:", tokenInfo.description);
+            console.log("📦 총 발행량:", tokenInfo.totalSupply.toString());
+            console.log("🔗 메타데이터 URI:", tokenInfo.metadataURI);
+          } else {
+            console.warn("⚠️ 토큰 정보를 불러오지 못했습니다.");
+          }
+        } else {
+          setErrorMessage("구매에 실패했습니다.");
+          setPurchaseStatus("error");
+        }
       } catch (error) {
-        console.error("구매 실패:", error);
-        setErrorMessage("구매 중 오류가 발생했습니다.");
+        console.error("❌ Ethereum 연결 오류:", error);
+        setErrorMessage("Ethereum 네트워크 연결 중 문제가 발생했습니다.");
         setPurchaseStatus("error");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Ethereum 연결 오류:", error);
-      setErrorMessage("Ethereum 네트워크 연결 중 문제가 발생했습니다.");
-      setPurchaseStatus("error");
-    } finally {
-      setLoading(false);
+    };
+
+    // 공유 버튼
+    const shareBtn = async () => {
+      try {
+        const url = window.location.href;
+        await navigator.clipboard.writeText(url);
+        alert("현재 페이지 URL이 복사되었습니다!");
+      } catch (err) {
+        console.error("URL 복사 실패:", err);
+        alert("URL 복사에 실패했습니다.");
+      }
+    };
+
+    if (!article) {
+      return <div className="p-10 text-center">로딩 중...</div>;
     }
-  };
 
-  // 공유 버튼
-  const shareBtn = async () => {
-    try {
-      const url = window.location.href;
-      await navigator.clipboard.writeText(url);
-      alert("현재 페이지 URL이 복사되었습니다!");
-    } catch (err) {
-      console.error("URL 복사 실패:", err);
-      alert("URL 복사에 실패했습니다.");
-    }
-  };
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 bg-gray-50">
+          <div className="container py-8">
+            <Link
+              href="/"
+              className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+            >
+              <ArrowLeft className="h-4 w-4" /> 돌아가기
+            </Link>
 
-  if (!article) {
-    return <div className="p-10 text-center">로딩 중...</div>;
-  }
-
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 bg-gray-50">
-        <div className="container py-8">
-          <Link
-            href="/"
-            className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
-          >
-            <ArrowLeft className="h-4 w-4" /> 돌아가기
-          </Link>
-
-          <div className="grid gap-8 md:grid-cols-2">
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-white shadow-sm">
-              <Image
-                src={article.imageUrl || "/placeholder.svg"}
-                alt={article.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
-              {/* {article.isNew && <Badge className="absolute left-4 top-4 bg-blue-500 hover:bg-blue-600">NEW</Badge>} */}
-            </div>
-
-            <div className="flex flex-col rounded-lg bg-white p-6 shadow-sm">
-              <div className="mb-2 text-sm text-muted-foreground">
-                {article.categoryName}
-              </div>
-              <h1 className="mb-4 text-2xl font-bold md:text-3xl">
-                {article.title}
-              </h1>
-
-              <div className="mb-6">
-                <span className="text-3xl font-bold">
-                  {(article.currentPrice ?? 0).toLocaleString()}원
-                </span>
-                {article.giftiPrice > article.currentPrice && (
-                  <div className="mt-1 flex items-baseline gap-2">
-                    <span className="text-sm line-through text-muted-foreground">
-                      {article.giftiPrice.toLocaleString()}원
-                    </span>
-                    <span className="text-sm text-primary">
-                      {Math.round(
-                        (1 - article.currentPrice / article.giftiPrice) * 100
-                      )}
-                      % 할인
-                    </span>
-                  </div>
-                )}
+            <div className="grid gap-8 md:grid-cols-2">
+              <div className="relative aspect-square overflow-hidden rounded-lg bg-white shadow-sm">
+                <Image
+                  src={article.imageUrl || "/placeholder.svg"}
+                  alt={article.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+                {/* {article.isNew && <Badge className="absolute left-4 top-4 bg-blue-500 hover:bg-blue-600">NEW</Badge>} */}
               </div>
 
-              <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>
-                  등록일: {article.createAt} · 조회 {article.viewCnt}회 · 관심{" "}
-                  {countLikes}
-                </span>
-              </div>
+              <div className="flex flex-col rounded-lg bg-white p-6 shadow-sm">
+                <div className="mb-2 text-sm text-muted-foreground">
+                  {article.categoryName}
+                </div>
+                <h1 className="mb-4 text-2xl font-bold md:text-3xl">
+                  {article.title}
+                </h1>
 
-              <div className="mt-auto">
-                <div className="grid grid-cols-12 gap-1">
-                  <div className="col-span-5">
-                    <Dialog
-                      open={showPurchaseDialog}
-                      onOpenChange={setShowPurchaseDialog}
-                    >
-                      <DialogTrigger asChild>
-                        <Button className="h-12 w-full px-[16px]" size="lg">
-                          <ShoppingCart className="mr-1 h-4 w-4" /> 구매하기
-                        </Button>
-                      </DialogTrigger>
+                <div className="mb-6">
+                  <span className="text-3xl font-bold">
+                    {(article.currentPrice ?? 0).toLocaleString()}원
+                  </span>
+                  {article.giftiPrice > article.currentPrice && (
+                    <div className="mt-1 flex items-baseline gap-2">
+                      <span className="text-sm line-through text-muted-foreground">
+                        {article.giftiPrice.toLocaleString()}원
+                      </span>
+                      <span className="text-sm text-primary">
+                        {Math.round(
+                          (1 - article.currentPrice / article.giftiPrice) * 100
+                        )}
+                        % 할인
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>NFT 기프티콘 구매</DialogTitle>
-                          <DialogDescription>
-                            {article.title} {amount}개를 구매합니다.
-                          </DialogDescription>
-                        </DialogHeader>
+                <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>
+                    등록일: {article.createAt} · 조회 {article.viewCnt}회 · 관심{" "}
+                    {countLikes}
+                  </span>
+                </div>
 
-                        <div className="py-4">
-                          <div className="mb-4 rounded-lg bg-gray-50 p-4">
-                            <div className="flex justify-between mb-2">
-                              <span className="text-sm text-muted-foreground">
-                                상품명
-                              </span>
-                              <span className="font-medium">
-                                {article.title}
-                              </span>
+                <div className="mt-auto">
+                  <div className="grid grid-cols-12 gap-1">
+                    <div className="col-span-5">
+                      <Dialog
+                        open={showPurchaseDialog}
+                        onOpenChange={setShowPurchaseDialog}
+                      >
+                        <DialogTrigger asChild>
+                          <Button className="h-12 w-full px-[16px]" size="lg">
+                            <ShoppingCart className="mr-1 h-4 w-4" /> 구매하기
+                          </Button>
+                        </DialogTrigger>
+
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>NFT 기프티콘 구매</DialogTitle>
+                            <DialogDescription>
+                              {article.title} {amount}개를 구매합니다.
+                            </DialogDescription>
+                          </DialogHeader>
+
+                          <div className="py-4">
+                            <div className="mb-4 rounded-lg bg-gray-50 p-4">
+                              <div className="flex justify-between mb-2">
+                                <span className="text-sm text-muted-foreground">
+                                  상품명
+                                </span>
+                                <span className="font-medium">
+                                  {article.title}
+                                </span>
+                              </div>
+                              <div className="flex justify-between mb-2">
+                                <span className="text-sm text-muted-foreground">
+                                  수량
+                                </span>
+                                <span className="font-medium">{amount}개</span>
+                              </div>
+                              <div className="flex justify-between mb-2">
+                                <span className="text-sm text-muted-foreground">
+                                  가격
+                                </span>
+                                <span className="font-medium">
+                                  {(
+                                    article.currentPrice * amount
+                                  ).toLocaleString()}
+                                  원
+                                </span>
+                              </div>
+                              <div className="flex justify-between pt-2 border-t">
+                                <span className="font-medium">총 결제금액</span>
+                                <span className="text-lg font-bold text-primary">
+                                  {(
+                                    article.currentPrice * amount
+                                  ).toLocaleString()}
+                                  원
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex justify-between mb-2">
-                              <span className="text-sm text-muted-foreground">
-                                수량
-                              </span>
-                              <span className="font-medium">{amount}개</span>
-                            </div>
-                            <div className="flex justify-between mb-2">
-                              <span className="text-sm text-muted-foreground">
-                                가격
-                              </span>
-                              <span className="font-medium">
-                                {(
-                                  article.currentPrice * amount
-                                ).toLocaleString()}
-                                원
-                              </span>
-                            </div>
-                            <div className="flex justify-between pt-2 border-t">
-                              <span className="font-medium">총 결제금액</span>
-                              <span className="text-lg font-bold text-primary">
-                                {(
-                                  article.currentPrice * amount
-                                ).toLocaleString()}
-                                원
-                              </span>
-                            </div>
+
+                            {purchaseStatus === "error" && (
+                              <Alert variant="destructive" className="mb-4">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle>오류</AlertTitle>
+                                <AlertDescription>
+                                  {errorMessage}
+                                </AlertDescription>
+                              </Alert>
+                            )}
+
+                            {purchaseStatus === "success" && (
+                              <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle>구매 완료</AlertTitle>
+                                <AlertDescription>
+                                  {amount}개의 NFT를 성공적으로 구매했습니다!
+                                </AlertDescription>
+                              </Alert>
+                            )}
                           </div>
 
-                          {purchaseStatus === "error" && (
-                            <Alert variant="destructive" className="mb-4">
-                              <AlertCircle className="h-4 w-4" />
-                              <AlertTitle>오류</AlertTitle>
-                              <AlertDescription>
-                                {errorMessage}
-                              </AlertDescription>
-                            </Alert>
-                          )}
+                          <DialogFooter>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setPurchaseStatus("idle");
+                                setShowPurchaseDialog(false);
+                              }}
+                              disabled={loading}
+                            >
+                              취소
+                            </Button>
+                            <Button
+                              onClick={() => handleBuyNFT(article.serialNum)}
+                              disabled={loading || purchaseStatus === "success"}
+                            >
+                              {loading ? (
+                                <>
+                                  <Skeleton className="h-4 w-4 mr-2 rounded-full animate-spin" />
+                                  처리 중...
+                                </>
+                              ) : purchaseStatus === "success" ? (
+                                "구매 완료"
+                              ) : (
+                                "구매 확인"
+                              )}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
 
-                          {purchaseStatus === "success" && (
-                            <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
-                              <AlertCircle className="h-4 w-4" />
-                              <AlertTitle>구매 완료</AlertTitle>
-                              <AlertDescription>
-                                {amount}개의 NFT를 성공적으로 구매했습니다!
-                              </AlertDescription>
-                            </Alert>
-                          )}
-                        </div>
+                    <div className="col-span-5">
+                      <Link
+                        href={`/gift/${params.id}/customize`}
+                        className="block"
+                      >
+                        <Button
+                          variant="outline"
+                          className="h-12 w-full px-[16px]"
+                          size="lg"
+                        >
+                          <Gift className="mr-1 h-4 w-4" /> 선물하기
+                        </Button>
+                      </Link>
+                    </div>
 
-                        <DialogFooter>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setPurchaseStatus("idle");
-                              setShowPurchaseDialog(false);
-                            }}
-                            disabled={loading}
-                          >
-                            취소
-                          </Button>
-                          <Button
-                            onClick={buyNFT}
-                            disabled={loading || purchaseStatus === "success"}
-                          >
-                            {loading ? (
-                              <>
-                                <Skeleton className="h-4 w-4 mr-2 rounded-full animate-spin" />
-                                처리 중...
-                              </>
-                            ) : purchaseStatus === "success" ? (
-                              "구매 완료"
-                            ) : (
-                              "구매 확인"
-                            )}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-
-                  <div className="col-span-5">
-                    <Link
-                      href={`/gift/${params.id}/customize`}
-                      className="block"
-                    >
+                    <div className="col-span-1">
                       <Button
+                        onClick={handleLikeToggle}
                         variant="outline"
-                        className="h-12 w-full px-[16px]"
-                        size="lg"
+                        size="icon"
+                        className="h-12 w-full"
+                        aria-label={article.isLiked ? "찜 해제하기" : "찜하기"}
                       >
-                        <Gift className="mr-1 h-4 w-4" /> 선물하기
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className={cn(
+                            "h-4 w-4",
+                            isLiked
+                              ? "fill-red-500 text-red-500"
+                              : "text-gray-500"
+                          )}
+                          fill={isLiked ? "currentColor" : "none"}
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                          />
+                        </svg>
                       </Button>
-                    </Link>
-                  </div>
+                    </div>
 
-                  <div className="col-span-1">
-                    <Button
-                      onClick={handleLikeToggle}
-                      variant="outline"
-                      size="icon"
-                      className="h-12 w-full"
-                      aria-label={article.isLiked ? "찜 해제하기" : "찜하기"}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className={cn(
-                          "h-4 w-4",
-                          isLiked
-                            ? "fill-red-500 text-red-500"
-                            : "text-gray-500"
-                        )}
-                        fill={isLiked ? "currentColor" : "none"}
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                    <div className="col-span-1">
+                      <Button
+                        onClick={shareBtn}
+                        variant="outline"
+                        size="icon"
+                        className="h-12 w-full"
+                        aria-label="공유하기"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                      </svg>
-                    </Button>
-                  </div>
-
-                  <div className="col-span-1">
-                    <Button
-                      onClick={shareBtn}
-                      variant="outline"
-                      size="icon"
-                      className="h-12 w-full"
-                      aria-label="공유하기"
-                    >
-                      <Share2 className="h-5 w-5" />
-                    </Button>
+                        <Share2 className="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="mt-8">
-            <Tabs defaultValue="description" className="w-full">
-              <TabsList className="w-full justify-start border-b bg-transparent p-0">
-                <TabsTrigger
+            <div className="mt-8">
+              <Tabs defaultValue="description" className="w-full">
+                <TabsList className="w-full justify-start border-b bg-transparent p-0">
+                  <TabsTrigger
+                    value="description"
+                    className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  >
+                    상품 설명
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="seller"
+                    className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  >
+                    판매자 정보
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="reviews"
+                    className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  >
+                    거래 후기
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent
                   value="description"
-                  className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  className="mt-6 rounded-lg bg-white p-6 shadow-sm"
                 >
-                  상품 설명
-                </TabsTrigger>
-                <TabsTrigger
-                  value="seller"
-                  className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-                >
-                  판매자 정보
-                </TabsTrigger>
-                <TabsTrigger
-                  value="reviews"
-                  className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-                >
-                  거래 후기
-                </TabsTrigger>
-              </TabsList>
+                  <div className="prose max-w-none">
+                    <p>{article.description}</p>
+                    <ul>
+                      <li>유효기간: {article.expirationDate}</li>
+                      <li>사용 가능 매장: 전국 스타벅스 매장</li>
+                      <li>교환 및 환불: 구매 후 7일 이내 가능</li>
+                    </ul>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
 
-              <TabsContent
-                value="description"
-                className="mt-6 rounded-lg bg-white p-6 shadow-sm"
-              >
-                <div className="prose max-w-none">
-                  <p>{article.description}</p>
-                  <ul>
-                    <li>유효기간: {article.expirationDate}</li>
-                    <li>사용 가능 매장: 전국 스타벅스 매장</li>
-                    <li>교환 및 환불: 구매 후 7일 이내 가능</li>
-                  </ul>
-                </div>
-              </TabsContent>
-            </Tabs>
+            <div className="mt-16">
+              <h2 className="mb-8 text-2xl font-bold">비슷한 상품</h2>
+              <PopularArticles />
+            </div>
           </div>
-
-          <div className="mt-16">
-            <h2 className="mb-8 text-2xl font-bold">비슷한 상품</h2>
-            <PopularArticles />
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </div>
-  );
+        </main>
+        <Footer />
+      </div>
+    );
+  };
 }

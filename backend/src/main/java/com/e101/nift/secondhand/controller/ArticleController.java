@@ -57,7 +57,7 @@ public class ArticleController {
     @GetMapping("/{articleId}")
     @Operation(summary = "판매 게시글 상세조회", description = "판매중인 상품의 상세 정보를 조회합니다.")
     public ResponseEntity<ArticleDetailDto> getArticleById(
-            @PathVariable Long articleId,
+            @PathVariable("articleId") Long articleId,
             HttpServletRequest request){
         Long userId = null;
 
