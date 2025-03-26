@@ -15,7 +15,7 @@ pipeline {
 			steps {
 				script {
 					//브랜치 이름
-					def branch = env.BRANCH_NAME ? env.GIT_BRANCH
+					def branch = env.BRANCH_NAME ? env.BRANCH_NAME : env.GIT_BRANCH
 
 					echo "🚀 Branch: ${branch}"
 
