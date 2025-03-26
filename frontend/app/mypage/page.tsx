@@ -32,6 +32,8 @@ import {
   Settings,
   ShoppingBag,
   User,
+  Gift,
+  Clock
 } from "lucide-react";
 import {
   Dialog,
@@ -50,6 +52,9 @@ import {
   fetchLikedArticles,
 } from "@/lib/api/mypage";
 import { useRouter } from "next/navigation";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { GiftCard } from "@/components/gift/gift-card"
+
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const getAccessToken = () => {
@@ -83,6 +88,9 @@ export default function MyPage() {
   const [likedArticles, setLikedArticles] = useState<ArticleCardProps[]>([]);
   const [totalPage, setTotalPage] = useState(1);
   const [currentPage, setCurrentPage] = useState(0);
+
+  // 임시 작성 코드
+  const [giftCardTab, setGiftCardTab] = useState("available")
 
   const PAGE_GROUP_SIZE = 5; // 한 번에 표시할 페이지 수
   // 지금 페이지 그룹 계산
@@ -289,65 +297,164 @@ export default function MyPage() {
     loadLikeArticles();
   }, [currentPage]);
 
-  // Sample article data
-  const myArticles = [
+  // Sample product data
+  const availableGiftCards = [
     {
       id: "1",
-      title: "스타벅스 아메리카노 Tall",
-      price: 4500,
-      category: "커피/음료",
-      image: "/placeholder.svg?height=400&width=400",
-      location: "서울 강남구",
-      listedAt: "3일 전",
-      isFavorite: false,
+      title: "디지털 상품권 5천원권",
+      brand: "공차",
+      price: 5000,
+      sender: "미서",
+      date: "2021.06.22",
+      expiryDays: "D-38",
+      imageUrl: "/placeholder.svg?height=200&width=200&text=공차",
     },
     {
       id: "2",
-      title: "CGV 영화 관람권",
-      price: 11000,
-      category: "문화/생활",
-      image: "/placeholder.svg?height=400&width=400",
-      location: "서울 송파구",
-      listedAt: "1주일 전",
-      isFavorite: true,
+      title: "싱글레귤러 아이스크림",
+      brand: "베스킨라빈스",
+      price: 3800,
+      sender: "미서",
+      date: "2023.01.22",
+      expiryDays: "D-73",
+      imageUrl: "/placeholder.svg?height=200&width=200&text=베스킨라빈스",
     },
     {
       id: "3",
-      title: "배스킨라빈스 파인트",
-      price: 8900,
-      category: "뷰티/아이스크림",
-      image: "/placeholder.svg?height=400&width=400",
-      location: "서울 마포구",
-      listedAt: "2주일 전",
-      isFavorite: false,
+      title: "생딸기 설빙",
+      brand: "설빙",
+      price: 8500,
+      sender: "미서",
+      date: "2024.03.04",
+      expiryDays: "D-73",
+      imageUrl: "/placeholder.svg?height=200&width=200&text=설빙",
     },
     {
       id: "4",
-      title: "교보문고 5만원권",
-      price: 48000,
-      category: "문화/생활",
-      image: "/placeholder.svg?height=400&width=400",
-      location: "서울 종로구",
-      listedAt: "3주일 전",
-      isFavorite: true,
+      title: "황올반+BBQ양념반+콜라1.25L",
+      brand: "BBQ",
+      price: 21000,
+      sender: "미서",
+      date: "2024.03.04",
+      expiryDays: "D-79",
+      imageUrl: "/placeholder.svg?height=200&width=200&text=BBQ",
     },
   ];
 
+  const usedGiftCards = [
+    {
+      id: "5",
+      title: "아메리카노 Tall",
+      brand: "스타벅스",
+      price: 4500,
+      sender: "김민지",
+      date: "2023.12.15",
+      usedDate: "2024.01.10",
+      imageUrl: "/placeholder.svg?height=200&width=200&text=스타벅스",
+    },
+    {
+      id: "6",
+      title: "빅맥 세트",
+      brand: "맥도날드",
+      price: 8900,
+      sender: "박준호",
+      date: "2023.11.20",
+      usedDate: "2023.12.05",
+      imageUrl: "/placeholder.svg?height=200&width=200&text=맥도날드",
+    },
+  ];
+
+  const likedProduct = [
+    {
+      productId: "1",
+      title: "스타벅스 아메리카노 Tall",
+      currentPrice: 4500,
+      originalPrice: 5000,
+      discountRate: 10,
+      imageUrl: "/placeholder.svg?height=400&width=400&text=스타벅스",
+      isLiked: true,
+    },
+    {
+      productId: "2",
+      title: "CGV 영화 관람권",
+      currentPrice: 11000,
+      originalPrice: 13000,
+      discountRate: 15,
+      imageUrl: "/placeholder.svg?height=400&width=400&text=CGV",
+      isLiked: true,
+    },
+    {
+      productId: "3",
+      title: "배스킨라빈스 파인트",
+      currentPrice: 8900,
+      originalPrice: 9800,
+      discountRate: 9,
+      imageUrl: "/placeholder.svg?height=400&width=400&text=배스킨라빈스",
+      isLiked: true,
+    },
+  ];
+
+  const transactionHistory = {
+    purchases: [
+      {
+        id: "p1",
+        title: "스타벅스 아메리카노 Tall",
+        price: 4500,
+        date: "2024.02.15",
+        seller: "김판매",
+        status: "완료",
+        imageUrl: "/placeholder.svg?height=100&width=100&text=스타벅스",
+      },
+      {
+        id: "p2",
+        title: "CGV 영화 관람권",
+        price: 11000,
+        date: "2024.01.20",
+        seller: "이영화",
+        status: "완료",
+        imageUrl: "/placeholder.svg?height=100&width=100&text=CGV",
+      },
+    ],
+    sales: [
+      {
+        id: "s1",
+        title: "배스킨라빈스 파인트",
+        price: 8900,
+        date: "2024.02.10",
+        buyer: "박아이스",
+        status: "완료",
+        imageUrl: "/placeholder.svg?height=100&width=100&text=배스킨라빈스",
+      },
+    ],
+    gifts: [
+      {
+        id: "g1",
+        title: "BBQ 황금올리브 치킨",
+        price: 18000,
+        date: "2024.03.01",
+        recipient: "최친구",
+        status: "전송완료",
+        imageUrl: "/placeholder.svg?height=100&width=100&text=BBQ",
+      },
+    ],
+  }
+
+
   const sidebarItems = [
-    { icon: User, label: "계정 정보", value: "account" },
-    { icon: ShoppingBag, label: "구매 내역", value: "purchases" },
-    { icon: Package, label: "판매 내역", value: "sales" },
+    { icon: Gift, label: "보유 NIFT", value: "gifticons" },
+    { icon: Clock, label: "거래내역", value: "transactions" },
+    { icon: Package, label: "선물 추억", value: "memories" },
     { icon: Heart, label: "찜한 상품", value: "favorites" },
     { icon: Settings, label: "설정", value: "settings" },
   ];
 
-  const [activeTab, setActiveTab] = useState("account");
+  const [activeTab, setActiveTab] = useState("gifticons");
 
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1 bg-gray-50 py-12">
+      <main className="flex-1 bg-white py-12">
         <div className="container">
           {!accessToken ? (
             <div className="flex flex-col items-center justify-center h-[60vh]">
@@ -469,105 +576,187 @@ export default function MyPage() {
                             </TabsTrigger>
                           ))}
                         </TabsList>
-
-                        <TabsContent value="account" className="mt-6 space-y-6">
+                        
+                        {/* 선물함 탭 */}
+                        <TabsContent value="gifticons" className="mt-6 space-y-6">
                           <div>
                             <h2 className="mb-4 text-xl font-semibold">
-                              계정 정보
+                              NIFT함
                             </h2>
                             <p className="mb-6 text-sm text-muted-foreground">
-                              개인 정보를 확인하고 수정할 수 있습니다.
+                              사용가능한 선물이 {availableGiftCards.length} 개 남아있어요.
                             </p>
                           </div>
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="name">닉네임</Label>
-                              <div className="flex gap-2">
-                                <Input
-                                  id="name"
-                                  value={nickname}
-                                  onChange={(e) => setNickname(e.target.value)}
-                                />
-                                <Button
-                                  className="whitespace-nowrap"
-                                  onClick={updateNickname}
-                                >
-                                  수정
-                                </Button>
+
+                          <Tabs defaultValue="available" onValueChange={setGiftCardTab}>
+                            <TabsList className="w-full">
+                              <TabsTrigger value="available" className="flex-1">
+                                사용가능 {availableGiftCards.length}
+                              </TabsTrigger>
+                              <TabsTrigger value="used" className="flex-1">
+                                사용완료 {usedGiftCards.length}
+                              </TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="available" className="mt-6">
+                              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                {availableGiftCards.map((card) => (
+                                  <GiftCard key={card.id} {...card} />
+                                ))}
                               </div>
-                            </div>
-                            <hr />
-                            <div className="space-y-2">
-                              <Label htmlFor="wallet">지갑 주소</Label>
-                              <div className="flex gap-2">
-                                <Input
-                                  id="wallet"
-                                  value={
-                                    walletAddress
-                                      ? walletAddress
-                                      : "연결되지 않음"
-                                  }
-                                  readOnly
-                                  className="bg-muted"
-                                />
-                                <Button
-                                  variant="outline"
-                                  className="whitespace-nowrap"
-                                  onClick={connectOrUpdateWallet}
-                                >
-                                  {walletAddress ? "변경하기" : "연결하기"}
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={copyToClipboard}
-                                >
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  className="whitespace-nowrap"
-                                  onClick={updateWalletAddress}
-                                >
-                                  수정
-                                </Button>
+                            </TabsContent>
+
+                            <TabsContent value="used" className="mt-6">
+                              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                {usedGiftCards.map((card) => (
+                                  <GiftCard key={card.id} {...card} />
+                                ))}
                               </div>
-                            </div>
-                          </div>
+                            </TabsContent>
+                          </Tabs>
                         </TabsContent>
-
-                        <TabsContent value="purchases" className="mt-6">
+                        {/* 거래내역 탭 */}
+                        <TabsContent value="transactions" className="mt-6">
                           <div>
                             <h2 className="mb-4 text-xl font-semibold">
-                              구매 내역
+                              거래내역
                             </h2>
                             <p className="mb-6 text-sm text-muted-foreground">
-                              구매한 기프티콘을 확인하고 사용할 수 있습니다.
+                              구매, 판매, 선물 내역을 확인 할 수 있습니다.
                             </p>
                           </div>
-                          {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                          {myArticles.slice(0, 3).map((article) => (
-                            <ArticleCard key={article.id} {...article} />
-                          ))}
-                        </div> */}
-                        </TabsContent>
+                          <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="purchases">
+                              <AccordionTrigger className="text-lg font-medium">
+                                구매내역 ({transactionHistory.purchases.length})
+                              </AccordionTrigger>
+                              <AccordionContent>
+                                {transactionHistory.purchases.length > 0 ? (
+                                  <div className="space-y-4">
+                                    {transactionHistory.purchases.map((item) => (
+                                      <div key={item.id} className="flex items-center gap-4 rounded-lg border bg-white p-4">
+                                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                                          <Image
+                                            src={item.imageUrl || "/placeholder.svg"}
+                                            alt={item.title}
+                                            fill
+                                            className="object-cover"
+                                          />
+                                        </div>
+                                        <div className="flex-1">
+                                          <h3 className="font-medium">{item.title}</h3>
+                                          <div className="mt-1 text-sm text-gray-500">
+                                            <div>판매자: {item.seller}</div>
+                                            <div>구매일: {item.date}</div>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className="font-bold">{item.price.toLocaleString()}원</div>
+                                          <div className="mt-1 text-sm text-primary">{item.status}</div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="py-4 text-center text-gray-500">구매 내역이 없습니다.</div>
+                                )}
+                              </AccordionContent>
+                            </AccordionItem>
 
-                        <TabsContent value="sales" className="mt-6">
+                            <AccordionItem value="sales">
+                              <AccordionTrigger className="text-lg font-medium">
+                                판매내역 ({transactionHistory.sales.length})
+                              </AccordionTrigger>
+                              <AccordionContent>
+                                {transactionHistory.sales.length > 0 ? (
+                                  <div className="space-y-4">
+                                    {transactionHistory.sales.map((item) => (
+                                      <div key={item.id} className="flex items-center gap-4 rounded-lg border bg-white p-4">
+                                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                                          <Image
+                                            src={item.imageUrl || "/placeholder.svg"}
+                                            alt={item.title}
+                                            fill
+                                            className="object-cover"
+                                          />
+                                        </div>
+                                        <div className="flex-1">
+                                          <h3 className="font-medium">{item.title}</h3>
+                                          <div className="mt-1 text-sm text-gray-500">
+                                            <div>구매자: {item.buyer}</div>
+                                            <div>판매일: {item.date}</div>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className="font-bold">{item.price.toLocaleString()}원</div>
+                                          <div className="mt-1 text-sm text-primary">{item.status}</div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="py-4 text-center text-gray-500">판매 내역이 없습니다.</div>
+                                )}
+                              </AccordionContent>
+                            </AccordionItem>
+
+                            <AccordionItem value="gifts">
+                              <AccordionTrigger className="text-lg font-medium">
+                                보낸 선물 ({transactionHistory.gifts.length})
+                              </AccordionTrigger>
+                              <AccordionContent>
+                                {transactionHistory.gifts.length > 0 ? (
+                                  <div className="space-y-4">
+                                    {transactionHistory.gifts.map((item) => (
+                                      <div key={item.id} className="flex items-center gap-4 rounded-lg border bg-white p-4">
+                                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                                          <Image
+                                            src={item.imageUrl || "/placeholder.svg"}
+                                            alt={item.title}
+                                            fill
+                                            className="object-cover"
+                                          />
+                                        </div>
+                                        <div className="flex-1">
+                                          <h3 className="font-medium">{item.title}</h3>
+                                          <div className="mt-1 text-sm text-gray-500">
+                                            <div>받는 사람: {item.recipient}</div>
+                                            <div>선물일: {item.date}</div>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className="font-bold">{item.price.toLocaleString()}원</div>
+                                          <div className="mt-1 text-sm text-primary">{item.status}</div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="py-4 text-center text-gray-500">보낸 선물이 없습니다.</div>
+                                )}
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        </TabsContent>
+                        {/* 선물받은 카드 보관함 탭 */}
+                        <TabsContent value="memories" className="mt-6">
                           <div>
                             <h2 className="mb-4 text-xl font-semibold">
-                              판매 내역
+                              NIFT카드
                             </h2>
                             <p className="mb-6 text-sm text-muted-foreground">
-                              판매 중인 기프티콘과 판매 완료된 기프티콘을 확인할
-                              수 있습니다.
+                              소중한 사람들과 주고받은 선물 추억을 확인해보세요.
                             </p>
                           </div>
+                          <div className="text-center py-12 text-gray-500">아직 선물 추억이 없습니다.</div>
                           {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                           {myArticles.slice(1, 4).map((article) => (
                             <ArticleCard key={article.id} {...article} />
                           ))}
                         </div> */}
                         </TabsContent>
-
+                        
+                        {/* 찜한 상품 탭 */}
                         <TabsContent value="favorites" className="mt-6">
                           <div>
                             <h2 className="mb-4 text-xl font-semibold">
@@ -634,7 +823,7 @@ export default function MyPage() {
                             </Button>
                           </div>
                         </TabsContent>
-
+                        {/* 설정 탭 */}
                         <TabsContent value="settings" className="mt-6">
                           <div>
                             <h2 className="mb-4 text-xl font-semibold">설정</h2>
@@ -643,6 +832,64 @@ export default function MyPage() {
                             </p>
                           </div>
                           <div className="space-y-6">
+                            <Card>
+                              <CardHeader>
+                                <CardTitle>계정 정보</CardTitle>
+                                <CardDescription>개인 정보를 확인하고 수정할 수 있습니다.</CardDescription>
+                              </CardHeader>
+                              <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="name">닉네임</Label>
+                                  <div className="flex gap-2">
+                                    <Input 
+                                        id="name" 
+                                        value={nickname} 
+                                        onChange={(e) => setNickname(e.target.value)} 
+                                      />
+                                    <Button 
+                                        className="whitespace-nowrap"
+                                        onClick={updateNickname}>
+                                      수정
+                                    </Button>
+                                  </div>
+                                </div>
+                                <hr />
+                                <div className="space-y-2">
+                                  <Label htmlFor="wallet">지갑 주소</Label>
+                                  <div className="flex gap-2">
+                                    <Input
+                                      id="wallet"
+                                      value={
+                                        walletAddress
+                                            ? walletAddress
+                                            : "연결되지 않음"
+                                        }
+                                      readOnly
+                                      className="bg-muted"
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        className="whitespace-nowrap" 
+                                        onClick={connectOrUpdateWallet}>
+                                      {walletAddress ? "변경하기" : "연결하기"}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={copyToClipboard}>
+                                      <Copy className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      className="whitespace-nowrap"
+                                      onClick={updateWalletAddress}
+                                    >
+                                      수정
+                                    </Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+
                             <Card>
                               <CardHeader>
                                 <CardTitle>알림 설정</CardTitle>

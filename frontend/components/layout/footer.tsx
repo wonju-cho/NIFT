@@ -57,7 +57,7 @@ export function Footer() {
             <h3 className="mb-4 text-sm font-medium">서비스</h3>
             <ul className="grid gap-2 text-sm text-gray-500">
               <li>
-                <Link href="#" className="hover:text-primary hover:underline">
+                <Link href="/about" className="hover:text-primary hover:underline">
                   서비스 소개
                 </Link>
               </li>
