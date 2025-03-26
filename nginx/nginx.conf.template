@@ -42,9 +42,9 @@ http {
 
         # Jenkins Webhook 프록시 추가 -> Multibranch pipeline은 secret token이 없어서 인증용 webhook을 만듦.
         location /jenkins-webhook/ {
-            proxy_pass http://${DOMAIN_NAME}:8080/project/NIFP_MultiBranch/;
+            proxy_pass http://jenkins:8080/git/notifyCommit;
             proxy_set_header Authorization \"Bearer $SECRET_TOKEN";\
-            proxy_set_header Host $host
+            proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
         }
     }
