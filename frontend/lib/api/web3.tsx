@@ -17,6 +17,7 @@ const NFT_ABI = [
   "function getTokenIdBySerial(uint256) view returns (uint256)",
   "function getSerialInfo(uint256) view returns (uint256,address,address,uint256,bool,uint256)",
   "function getTokenInfo(uint256) view returns (string,string,uint256,string)",
+  "function listForSale(uint256 serialNumber, uint256 price) public",
 ];
 
 // // ✅ IPFS URL을 변환하는 함수
@@ -202,13 +203,22 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
 
         // tokenId 및 메타데이터 URI 조회
         const tokenId = await contract.getTokenIdBySerial(serial);
-        const [, , , , ,] = await contract.getSerialInfo(serial); // 필요시 사용
+        const [price, seller] = await contract.getSerialInfo(serial);
         const [, , , metadataURI] = await contract.getTokenInfo(tokenId);
 
         const metadata = await fetchMetadata(metadataURI, serial);
         console.log("🪙 토큰 정보: ", metadata);
 
-        return metadata;
+        return {
+          ...metadata,
+          id: Number(tokenId),
+          serialNum: serial,
+          price: Number(price),
+          seller: seller,
+          isSelling:
+            Number(price) > 0 &&
+            seller !== "0x0000000000000000000000000000000000000000",
+        };
       })
     );
 
@@ -217,4 +227,16 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
     console.error("❌ 사용자 NFT 조회 실패:", error);
     return [];
   }
+}
+
+export async function listGifticonForSale(serialNumber: number, price: number) {
+  if (!window.ethereum) throw new Error("Metamask not found");
+
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
+
+  const tx = await contract.listForSale(serialNumber, price);
+  await tx.wait();
+  return tx;
 }

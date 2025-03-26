@@ -34,7 +34,7 @@ public class Article {
     private Integer viewCnt = 0;
 
     @ManyToOne
-    @JoinColumn(name = "gifticon", nullable = false)
+    @JoinColumn(name = "gifticon_id", nullable = false)
     private Gifticon gifticon;
 
     @PrePersist

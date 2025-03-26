@@ -19,7 +19,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
+
 
 @Slf4j
 @Service
@@ -140,16 +143,18 @@ public class ArticleServiceImpl implements ArticleService {
         Gifticon gifticon = gifticonRepository.findById(postArticleDto.getGifticonId())
                 .orElseThrow(() -> new IllegalArgumentException("기프티콘이 존재하지 않습니다."));
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
         Article article = new Article();
         article.setTitle(postArticleDto.getTitle());
         article.setDescription(postArticleDto.getDescription());
         article.setUserId(userId);
         article.setCurrentPrice(postArticleDto.getCurrentPrice());
-        article.setExpirationDate(postArticleDto.getExpirationDate());
+        article.setExpirationDate(LocalDateTime.parse(postArticleDto.getExpirationDate(), formatter));
         article.setSerialNum(postArticleDto.getSerialNum());
         article.setCountLikes(0);
         article.setViewCnt(0);
-        article.setImageUrl(gifticon.getImageUrl());
+        article.setImageUrl(postArticleDto.getImageUrl());
         article.setGifticon(gifticon);
 
         articleRepository.save(article);
