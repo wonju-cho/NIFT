@@ -1,18 +1,28 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { ethers } from "ethers"
-import { ArrowLeft, Heart, Share2, MapPin, Clock, ShoppingCart, AlertCircle, Minus, Plus, Gift } from "lucide-react"
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PopularArticles } from "@/components/home/popular-articles"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { SSF_CONTRACT_ADDRESS } from "@/lib/api/web3"
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Heart,
+  Share2,
+  MapPin,
+  Clock,
+  ShoppingCart,
+  AlertCircle,
+  Minus,
+  Plus,
+  Gift,
+} from "lucide-react";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PopularArticles } from "@/components/home/popular-articles";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { buyNFT, fetchTokenInfoBySerial } from "@/lib/api/web3";
 import {
   Dialog,
   DialogContent,
@@ -21,15 +31,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ArticlePage({ params }: { params: { id: string } }) {
   // 실제 구현에서는 params.id를 사용하여 상품 데이터를 가져옵니다
   const article = {
     id: params.id,
     title: "스타벅스 아메리카노 Tall",
+    serialNum: 1,
     price: 4000,
     originalPrice: 4500,
     category: "커피/음료",
@@ -40,7 +51,8 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       rating: 4.8,
       transactions: 56,
     },
-    description: "스타벅스 아메리카노 Tall 사이즈 기프티콘입니다. 유효기간은 구매일로부터 30일입니다.",
+    description:
+      "스타벅스 아메리카노 Tall 사이즈 기프티콘입니다. 유효기간은 구매일로부터 30일입니다.",
     image: "/placeholder.svg?height=600&width=600",
     expiryDate: "2023-12-31",
     location: "서울 강남구",
@@ -49,90 +61,66 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     views: 24,
     isNew: true,
     isFavorite: false,
-  }
+  };
 
-  const [amount, setAmount] = useState<number>(1)
-  const [loading, setLoading] = useState<boolean>(false)
-  const [showPurchaseDialog, setShowPurchaseDialog] = useState<boolean>(false)
-  const [purchaseStatus, setPurchaseStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
-  const [errorMessage, setErrorMessage] = useState<string>("")
-
-  const contractABI = ["function buyToken(uint256 amount) external payable"]
+  const [amount, setAmount] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [showPurchaseDialog, setShowPurchaseDialog] = useState<boolean>(false);
+  const [purchaseStatus, setPurchaseStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const incrementAmount = () => {
-    setAmount((prev) => prev + 1)
-  }
+    setAmount((prev) => prev + 1);
+  };
 
   const decrementAmount = () => {
     if (amount > 1) {
-      setAmount((prev) => prev - 1)
+      setAmount((prev) => prev - 1);
     }
-  }
+  };
 
-  const buyNFT = async () => {
+  const handleBuyNFT = async (serialNumber: number) => {
     if (!window.ethereum) {
-      setErrorMessage("MetaMask가 필요합니다.")
-      setPurchaseStatus("error")
-      return
+      setErrorMessage("MetaMask가 필요합니다.");
+      setPurchaseStatus("error");
+      return;
     }
 
-    setPurchaseStatus("loading")
-    setLoading(true)
+    setPurchaseStatus("loading");
+    setLoading(true);
 
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum)
-      await window.ethereum.request({ method: "eth_requestAccounts" })
+      await window.ethereum.request({ method: "eth_requestAccounts" });
 
-      const signer = await provider.getSigner()
-      console.log("Connected Address:", await signer.getAddress())
+      const success = await buyNFT(100007);
 
-      // 스마트 컨트랙트 인스턴스 생성
-      const contract = new ethers.Contract(SSF_CONTRACT_ADDRESS, contractABI, signer)
-
-      const pricePerToken = ethers.parseEther("0.000001")
-      const totalPrice = pricePerToken * BigInt(amount)
-      console.log("Sending ETH:", totalPrice.toString())
-
-      // estimateGas를 사용하여 가스비를 계산
-      let gasLimit
-      try {
-        gasLimit = await contract.buyToken.estimateGas(amount, {
-          value: totalPrice,
-        })
-        console.log("Estimated Gas:", gasLimit.toString())
-      } catch (error) {
-        console.error("estimateGas 실패:", error)
-        setErrorMessage("가스비 계산 중 오류가 발생했습니다.")
-        setPurchaseStatus("error")
-        setLoading(false)
-        return
-      }
-
-      // `gasLimit`이 예상보다 낮게 설정되는 경우 대비하여 여유롭게 증가
-      const gasBuffer = BigInt(50000)
-      const finalGasLimit = gasLimit + gasBuffer
-
-      // 트랜잭션 실행
-      try {
-        const tx = await contract.buyToken(amount, {
-          value: totalPrice,
-          gasLimit: finalGasLimit,
-        })
-        await tx.wait()
-        setPurchaseStatus("success")
-      } catch (error) {
-        console.error("구매 실패:", error)
-        setErrorMessage("구매 중 오류가 발생했습니다.")
-        setPurchaseStatus("error")
+      if (success) {
+        setPurchaseStatus("success");
+        const tokenInfo = await fetchTokenInfoBySerial(100007);
+        if (tokenInfo) {
+          console.log("🧾 [Token Info]");
+          console.log("🎯 Token ID:", tokenInfo.tokenId.toString());
+          console.log("📛 이름:", tokenInfo.name);
+          console.log("📝 설명:", tokenInfo.description);
+          console.log("📦 총 발행량:", tokenInfo.totalSupply.toString());
+          console.log("🔗 메타데이터 URI:", tokenInfo.metadataURI);
+        } else {
+          console.warn("⚠️ 토큰 정보를 불러오지 못했습니다.");
+        }
+      } else {
+        setErrorMessage("구매에 실패했습니다.");
+        setPurchaseStatus("error");
       }
     } catch (error) {
-      console.error("Ethereum 연결 오류:", error)
-      setErrorMessage("Ethereum 네트워크 연결 중 문제가 발생했습니다.")
-      setPurchaseStatus("error")
+      console.error("❌ Ethereum 연결 오류:", error);
+      setErrorMessage("Ethereum 네트워크 연결 중 문제가 발생했습니다.");
+      setPurchaseStatus("error");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -156,22 +144,35 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
-              {article.isNew && <Badge className="absolute left-4 top-4 bg-blue-500 hover:bg-blue-600">NEW</Badge>}
+              {article.isNew && (
+                <Badge className="absolute left-4 top-4 bg-blue-500 hover:bg-blue-600">
+                  NEW
+                </Badge>
+              )}
             </div>
 
             <div className="flex flex-col rounded-lg bg-white p-6 shadow-sm">
-              <div className="mb-2 text-sm text-muted-foreground">{article.category}</div>
-              <h1 className="mb-4 text-2xl font-bold md:text-3xl">{article.title}</h1>
+              <div className="mb-2 text-sm text-muted-foreground">
+                {article.category}
+              </div>
+              <h1 className="mb-4 text-2xl font-bold md:text-3xl">
+                {article.title}
+              </h1>
 
               <div className="mb-6">
-                <span className="text-3xl font-bold">{article.price.toLocaleString()}원</span>
+                <span className="text-3xl font-bold">
+                  {article.price.toLocaleString()}원
+                </span>
                 {article.originalPrice > article.price && (
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="text-sm line-through text-muted-foreground">
                       {article.originalPrice.toLocaleString()}원
                     </span>
                     <span className="text-sm text-primary">
-                      {Math.round((1 - article.price / article.originalPrice) * 100)}% 할인
+                      {Math.round(
+                        (1 - article.price / article.originalPrice) * 100
+                      )}
+                      % 할인
                     </span>
                   </div>
                 )}
@@ -180,7 +181,8 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
               <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
                 <span>
-                  {article.location} {article.distance && `· ${article.distance}`}
+                  {article.location}{" "}
+                  {article.distance && `· ${article.distance}`}
                 </span>
               </div>
 
@@ -194,13 +196,19 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
               <div className="mb-6 rounded-lg bg-gray-50 p-4">
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src={article.seller.avatar} alt={article.seller.name} />
-                    <AvatarFallback>{article.seller.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage
+                      src={article.seller.avatar}
+                      alt={article.seller.name}
+                    />
+                    <AvatarFallback>
+                      {article.seller.name.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="font-medium">{article.seller.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      거래 {article.seller.transactions}회 · 평점 {article.seller.rating}
+                      거래 {article.seller.transactions}회 · 평점{" "}
+                      {article.seller.rating}
                     </div>
                   </div>
                 </div>
@@ -221,7 +229,12 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                   <div className="flex h-10 w-16 items-center justify-center border-y bg-white text-center">
                     {amount}
                   </div>
-                  <Button variant="outline" size="icon" onClick={incrementAmount} className="h-10 w-10 rounded-l-none">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={incrementAmount}
+                    className="h-10 w-10 rounded-l-none"
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -230,7 +243,10 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
               <div className="mt-auto">
                 <div className="grid grid-cols-12 gap-1">
                   <div className="col-span-5">
-                    <Dialog open={showPurchaseDialog} onOpenChange={setShowPurchaseDialog}>
+                    <Dialog
+                      open={showPurchaseDialog}
+                      onOpenChange={setShowPurchaseDialog}
+                    >
                       <DialogTrigger asChild>
                         <Button className="h-12 w-full px-[16px]" size="lg">
                           <ShoppingCart className="mr-1 h-4 w-4" /> 구매하기
@@ -248,16 +264,26 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                         <div className="py-4">
                           <div className="mb-4 rounded-lg bg-gray-50 p-4">
                             <div className="flex justify-between mb-2">
-                              <span className="text-sm text-muted-foreground">상품명</span>
-                              <span className="font-medium">{article.title}</span>
+                              <span className="text-sm text-muted-foreground">
+                                상품명
+                              </span>
+                              <span className="font-medium">
+                                {article.title}
+                              </span>
                             </div>
                             <div className="flex justify-between mb-2">
-                              <span className="text-sm text-muted-foreground">수량</span>
+                              <span className="text-sm text-muted-foreground">
+                                수량
+                              </span>
                               <span className="font-medium">{amount}개</span>
                             </div>
                             <div className="flex justify-between mb-2">
-                              <span className="text-sm text-muted-foreground">가격</span>
-                              <span className="font-medium">{(article.price * amount).toLocaleString()}원</span>
+                              <span className="text-sm text-muted-foreground">
+                                가격
+                              </span>
+                              <span className="font-medium">
+                                {(article.price * amount).toLocaleString()}원
+                              </span>
                             </div>
                             <div className="flex justify-between pt-2 border-t">
                               <span className="font-medium">총 결제금액</span>
@@ -271,7 +297,9 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                             <Alert variant="destructive" className="mb-4">
                               <AlertCircle className="h-4 w-4" />
                               <AlertTitle>오류</AlertTitle>
-                              <AlertDescription>{errorMessage}</AlertDescription>
+                              <AlertDescription>
+                                {errorMessage}
+                              </AlertDescription>
                             </Alert>
                           )}
 
@@ -279,7 +307,9 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                             <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
                               <AlertCircle className="h-4 w-4" />
                               <AlertTitle>구매 완료</AlertTitle>
-                              <AlertDescription>{amount}개의 NFT를 성공적으로 구매했습니다!</AlertDescription>
+                              <AlertDescription>
+                                {amount}개의 NFT를 성공적으로 구매했습니다!
+                              </AlertDescription>
                             </Alert>
                           )}
                         </div>
@@ -288,14 +318,17 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                           <Button
                             variant="outline"
                             onClick={() => {
-                              setPurchaseStatus("idle")
-                              setShowPurchaseDialog(false)
+                              setPurchaseStatus("idle");
+                              setShowPurchaseDialog(false);
                             }}
                             disabled={loading}
                           >
                             취소
                           </Button>
-                          <Button onClick={buyNFT} disabled={loading || purchaseStatus === "success"}>
+                          <Button
+                            onClick={() => handleBuyNFT(article.serialNum)}
+                            disabled={loading || purchaseStatus === "success"}
+                          >
                             {loading ? (
                               <>
                                 <Skeleton className="h-4 w-4 mr-2 rounded-full animate-spin" />
@@ -313,8 +346,15 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                   </div>
 
                   <div className="col-span-5">
-                    <Link href={`/gift/${params.id}/customize`} className="block">
-                      <Button variant="outline" className="h-12 w-full px-[16px]" size="lg">
+                    <Link
+                      href={`/gift/${params.id}/customize`}
+                      className="block"
+                    >
+                      <Button
+                        variant="outline"
+                        className="h-12 w-full px-[16px]"
+                        size="lg"
+                      >
                         <Gift className="mr-1 h-4 w-4" /> 선물하기
                       </Button>
                     </Link>
@@ -327,12 +367,21 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                       className="h-12 w-full"
                       aria-label={article.isFavorite ? "찜 해제하기" : "찜하기"}
                     >
-                      <Heart className={`h-5 w-5 ${article.isFavorite ? "fill-primary text-primary" : ""}`} />
+                      <Heart
+                        className={`h-5 w-5 ${
+                          article.isFavorite ? "fill-primary text-primary" : ""
+                        }`}
+                      />
                     </Button>
                   </div>
 
                   <div className="col-span-1">
-                    <Button variant="outline" size="icon" className="h-12 w-full" aria-label="공유하기">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-12 w-full"
+                      aria-label="공유하기"
+                    >
                       <Share2 className="h-5 w-5" />
                     </Button>
                   </div>
@@ -364,7 +413,10 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="description" className="mt-6 rounded-lg bg-white p-6 shadow-sm">
+              <TabsContent
+                value="description"
+                className="mt-6 rounded-lg bg-white p-6 shadow-sm"
+              >
                 <div className="prose max-w-none">
                   <p>{article.description}</p>
                   <ul>
@@ -375,17 +427,28 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="seller" className="mt-6 rounded-lg bg-white p-6 shadow-sm">
+              <TabsContent
+                value="seller"
+                className="mt-6 rounded-lg bg-white p-6 shadow-sm"
+              >
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarImage src={article.seller.avatar} alt={article.seller.name} />
-                      <AvatarFallback>{article.seller.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage
+                        src={article.seller.avatar}
+                        alt={article.seller.name}
+                      />
+                      <AvatarFallback>
+                        {article.seller.name.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="text-lg font-medium">{article.seller.name}</h3>
+                      <h3 className="text-lg font-medium">
+                        {article.seller.name}
+                      </h3>
                       <p className="text-sm text-muted-foreground">
-                        거래 {article.seller.transactions}회 · 평점 {article.seller.rating}
+                        거래 {article.seller.transactions}회 · 평점{" "}
+                        {article.seller.rating}
                       </p>
                     </div>
                   </div>
@@ -398,9 +461,14 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="reviews" className="mt-6 rounded-lg bg-white p-6 shadow-sm">
+              <TabsContent
+                value="reviews"
+                className="mt-6 rounded-lg bg-white p-6 shadow-sm"
+              >
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">아직 거래 후기가 없습니다.</p>
+                  <p className="text-muted-foreground">
+                    아직 거래 후기가 없습니다.
+                  </p>
                 </div>
               </TabsContent>
             </Tabs>
@@ -414,6 +482,5 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       </main>
       <Footer />
     </div>
-  )
+  );
 }
-
