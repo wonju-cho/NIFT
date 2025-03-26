@@ -24,8 +24,13 @@ RUN ./gradlew dependencies --no-daemon
 # 전체 프로젝트 복사
 COPY . .
 
-# 빌드 실행
-RUN ./gradlew build --no-daemon
+# BUILD_MODE에 따라 다르게 실행
+RUN if [ "$BUILD_MODE" = "dev" ]; then \
+      ./gradlew build --info --stacktrace --no-daemon ; \
+    else \
+      ./gradlew build --no-daemon ; \
+    fi
+
 
 # 실행용 컨테이너
 

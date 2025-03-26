@@ -15,7 +15,9 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - ./backend/src/main/resources/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backend/src/main/resources/dev_init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
     networks:
       - backend-tier
 
@@ -43,9 +45,13 @@ services:
       - backend-tier
 
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        BUILD_MODE: production
     restart: always
-    container_name: backend
+    container_name: dev
     env_file:
       - .env
     depends_on:
@@ -62,7 +68,11 @@ services:
       - backend-tier
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        BUILD_MODE: dev
     restart: always
     container_name: frontend
     depends_on: 
@@ -83,7 +93,11 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx.conf.template:/etc/nginx/nginx.conf.template
+      - ./nginx/entrypoint.sh:/entrypoint.sh
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
     networks:
       - frontend-tier
       - backend-tier
