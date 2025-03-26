@@ -3,7 +3,7 @@ package com.e101.nift.secondhand.controller;
 import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
-import com.e101.nift.secondhand.service.ArticleServiceImpl;
+import com.e101.nift.secondhand.service.ArticleService;
 import com.e101.nift.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +25,7 @@ import java.util.List;
 @RequestMapping("/secondhand-articles")
 public class ArticleController {
     private static final Logger log = LoggerFactory.getLogger(ArticleController.class);
-    private final ArticleServiceImpl articleService;
+    private final ArticleService articleService;
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping

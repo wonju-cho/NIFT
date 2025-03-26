@@ -208,7 +208,10 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
         const metadata = await fetchMetadata(metadataURI, serial);
         console.log("🪙 토큰 정보: ", metadata);
 
-        return metadata;
+        return {
+          ...metadata,
+          id: Number(tokenId),
+        };
       })
     );
 

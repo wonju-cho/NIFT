@@ -1,6 +1,6 @@
-import axios from "axios"
+import axios from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL // 백엔드 API 주소
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL; // 백엔드 API 주소
 
 export const ArticleService = {
   async getArticles(
@@ -17,22 +17,24 @@ export const ArticleService = {
           category,
           page,
           size,
-          userId
-        }
-      })
-      return response.data
+          userId,
+        },
+      });
+      return response.data;
     } catch (error) {
-      console.error("상품 목록을 가져오는 중 오류 발생:", error)
-      throw error
+      console.error("상품 목록을 가져오는 중 오류 발생:", error);
+      throw error;
     }
   },
 
   // 좋아요 추가 또는 삭제
   async toggleLike(articleId: number, isLiked: boolean) {
-    const accessToken = typeof window !== "undefined" ?
-        localStorage.getItem("access_token") : null;
+    const accessToken =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
 
-    if (!accessToken){
+    if (!accessToken) {
       alert("로그인이 필요합니다.");
       return false;
     }
@@ -55,5 +57,44 @@ export const ArticleService = {
       console.error("좋아요 처리 중 오류 발생 : ", error);
       return false;
     }
-  }
-}
+  },
+
+  // 게시글 작성성
+  async createArticle(postData: {
+    title: string;
+    description: string;
+    currentPrice: number;
+    serialNum: string;
+    expiryDate: string; // ISO 형식 (e.g. "2025-12-31T00:00:00")
+    gifticonId: number;
+    imageUrl: string;
+  }) {
+    const accessToken =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
+
+    if (!accessToken) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/secondhand-articles`,
+        postData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("게시글 등록 중 오류 발생:", error);
+      throw error;
+    }
+  },
+};

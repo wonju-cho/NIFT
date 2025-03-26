@@ -1,0 +1,42 @@
+import { GifticonDetailCard } from "./SelectedGifticon";
+import { RegisterForm } from "./RegisterForm";
+import { GifticonCarousel } from "./GifticonCarousel";
+import { Separator } from "@/components/ui/separator";
+
+export function RegisterPageLayout({
+  gifticons,
+  selected,
+  onSelect,
+  selectedData,
+  onSubmit,
+  carouselRef,
+  onScroll,
+}: any) {
+  return (
+    <div className="container">
+      <div className="grid gap-8 md:grid-cols-2 items-stretch">
+        {/* 선택한 기프티콘 영역 */}
+        <div className="h-[500px]">
+          <h2 className="text-xl font-bold mb-4">선택한 기프티콘</h2>
+          <GifticonDetailCard gifticon={selectedData} />
+        </div>
+
+        {/* 게시글 작성 영역 */}
+        <div className="h-[500px]">
+          <h2 className="text-xl font-bold mb-4">게시글 작성</h2>
+          <RegisterForm onSubmit={onSubmit} />
+        </div>
+      </div>
+
+      <Separator className="my-8" />
+
+      <GifticonCarousel
+        gifticons={gifticons}
+        selected={selected}
+        onSelect={onSelect}
+        scrollRef={carouselRef}
+        onScroll={onScroll}
+      />
+    </div>
+  );
+}
