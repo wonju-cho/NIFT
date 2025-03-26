@@ -1,13 +1,15 @@
 package com.e101.nift.secondhand.service;
 
+import com.e101.nift.gifticon.entity.Gifticon;
 import com.e101.nift.secondhand.entity.Article;
+import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
 import com.e101.nift.secondhand.repository.LikeRepository;
 import com.e101.nift.secondhand.repository.ArticleRepository;
-import com.e101.nift.gifticon.entity.Gifticon;
 import com.e101.nift.gifticon.repository.GifticonRepository;
 import com.e101.nift.user.entity.User;
+import com.e101.nift.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -17,7 +19,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -28,6 +29,7 @@ public class ArticleServiceImpl implements ArticleService {
     private final ArticleRepository articleRepository;
     private final LikeRepository likeRepository;
     private final GifticonRepository gifticonRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -96,6 +98,41 @@ public class ArticleServiceImpl implements ArticleService {
         log.info("상품 ID: {}, userId: {}, isLiked: {}", article.getArticleId(), userId, isLiked);
 
         return ArticleListDto.from(article, isLiked);
+    }
+
+    // 중고 기프티콘의 상세 정보 조회
+    @Override
+    public ArticleDetailDto getArticleDetail(Long articleId, Long userId) {
+        Article article = articleRepository.findByIdWithGifticonBrandCategory(articleId)
+                .orElseThrow(() -> new RuntimeException("상품이 조회되지 않습니다."));
+
+        Gifticon gifticon = article.getGifticon();
+        boolean isLiked = false;
+        if (userId != null) {
+            isLiked = likeRepository.existsByArticle_ArticleIdAndUser_UserId(articleId, userId);
+        }
+
+        User user = userRepository.findByUserId(article.getUserId())
+                .orElseThrow(() -> new RuntimeException("판매자 정보가 조회되지 않습니다."));
+
+        return new ArticleDetailDto(
+                article.getArticleId(),
+                article.getTitle(),
+                article.getDescription(),
+                article.getUserId(),
+                article.getExpirationDate(),
+                article.getImageUrl(),
+                article.getCountLikes(),
+                article.getCurrentPrice(),
+                article.getCreatedAt(),
+                article.getViewCnt(),
+                gifticon.getPrice(),
+                gifticon.getBrand().getBrandName(),
+                gifticon.getCategory().getCategoryName(),
+                isLiked,
+                user.getNickName(),
+                user.getProfileImage()
+        );
     }
 
     @Override
