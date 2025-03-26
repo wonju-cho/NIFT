@@ -7,6 +7,8 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { listGifticonForSale } from "@/lib/api/web3";
+import { useLoading } from "@/components/LoadingContext";
 
 // 지갑 주소 가져오기
 async function getWalletAddress() {
@@ -28,6 +30,7 @@ const convertIpfsUrl = (url: string) => {
 };
 
 export default function RegisterPage() {
+  const { isLoading, setIsLoading } = useLoading();
   const [ownedGifticons, setOwnedGifticons] = useState<any[]>([]);
   const [selectedGifticon, setSelectedGifticon] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -43,10 +46,18 @@ export default function RegisterPage() {
         }
 
         const nfts = await getUserNFTsAsJson(address);
-        const formatted = nfts.map((nft) => ({
-          ...nft,
-          image: convertIpfsUrl(nft.image),
-        }));
+        const formatted = nfts
+          .map((nft) => ({
+            ...nft,
+            image: convertIpfsUrl(nft.image),
+          }))
+          .sort((a, b) => {
+            // 판매중이면 뒤로 정렬
+            if (a.isSelling && !b.isSelling) return 1;
+            if (!a.isSelling && b.isSelling) return -1;
+            return 0;
+          });
+
         setOwnedGifticons(formatted);
       } catch (error) {
         console.error("NFT 로딩 실패:", error);
@@ -93,12 +104,16 @@ export default function RegisterPage() {
 
     console.log("🟢 등록 요청 데이터:", payload);
 
+    setIsLoading(true); // 로딩 시작
+
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
         alert("로그인이 필요합니다.");
         return;
       }
+
+      await listGifticonForSale(payload.serialNum, payload.currentPrice);
 
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles`,
@@ -111,12 +126,15 @@ export default function RegisterPage() {
         }
       );
 
-      alert("✅ 게시글이 성공적으로 등록되었습니다!");
+      alert("게시글이 성공적으로 등록되었습니다!");
+
       router.push("/articles");
       console.log("📌 응답:", response.data);
     } catch (error) {
       console.error("❌ 게시글 등록 실패:", error);
       alert("게시글 등록에 실패했습니다.");
+    } finally {
+      setIsLoading(false); // 로딩 시작
     }
   };
 

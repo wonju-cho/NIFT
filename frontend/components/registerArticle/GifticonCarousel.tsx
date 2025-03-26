@@ -42,12 +42,22 @@ export function GifticonCarousel({
         {gifticons.map((gifticon) => (
           <div
             key={gifticon.serialNum}
-            className={`cursor-pointer rounded-lg border p-4 w-[200px] flex-shrink-0 transition-all ${
-              selected === gifticon.serialNum
-                ? "border-primary bg-primary/5"
-                : ""
-            }`}
-            onClick={() => onSelect(gifticon.serialNum)}
+            className={`cursor-pointer rounded-lg border p-4 w-[200px] flex-shrink-0 transition-all
+              ${
+                selected === gifticon.serialNum
+                  ? "border-primary bg-primary/5"
+                  : ""
+              }
+              ${
+                gifticon.isSelling
+                  ? "opacity-40 pointer-events-none"
+                  : "hover:border-gray-400"
+              }
+            `}
+            onClick={() => {
+              if (gifticon.isSelling) return; // 판매중이면 클릭 막기
+              onSelect(gifticon.serialNum);
+            }}
           >
             <div className="relative">
               <Image
@@ -57,6 +67,11 @@ export function GifticonCarousel({
                 height={200}
                 className="object-cover rounded-md"
               />
+              {gifticon.isSelling && (
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                  판매 등록 중
+                </div>
+              )}
               {selected === gifticon.serialNum && (
                 <div className="absolute right-2 top-2 rounded-full bg-primary text-white h-6 w-6 flex items-center justify-center">
                   <Check className="h-4 w-4" />

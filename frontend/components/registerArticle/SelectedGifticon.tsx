@@ -3,7 +3,9 @@ import Image from "next/image";
 export function GifticonDetailCard({ gifticon }: { gifticon: any }) {
   if (!gifticon)
     return (
-      <p className="text-muted-foreground text-center">기프티콘을 선택하세요</p>
+      <div className="flex items-center justify-center h-full text-muted-foreground text-center">
+        기프티콘을 선택하세요
+      </div>
     );
 
   return (
@@ -16,7 +18,8 @@ export function GifticonDetailCard({ gifticon }: { gifticon: any }) {
         className="object-contain mb-4"
       />
       <div className="bg-white rounded-lg p-4 max-w-md">
-        <h3 className="text-lg font-medium mb-2">{gifticon.title}</h3>
+        <h3 className="text-lg font-bold mb-2">{gifticon.title}</h3>{" "}
+        {/* ✅ 이름 굵게 */}
         <div className="space-y-1 text-left text-sm">
           <div>브랜드: {gifticon.brand}</div>
           <div>카테고리: {gifticon.category}</div>
