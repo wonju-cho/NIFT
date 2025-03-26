@@ -24,6 +24,7 @@ public class Article {
     private Long userId;
     private LocalDateTime expirationDate;
     private String imageUrl;
+    private Long SerialNum;
 
     private Integer countLikes = 0;
     private Float currentPrice;
@@ -33,4 +34,9 @@ public class Article {
     @ManyToOne
     @JoinColumn(name = "gifticon", nullable = false)
     private Gifticon gifticon;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

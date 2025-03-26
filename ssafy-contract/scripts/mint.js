@@ -3,7 +3,7 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  const contractAddress = "0x6A231E46E632c0F96dd63B5A16AC9242BcEA7C9e"; // 배포된 컨트랙트 주소
+  const contractAddress = "0xD023e5dc2b03224293D9341edFb403D10Ed27383"; // 배포된 컨트랙트 주소
   const recipient = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F"; // 수령자 지갑 주소
   const amount = 10; // 기프티콘 개수
 
@@ -24,7 +24,7 @@ async function main() {
   async function main() {
     const [deployer] = await ethers.getSigners();
     const recipient = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F"; // 구매자의 지갑 주소
-    const contractAddress = "0x890e0B01283d6bD321Da88c57606B5eAD0955Fb5"; // 배포된 컨트랙트 주소
+    const contractAddress = "0xD023e5dc2b03224293D9341edFb403D10Ed27383"; // 배포된 컨트랙트 주소
 
     const GifticonNFT = await ethers.getContractFactory("GifticonNFT");
     const gifticonNFT = await GifticonNFT.attach(contractAddress);

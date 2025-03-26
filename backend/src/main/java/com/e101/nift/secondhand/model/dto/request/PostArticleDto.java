@@ -1,18 +1,22 @@
-package com.e101.nift.article.model.dto.request;
+package com.e101.nift.secondhand.model.dto.request;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 
+@Slf4j
+@Getter
+@Setter
 public class PostArticleDto {
 
     private String title;
     private String description;
-    private String author;
     private Float currentPrice;
-    private Integer categoryId;
-    private LocalDateTime createdAt;
+    private String imageUrl;
+    private Long serialNum;
     private LocalDateTime expirationDate;
     private Long gifticonId;
 
-    // 이걸 기프티콘id에서 받아올지, 게시글 테이블에도 저장할지?
-    //private Integer brandId;
 }

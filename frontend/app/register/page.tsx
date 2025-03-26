@@ -290,8 +290,8 @@ export default function RegisterPage() {
           return;
         }
 
-        const tokenIds = Array.from({ length: 10 }, (_, i) => i + 1); // ✅ 1~10번 ID 조회
-        const nfts = await getUserNFTsAsJson(userAddress, tokenIds); // ✅ 사용자의 NFT 정보 가져오기
+        // const tokenIds = Array.from({ length: 10 }, (_, i) => i + 1); // ✅ 1~10번 ID 조회
+        const nfts = await getUserNFTsAsJson(userAddress); // ✅ 사용자의 NFT 정보 가져오기
 
         console.log("📌 NFT 데이터:", nfts); // 🔥 콘솔 로그 추가 (확인 필수)
 
@@ -390,7 +390,7 @@ export default function RegisterPage() {
                             시리얼번호:
                           </span>
                           <span className="text-sm col-span-2">
-                            {selectedGifticonData.serialNum}
+                            {selectedGifticonData.serialNum + ""}
                           </span>
                         </div>
                       </div>
