@@ -2,11 +2,10 @@ package com.e101.nift.secondhand.controller;
 
 import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
+import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
 import com.e101.nift.secondhand.service.ArticleService;
-import com.e101.nift.secondhand.service.ArticleServiceImpl;
 import com.e101.nift.user.entity.User;
-import com.e101.nift.user.service.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,7 @@ import java.util.List;
 @RequestMapping("/secondhand-articles")
 public class ArticleController {
     private static final Logger log = LoggerFactory.getLogger(ArticleController.class);
-    private final ArticleServiceImpl articleService;
+    private final ArticleService articleService;
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
@@ -55,6 +54,25 @@ public class ArticleController {
         return ResponseEntity.ok(articles);
     }
 
+    @GetMapping("/{articleId}")
+    @Operation(summary = "판매 게시글 상세조회", description = "판매중인 상품의 상세 정보를 조회합니다.")
+    public ResponseEntity<ArticleDetailDto> getArticleById(
+            @PathVariable Long articleId,
+            HttpServletRequest request){
+        Long userId = null;
+
+        try {
+            User user = jwtTokenProvider.getUserFromRequest(request);
+            userId = user.getUserId();
+        } catch (UsernameNotFoundException e){
+            log.warn("유효하지 않은 토큰입니다: {}", e.getMessage());
+        }
+
+        ArticleDetailDto dto = articleService.getArticleDetail(articleId, userId);
+        return ResponseEntity.ok(dto);
+    }
+
+
     @Operation(summary = "게시글 쓰기", description = "기프티콘 판매 게시글을 작성합니다.")
     @PostMapping
     public ResponseEntity<?> PostArticles(
@@ -69,4 +87,6 @@ public class ArticleController {
         articleService.createArticle(postArticleDto, userId);
         return ResponseEntity.status(201).build();
     }
+
+
 }

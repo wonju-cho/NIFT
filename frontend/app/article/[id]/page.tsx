@@ -1,17 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
 import { ethers } from "ethers"
-import { ArrowLeft, Heart, Share2, MapPin, Clock, ShoppingCart, AlertCircle, Minus, Plus, Gift } from "lucide-react"
+import { ArrowLeft, Share2, Clock, ShoppingCart, AlertCircle,Gift } from "lucide-react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PopularArticles } from "@/components/home/popular-articles"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SSF_CONTRACT_ADDRESS } from "@/lib/api/web3"
 import {
   Dialog,
@@ -24,48 +23,98 @@ import {
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useLoading } from "@/components/LoadingContext"
+
+type ArticleDetail = {
+  articleId: number
+  title: string
+  description: string
+  userId: number
+  expirationDate: string
+  imageUrl: string
+  countLikes: number
+  currentPrice: number
+  createAt: string
+  viewCnt: number
+  giftiPrice: number
+  brandName: string
+  categoryName: string
+  isLiked: boolean
+}
 
 export default function ArticlePage({ params }: { params: { id: string } }) {
-  // 실제 구현에서는 params.id를 사용하여 상품 데이터를 가져옵니다
-  const article = {
-    id: params.id,
-    title: "스타벅스 아메리카노 Tall",
-    price: 4000,
-    originalPrice: 4500,
-    category: "커피/음료",
-    seller: {
-      id: "user123",
-      name: "닉네임",
-      avatar: "/placeholder.svg?height=40&width=40",
-      rating: 4.8,
-      transactions: 56,
-    },
-    description: "스타벅스 아메리카노 Tall 사이즈 기프티콘입니다. 유효기간은 구매일로부터 30일입니다.",
-    image: "/placeholder.svg?height=600&width=600",
-    expiryDate: "2023-12-31",
-    location: "서울 강남구",
-    distance: "1.2km",
-    listedAt: "3시간 전",
-    views: 24,
-    isNew: true,
-    isFavorite: false,
-  }
+  const { id } = params
+
 
   const [amount, setAmount] = useState<number>(1)
   const [loading, setLoading] = useState<boolean>(false)
   const [showPurchaseDialog, setShowPurchaseDialog] = useState<boolean>(false)
   const [purchaseStatus, setPurchaseStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   const [errorMessage, setErrorMessage] = useState<string>("")
+  const [article, setArticle] = useState<ArticleDetail | null>(null)
+  const [isLiked, setIsLiked] = useState<boolean>(false)
+  const [countLikes, setLikeCount] = useState<number>(0)
+  const { isLoading, setIsLoading } = useLoading()
+
 
   const contractABI = ["function buyToken(uint256 amount) external payable"]
 
-  const incrementAmount = () => {
-    setAmount((prev) => prev + 1)
-  }
+  useEffect(() => {
+    const fetchArticle = async () => {
+      try {
+        setIsLoading(true) // 로딩 시작작
 
-  const decrementAmount = () => {
-    if (amount > 1) {
-      setAmount((prev) => prev - 1)
+        const accessToken = localStorage.getItem("access_token")
+        const headers: HeadersInit = accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : {}
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles/${id}`, {
+          headers,
+        })
+
+        if (!res.ok) throw new Error("Failed to fetch article")
+        const data = await res.json()
+        setArticle(data)
+        setIsLiked(data.liked)
+        setLikeCount(data.countLikes)
+      } catch (error) {
+        console.error("Error fetching article:", error)
+      } finally {
+        setIsLoading(false) // 로딩 종료
+      }
+    }
+  
+    fetchArticle()
+  }, [id])
+
+  // 좋아요 클릭
+  const handleLikeToggle = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    const token = localStorage.getItem("access_token")
+  
+    if (!token) {
+      alert("로그인이 필요합니다.")
+      return
+    }
+    const method = isLiked ? "DELETE" : "POST"
+
+    // 관심 - UI 업데이트
+    setIsLiked(!isLiked)
+    setLikeCount((prev) => isLiked ? prev - 1 : prev + 1)
+
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles/${article?.articleId}/likes`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  
+    if (!res.ok) {
+      console.warn("좋아요 토글 실패")
+      setIsLiked((prev) => !prev)
+      setLikeCount((prev) => isLiked ? prev + 1 : prev - 1) // 롤백도 같이
     }
   }
 
@@ -134,6 +183,23 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     }
   }
 
+  // 공유 버튼
+  const shareBtn = async () => {
+    try {
+      const url = window.location.href
+      await navigator.clipboard.writeText(url)
+      alert("현재 페이지 URL이 복사되었습니다!")
+    } catch (err) {
+      console.error("URL 복사 실패:", err)
+      alert("URL 복사에 실패했습니다.")
+    }
+  }
+  
+
+  if (!article) {
+    return <div className="p-10 text-center">로딩 중...</div>
+  }  
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -149,82 +215,39 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
           <div className="grid gap-8 md:grid-cols-2">
             <div className="relative aspect-square overflow-hidden rounded-lg bg-white shadow-sm">
               <Image
-                src={article.image || "/placeholder.svg"}
+                src={article.imageUrl || "/placeholder.svg"}
                 alt={article.title}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
-              {article.isNew && <Badge className="absolute left-4 top-4 bg-blue-500 hover:bg-blue-600">NEW</Badge>}
+              {/* {article.isNew && <Badge className="absolute left-4 top-4 bg-blue-500 hover:bg-blue-600">NEW</Badge>} */}
             </div>
 
             <div className="flex flex-col rounded-lg bg-white p-6 shadow-sm">
-              <div className="mb-2 text-sm text-muted-foreground">{article.category}</div>
+              <div className="mb-2 text-sm text-muted-foreground">{article.categoryName}</div>
               <h1 className="mb-4 text-2xl font-bold md:text-3xl">{article.title}</h1>
 
               <div className="mb-6">
-                <span className="text-3xl font-bold">{article.price.toLocaleString()}원</span>
-                {article.originalPrice > article.price && (
+                <span className="text-3xl font-bold">{(article.currentPrice ?? 0).toLocaleString()}원</span>
+                {article.giftiPrice > article.currentPrice && (
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="text-sm line-through text-muted-foreground">
-                      {article.originalPrice.toLocaleString()}원
+                      {article.giftiPrice.toLocaleString()}원
                     </span>
                     <span className="text-sm text-primary">
-                      {Math.round((1 - article.price / article.originalPrice) * 100)}% 할인
+                      {Math.round((1 - article.currentPrice / article.giftiPrice) * 100)}% 할인
                     </span>
                   </div>
                 )}
               </div>
 
               <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>
-                  {article.location} {article.distance && `· ${article.distance}`}
-                </span>
-              </div>
-
-              <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 <span>
-                  등록일: {article.listedAt} · 조회 {article.views}회
+                  등록일: {article.createAt} · 조회 {article.viewCnt}회 · 관심 {countLikes} 
                 </span>
-              </div>
-
-              <div className="mb-6 rounded-lg bg-gray-50 p-4">
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={article.seller.avatar} alt={article.seller.name} />
-                    <AvatarFallback>{article.seller.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">{article.seller.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      거래 {article.seller.transactions}회 · 평점 {article.seller.rating}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <div className="mb-2 text-sm font-medium">수량</div>
-                <div className="flex items-center">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={decrementAmount}
-                    disabled={amount <= 1}
-                    className="h-10 w-10 rounded-r-none"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <div className="flex h-10 w-16 items-center justify-center border-y bg-white text-center">
-                    {amount}
-                  </div>
-                  <Button variant="outline" size="icon" onClick={incrementAmount} className="h-10 w-10 rounded-l-none">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
               </div>
 
               <div className="mt-auto">
@@ -257,12 +280,12 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                             </div>
                             <div className="flex justify-between mb-2">
                               <span className="text-sm text-muted-foreground">가격</span>
-                              <span className="font-medium">{(article.price * amount).toLocaleString()}원</span>
+                              <span className="font-medium">{(article.currentPrice * amount).toLocaleString()}원</span>
                             </div>
                             <div className="flex justify-between pt-2 border-t">
                               <span className="font-medium">총 결제금액</span>
                               <span className="text-lg font-bold text-primary">
-                                {(article.price * amount).toLocaleString()}원
+                                {(article.currentPrice * amount).toLocaleString()}원
                               </span>
                             </div>
                           </div>
@@ -322,17 +345,33 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
 
                   <div className="col-span-1">
                     <Button
+                      onClick={handleLikeToggle}
                       variant="outline"
                       size="icon"
                       className="h-12 w-full"
-                      aria-label={article.isFavorite ? "찜 해제하기" : "찜하기"}
+                      aria-label={article.isLiked ? "찜 해제하기" : "찜하기"}
                     >
-                      <Heart className={`h-5 w-5 ${article.isFavorite ? "fill-primary text-primary" : ""}`} />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={cn("h-4 w-4", isLiked ? "fill-red-500 text-red-500" : "text-gray-500")}
+                        fill={isLiked ? "currentColor" : "none"}
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
+                      </svg>
                     </Button>
                   </div>
 
                   <div className="col-span-1">
-                    <Button variant="outline" size="icon" className="h-12 w-full" aria-label="공유하기">
+                    <Button 
+                      onClick={shareBtn}
+                      variant="outline" size="icon" className="h-12 w-full" aria-label="공유하기">
                       <Share2 className="h-5 w-5" />
                     </Button>
                   </div>
@@ -368,41 +407,13 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                 <div className="prose max-w-none">
                   <p>{article.description}</p>
                   <ul>
-                    <li>유효기간: {article.expiryDate}</li>
+                    <li>유효기간: {article.expirationDate}</li>
                     <li>사용 가능 매장: 전국 스타벅스 매장</li>
                     <li>교환 및 환불: 구매 후 7일 이내 가능</li>
                   </ul>
                 </div>
               </TabsContent>
 
-              <TabsContent value="seller" className="mt-6 rounded-lg bg-white p-6 shadow-sm">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage src={article.seller.avatar} alt={article.seller.name} />
-                      <AvatarFallback>{article.seller.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="text-lg font-medium">{article.seller.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        거래 {article.seller.transactions}회 · 평점 {article.seller.rating}
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">판매자의 다른 상품</h4>
-                    <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                      {/* 판매자의 다른 상품들 */}
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="reviews" className="mt-6 rounded-lg bg-white p-6 shadow-sm">
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">아직 거래 후기가 없습니다.</p>
-                </div>
-              </TabsContent>
             </Tabs>
           </div>
 
