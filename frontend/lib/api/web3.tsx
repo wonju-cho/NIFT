@@ -25,6 +25,9 @@ const NFT_ABI = [
   "function getTokenIdBySerial(uint256 serialNumber) view returns (uint256)",
   "function getTokenInfo(uint256 tokenId) view returns (string name, string description, uint256 totalSupply, string metadataURI)",
   "function isApprovedForAll(address account, address operator) view returns (bool)",
+
+  "function listForSale(uint256 serialNumber, uint256 price)",
+  "function getSerialsByOwner(address owner) view returns (uint256[])",
 ];
 
 // const ETH_ABI = [
