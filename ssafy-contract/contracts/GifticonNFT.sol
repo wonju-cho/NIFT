@@ -45,8 +45,6 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     mapping(uint256 => TokenInfo) private _tokenInfos;      // tokenId → 메타 정보
     mapping(address => uint256[]) private _ownedSerials;    // 특정 사용자가 소유하는 시리얼 넘버들
     mapping(address => bool) private _authorizedTransfers; // 안전한 전송을 위한 허용된 전송자
-    mapping(uint256 => bool) private _isReclaimNotified;    // 알림
-    mapping(uint256 => uint256) private _reclaimNoticeTime; // 알림 전송 시간
 
     IERC20 public ssfToken; // 결제에 사용될 ERC20 토큰
 
@@ -59,7 +57,6 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     event Gifted(address indexed sender, address indexed recipient, uint256 indexed serialNumber);
     event SerialOwnershipTransferred(uint256 indexed serialNumber, address indexed from, address indexed to);
     event GiftPending(address indexed sender, uint256 indexed serialNumber, address indexed recipient);
-    event ReclaimNotice(uint256 indexed serialNumber, address indexed currentOwner, address indexed originalOwner, uint256 reclaimableAt);
 
     // 🏗️ 생성자
     constructor(address _ssfToken) ERC1155("ipfs://bafkreidpioogd7mj4t5sovbw2nkn3tavw3zrq4qmqwvkxptm52scasxfl4") Ownable() {
@@ -265,9 +262,6 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     function reclaimExpiredNFT(uint256 serialNumber) public nonReentrant {
         SerialInfo storage info = _serialInfos[serialNumber];
 
-        require(_isReclaimNotified[serialNumber], "Not yet notified");
-        require(block.timestamp >= _reclaimNoticeTime[serialNumber], "Waiting period not over");
-
         require(!info.redeemed, "Already redeemed");
         require(info.owner != info.originalOwner, "Already original owner");
 
@@ -287,24 +281,8 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         _removeSerialFromOwner(currentOwner, serialNumber);
         _addSerialToOwner(originalOwner, serialNumber);
 
-        // 회수 상태 초기화
-        _isReclaimNotified[serialNumber] = false;
-        _reclaimNoticeTime[serialNumber] = 0;
-
         emit SerialOwnershipTransferred(serialNumber, currentOwner, originalOwner);
     }
-
-    function notifyReclaim(uint256 serialNumber) public {
-        SerialInfo storage info = _serialInfos[serialNumber];
-        require(block.timestamp >= info.expirationDate, "NFT not expired yet");
-        require(!_isReclaimNotified[serialNumber], "Already notified");
-
-        _isReclaimNotified[serialNumber] = true;
-        _reclaimNoticeTime[serialNumber] = block.timestamp + 3 days;
-
-        emit ReclaimNotice(serialNumber, info.owner, info.originalOwner, _reclaimNoticeTime[serialNumber]);
-    }
-
 
     // 🔍 조회 함수들
 
@@ -319,32 +297,32 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     }
 
     // 시리얼 넘버 상세 정보 조회
-function getSerialInfo(uint256 serialNumber) public view returns (
-    uint256 price,
-    address seller,
-    address owner,
-    address originalOwner,
-    uint256 expirationDate,
-    bool redeemed,
-    uint256 redeemedAt,
-    bool isPending,
-    uint256 pendingDate,
-    address pendingRecipient
-) {
-    SerialInfo memory info = _serialInfos[serialNumber];
-    return (
-        info.price,
-        info.seller,
-        info.owner,
-        info.originalOwner,
-        info.expirationDate,
-        info.redeemed,
-        info.redeemedAt,
-        info.isPending,
-        info.pendingDate,
-        info.pendingRecipient
-    );
-}
+    function getSerialInfo(uint256 serialNumber) public view returns (
+        uint256 price,
+        address seller,
+        address owner,
+        address originalOwner,
+        uint256 expirationDate,
+        bool redeemed,
+        uint256 redeemedAt,
+        bool isPending,
+        uint256 pendingDate,
+        address pendingRecipient
+    ) {
+        SerialInfo memory info = _serialInfos[serialNumber];
+        return (
+            info.price,
+            info.seller,
+            info.owner,
+            info.originalOwner,
+            info.expirationDate,
+            info.redeemed,
+            info.redeemedAt,
+            info.isPending,
+            info.pendingDate,
+            info.pendingRecipient
+        );
+    }
 
     // tokenId 기반 메타 정보 조회
     function getTokenInfo(uint256 tokenId) public view returns (
