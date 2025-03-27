@@ -106,7 +106,7 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
               </div>
             )}
 
-            {/* 앞면 요소들을 표시 */}
+            {/* 앞면 요소들을 표시 - 스케일 적용 */}
             {frontElements.map((element) => (
               <div
                 key={element.id}
@@ -176,7 +176,6 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
               </div>
             ))}
           </div>
-
 
           {/* 카드 뒷면 */}
           <div
