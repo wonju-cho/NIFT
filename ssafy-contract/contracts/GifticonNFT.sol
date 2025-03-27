@@ -33,6 +33,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
     // 시리얼 넘버 자동 증가용 변수 (100000번부터 시작)
     uint256 private _nextSerial = 100000;
+    enum TransferMode { Purchase, Gift } // 0: 구매 전송, 1: 선물
 
     // 매핑
     mapping(uint256 => uint256) private _serialToTokenId; // 시리얼 넘버 → tokenId
@@ -155,7 +156,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         require(success, "ERC20 payment failed");
 
         // 판매자로부터 구매자에게 직접 NFT 전송
-        _safeTransferFrom(seller, msg.sender, tokenId, 1, abi.encode(serialNumber, uint256(0)));
+        _safeTransferFrom(seller, msg.sender, tokenId, 1, abi.encode(serialNumber, uint256(TransferMode.Purchase)));
 
         // 상태 업데이트
         info.owner = msg.sender;
@@ -220,7 +221,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         _removeSerialFromOwner(msg.sender, serialNumber);
         _addSerialToOwner(to, serialNumber);
 
-        _safeTransferFrom(msg.sender, to, tokenId, 1, abi.encode(serialNumber, uint256(1)));
+        _safeTransferFrom(msg.sender, to, tokenId, 1, abi.encode(serialNumber, uint256(TransferMode.Gift)));
 
         emit SerialOwnershipTransferred(serialNumber, msg.sender, to);
         emit Gifted(msg.sender, to, serialNumber);
@@ -297,21 +298,19 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     ) internal override {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
 
-        // 민팅/소각이 아닌 경우에만 검사
         if (from != address(0) && to != address(0)) {
             require(ids.length == 1, "Batch transfer not supported for serial-based NFTs");
 
             uint256 tokenId = ids[0];
             require(data.length >= 32, "Not enough data");
 
-            // data: [serialNumber (32 bytes)] + [mode (32 bytes, optional)]
             uint256 serial;
-            uint256 mode = 0; // 기본값: 일반 전송
-            assembly {
-                serial := mload(add(data, 32))
-                if iszero(lt(mload(data), 64)) {
-                    mode := mload(add(data, 64))
-                }
+            TransferMode mode = TransferMode.Purchase;
+
+            if (data.length >= 64) {
+                (serial, mode) = abi.decode(data, (uint256, TransferMode));
+            } else {
+                serial = abi.decode(data, (uint256));
             }
 
             require(_serialToTokenId[serial] == tokenId, "Serial/tokenId mismatch");
@@ -319,9 +318,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
             SerialInfo memory info = _serialInfos[serial];
             require(!info.redeemed, "Cannot transfer: already redeemed");
 
-            // mode가 1이 아닐 때만 판매 여부 검사 (0: 구매 전송, 1: 선물)
-            if (mode == 1) {
-                // 선물 모드 → 판매 중이면 막아야 함
+            if (mode == TransferMode.Gift) {
                 require(info.seller == address(0), "Cannot gift: listed for sale");
             }
         }
