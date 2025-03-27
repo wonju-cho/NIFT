@@ -81,7 +81,7 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
         >
           {/* 카드 앞면 */}
           <div
-            className="absolute inset-0 backface-hidden overflow-visible"
+            className="absolute inset-0 backface-hidden overflow-hidden"
             style={{
               background: frontTemplate.background,
               transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
@@ -90,6 +90,22 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
               backgroundPosition: "center",
             }}
           >
+            {/* 배경이 이미지 데이터인 경우 이미지로 표시 */}
+            {frontTemplate.background && frontTemplate.background.startsWith("data:image/") && (
+              <div className="absolute inset-0 z-0">
+                <img
+                  src={frontTemplate.background || "/placeholder.svg"}
+                  alt="Background"
+                  className="w-full h-full object-cover"
+                  crossOrigin="anonymous"
+                  onError={(e) => {
+                    console.error("배경 이미지 로딩 오류")
+                    ;(e.target as HTMLImageElement).style.display = "none"
+                  }}
+                />
+              </div>
+            )}
+
             {/* 앞면 요소들을 표시 */}
             {frontElements.map((element) => (
               <div
@@ -127,6 +143,11 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
                       alt="User uploaded"
                       className="w-full h-full object-contain"
                       style={{ maxWidth: "100%", maxHeight: "100%" }}
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        console.error("이미지 로딩 오류:", element.id)
+                        ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=100&width=100&text=이미지+오류"
+                      }}
                     />
                   </div>
                 )}
@@ -147,6 +168,7 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
                         src={element.src || "/placeholder.svg"}
                         alt="Sticker"
                         className="w-full h-full object-contain"
+                        crossOrigin="anonymous"
                       />
                     )}
                   </div>
@@ -155,9 +177,10 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
             ))}
           </div>
 
+
           {/* 카드 뒷면 */}
           <div
-            className="absolute inset-0 backface-hidden overflow-visible"
+            className="absolute inset-0 backface-hidden overflow-hidden"
             style={{
               background: backTemplate.background,
               transform: isFlipped ? "rotateY(0deg)" : "rotateY(-180deg)",
@@ -199,12 +222,24 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
 
                   {element.type === "image" && element.src && (
                     <div className="w-full h-full flex items-center justify-center">
-                      <img
-                        src={element.src || "/placeholder.svg"}
-                        alt="User uploaded"
-                        className="w-full h-full object-contain"
-                        style={{ maxWidth: "100%", maxHeight: "100%" }}
-                      />
+                      {element.src.startsWith("data:image/") ? (
+                        <img
+                          src={element.src || "/placeholder.svg"}
+                          alt="User uploaded"
+                          className="w-full h-full object-contain"
+                          style={{ maxWidth: "100%", maxHeight: "100%" }}
+                          crossOrigin="anonymous"
+                          onError={(e) => {
+                            console.error("이미지 로딩 오류:", e)
+                            ;(e.target as HTMLImageElement).src =
+                              "/placeholder.svg?height=100&width=100&text=이미지+오류"
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded">
+                          <p className="text-sm text-gray-500">이미지를 불러올 수 없습니다</p>
+                        </div>
+                      )}
                     </div>
                   )}
 

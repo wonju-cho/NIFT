@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { Repeat, Mail, User } from "lucide-react"
+import { ImageHandler } from "./image-handler"
 
 // 사용 가능한 글꼴 목록 정의
 const fontOptions = [
@@ -95,35 +96,78 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
     }
   }
 
-  // 이미지 추가 핸들러
-  const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+ // 이미지 추가 핸들러
+ const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0]
+  if (!file) return
 
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const newElement: CardElementType = {
-        id: uuidv4(),
-        type: "image",
-        src: event.target?.result as string,
-        x: 50,
-        y: 50,
-        width: 150,
-        height: 150,
-        rotation: 0,
-        zIndex: isFlipped ? backElements.length + 1 : frontElements.length + 1,
-      }
-
-      if (isFlipped) {
-        setBackElements((prev) => [...prev, newElement])
-      } else {
-        setFrontElements((prev) => [...prev, newElement])
-      }
-
-      setSelectedElementId(newElement.id)
-    }
-    reader.readAsDataURL(file)
+  // 파일 크기 제한 (5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert("이미지 크기는 5MB 이하여야 합니다.")
+    return
   }
+
+  const reader = new FileReader()
+  reader.onload = (event) => {
+    if (!event.target?.result) {
+      console.error("이미지를 읽을 수 없습니다.")
+      return
+    }
+
+    try {
+      // 이미지 데이터 압축 또는 최적화 로직을 추가할 수 있습니다
+      const imageData = event.target.result as string
+
+      // 이미지 데이터 유효성 검사
+      if (!imageData.startsWith("data:image/")) {
+        throw new Error("유효하지 않은 이미지 형식입니다.")
+      }
+
+      console.log("이미지 데이터 로드 성공:", imageData.substring(0, 50) + "...")
+
+      // 이미지 미리 로드하여 유효성 확인
+      const img = new Image()
+      img.onload = () => {
+        const newElement: CardElementType = {
+          id: uuidv4(),
+          type: "image",
+          src: imageData,
+          x: 50,
+          y: 50,
+          width: 150,
+          height: 150,
+          rotation: 0,
+          zIndex: isFlipped ? backElements.length + 1 : frontElements.length + 1,
+        }
+
+        if (isFlipped) {
+          setBackElements((prev) => [...prev, newElement])
+        } else {
+          setFrontElements((prev) => [...prev, newElement])
+        }
+
+        setSelectedElementId(newElement.id)
+      }
+
+      img.onerror = () => {
+        console.error("이미지 로드 실패")
+        alert("이미지를 로드할 수 없습니다. 다른 이미지를 선택해주세요.")
+      }
+
+      img.src = imageData
+    } catch (error) {
+      console.error("이미지 처리 중 오류 발생:", error)
+      alert("이미지를 처리하는 중 오류가 발생했습니다.")
+    }
+  }
+
+  reader.onerror = (error) => {
+    console.error("이미지 읽기 오류:", error)
+    alert("이미지를 읽을 수 없습니다.")
+  }
+
+  reader.readAsDataURL(file)
+}
 
   // 배경 이미지 추가 핸들러
   const handleAddBackgroundImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,14 +202,15 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
 
   // 스티커 추가 핸들러
   const handleAddSticker = (sticker: { id: string; src: string }) => {
+    // 카드 중앙에 스티커 배치
     const newElement: CardElementType = {
       id: uuidv4(),
       type: "sticker",
       src: sticker.src,
-      x: 100,
-      y: 100,
-      width: 80,
-      height: 80,
+      x: 160, // 카드 중앙 (400/2 - 40)
+      y: 110, // 카드 중앙 (300/2 - 40)
+      width: 60,
+      height: 60,
       rotation: 0,
       zIndex: isFlipped ? backElements.length + 1 : frontElements.length + 1,
     }
@@ -186,7 +231,7 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
       type: "text",
       content: "텍스트를 입력하세요",
       x: 100,
-      y: 100,
+      y: 125, // 카드 중앙에 가깝게 배치
       width: 200,
       height: 50,
       rotation: 0,
@@ -351,29 +396,207 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
 
   // 선물 카드 저장 및 다음 단계로 이동
   const handleSaveCard = () => {
-    // 카드 데이터 저장
-    const cardData = {
-      frontElements,
-      backElements,
-      frontTemplate: {
-        id: selectedTemplate.id,
-        background: customBackground || selectedTemplate.background,
-      },
-      backTemplate: {
-        id: selectedBackTemplate.id,
-        background: customBackBackground || selectedBackTemplate.background,
-      },
-      isFlipped,
-      message,
-      recipientName,
+    try {
+      // 이미지 데이터 크기 확인 및 경고
+      let totalSize = 0
+      let largeImageFound = false
+
+      // 앞면 요소 확인
+      frontElements.forEach((el) => {
+        if (el.type === "image" && el.src) {
+          const size = (el.src.length * 2) / 1024 / 1024 // 대략적인 MB 크기
+          totalSize += size
+          if (size > 1) largeImageFound = true
+        }
+      })
+
+      // 뒷면 요소 확인
+      backElements.forEach((el) => {
+        if (el.type === "image" && el.src) {
+          const size = (el.src.length * 2) / 1024 / 1024 // 대략적인 MB 크기
+          totalSize += size
+          if (size > 1) largeImageFound = true
+        }
+      })
+
+      // 경고 표시
+      if (largeImageFound) {
+        console.warn("큰 이미지가 포함되어 있습니다. 총 데이터 크기:", totalSize.toFixed(2) + "MB")
+      }
+
+      // 요소 배열이 비어있고 배경이 이미지인 경우 처리
+      let finalFrontElements = [...frontElements]
+      let finalBackElements = [...backElements]
+      let finalFrontBackground = customBackground || selectedTemplate.background
+      let finalBackBackground = customBackBackground || selectedBackTemplate.background
+
+      // 앞면에 요소가 없고 배경이 이미지인 경우, 배경을 요소로 변환
+      if (finalFrontElements.length === 0 && finalFrontBackground && finalFrontBackground.startsWith("data:image/")) {
+        console.log("앞면 요소가 없고 배경이 이미지입니다. 요소로 변환합니다.")
+        finalFrontElements = [
+          {
+            id: uuidv4(),
+            type: "image",
+            src: finalFrontBackground,
+            x: 0,
+            y: 0,
+            width: 400,
+            height: 300,
+            rotation: 0,
+            zIndex: 1,
+          },
+        ]
+        finalFrontBackground = "white" // 배경을 흰색으로 설정
+      }
+
+      // 뒷면에 요소가 없고 배경이 이미지인 경우, 배경을 요소로 변환
+      if (finalBackElements.length === 0 && finalBackBackground && finalBackBackground.startsWith("data:image/")) {
+        console.log("뒷면 요소가 없고 배경이 이미지입니다. 요소로 변환합니다.")
+        finalBackElements = [
+          {
+            id: uuidv4(),
+            type: "image",
+            src: finalBackBackground,
+            x: 0,
+            y: 0,
+            width: 400,
+            height: 300,
+            rotation: 0,
+            zIndex: 1,
+          },
+        ]
+        finalBackBackground = "white" // 배경을 흰색으로 설정
+      }
+
+      // 카드 데이터 저장
+      const cardData = {
+        frontElements: finalFrontElements,
+        backElements: finalBackElements,
+        frontTemplate: {
+          id: selectedTemplate.id,
+          background: finalFrontBackground,
+        },
+        backTemplate: {
+          id: selectedBackTemplate.id,
+          background: finalBackBackground,
+        },
+        isFlipped,
+        message,
+        recipientName,
+      }
+
+      // 디버깅용 로그 추가
+      console.log("저장할 카드 데이터:", JSON.stringify(cardData).substring(0, 200) + "...")
+      console.log("총 데이터 크기:", JSON.stringify(cardData).length / 1024 / 1024, "MB")
+      console.log("프론트 요소 수:", finalFrontElements.length)
+      console.log("백 요소 수:", finalBackElements.length)
+
+      // localStorage에 카드 데이터 저장
+      try {
+        localStorage.setItem(`card-data-${params.id}`, JSON.stringify(cardData))
+        console.log("카드 데이터가 성공적으로 저장되었습니다.")
+      } catch (storageError) {
+        console.error("localStorage 저장 오류:", storageError)
+        alert("카드 데이터가 너무 큽니다. 이미지 크기를 줄이거나 개수를 줄여주세요.")
+        return
+      }
+
+      // 결제 페이지로 이동
+      router.push(`/gift/${params.id}/payment`)
+    } catch (error) {
+      console.error("카드 데이터 저장 중 오류 발생:", error)
+      alert("카드 데이터 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
     }
-
-    // localStorage에 카드 데이터 저장
-    localStorage.setItem(`card-data-${params.id}`, JSON.stringify(cardData))
-
-    // 결제 페이지로 이동 (confirm 페이지 대신 payment 페이지로 변경)
-    router.push(`/gift/${params.id}/payment`)
   }
+
+  // 페이지 로드 시 localStorage에서 카드 데이터 불러오기
+  useEffect(() => {
+    // URL에서 쿼리 파라미터 확인
+    const searchParams = new URLSearchParams(window.location.search)
+    const isEditMode = searchParams.get("edit") === "true"
+
+    // 수정 모드일 때만 저장된 데이터 불러오기
+    if (isEditMode) {
+      try {
+        const savedCardData = localStorage.getItem(`card-data-${params.id}`)
+        if (savedCardData) {
+          const parsedData = JSON.parse(savedCardData)
+          console.log("저장된 카드 데이터 불러오기:", parsedData)
+
+          // 프론트 요소 설정
+          if (parsedData.frontElements && Array.isArray(parsedData.frontElements)) {
+            setFrontElements(parsedData.frontElements)
+          }
+
+          // 백 요소 설정
+          if (parsedData.backElements && Array.isArray(parsedData.backElements)) {
+            setBackElements(parsedData.backElements)
+          }
+
+          // 템플릿 설정
+          if (parsedData.frontTemplate) {
+            const frontTemplateId = parsedData.frontTemplate.id
+            const foundTemplate = cardTemplates.find((t) => t.id === frontTemplateId) || cardTemplates[0]
+            setSelectedTemplate(foundTemplate)
+
+            // 커스텀 배경 설정
+            if (
+              parsedData.frontTemplate.background &&
+              (parsedData.frontTemplate.background.startsWith("data:") ||
+                parsedData.frontTemplate.background.startsWith("#"))
+            ) {
+              setCustomBackground(parsedData.frontTemplate.background)
+            }
+          }
+
+          // 백 템플릿 설정
+          if (parsedData.backTemplate) {
+            const backTemplateId = parsedData.backTemplate.id
+            const foundBackTemplate = cardTemplates.find((t) => t.id === backTemplateId) || cardTemplates[0]
+            setSelectedBackTemplate(foundBackTemplate)
+
+            // 커스텀 배경 설정
+            if (
+              parsedData.backTemplate.background &&
+              (parsedData.backTemplate.background.startsWith("data:") ||
+                parsedData.backTemplate.background.startsWith("#"))
+            ) {
+              setCustomBackBackground(parsedData.backTemplate.background)
+            }
+          }
+
+          // 메시지와 받는 사람 설정
+          if (parsedData.message) {
+            setMessage(parsedData.message)
+          }
+
+          if (parsedData.recipientName) {
+            setRecipientName(parsedData.recipientName)
+          }
+
+          // 카드 뒤집기 상태 설정
+          if (parsedData.isFlipped !== undefined) {
+            setIsFlipped(parsedData.isFlipped)
+          }
+        }
+      } catch (error) {
+        console.error("카드 데이터 불러오기 실패:", error)
+      }
+    } else {
+      // 수정 모드가 아닐 경우 기본값으로 초기화
+      console.log("새로운 카드 만들기 모드")
+      setFrontElements([])
+      setBackElements([])
+      setSelectedTemplate(cardTemplates[0])
+      setSelectedBackTemplate(cardTemplates[0])
+      setCustomBackground(null)
+      setCustomBackBackground(null)
+      setMessage("")
+      setRecipientName("")
+      setIsFlipped(false)
+    }
+  }, [params.id])
+
 
   // 배경 클릭 시 선택 해제를 위한 이벤트 리스너
   useEffect(() => {
@@ -514,7 +737,7 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
                 >
                   {/* 카드 앞면 */}
                   <div
-                    className="absolute inset-0 backface-hidden"
+                    className="absolute inset-0 backface-hidden overflow-hidden"
                     style={{
                       backgroundImage:
                         selectedTemplate.isCustom && customBackground
@@ -585,7 +808,7 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
 
                   {/* 카드 뒷면 */}
                   <div
-                    className="absolute inset-0 backface-hidden"
+                    className="absolute inset-0 backface-hidden overflow-hidden"
                     style={{
                       backgroundImage:
                         selectedBackTemplate.isCustom && customBackBackground
@@ -903,13 +1126,44 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
                               ></div>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
-                              <Button
+                              <ImageHandler
+                                onImageSelected={(imageData) => {
+                                  console.log("이미지 선택됨:", imageData.substring(0, 50) + "...")
+
+                                  // 새 요소 생성
+                                  const newElement: CardElementType = {
+                                    id: uuidv4(),
+                                    type: "image",
+                                    src: imageData,
+                                    x: 50,
+                                    y: 50,
+                                    width: 150,
+                                    height: 150,
+                                    rotation: 0,
+                                    zIndex: isFlipped ? backElements.length + 1 : frontElements.length + 1,
+                                  }
+
+                                  // 요소 배열에 추가
+                                  if (isFlipped) {
+                                    setBackElements((prev) => {
+                                      const newElements = [...prev, newElement]
+                                      console.log("백 요소 추가됨:", newElements.length)
+                                      return newElements
+                                    })
+                                  } else {
+                                    setFrontElements((prev) => {
+                                      const newElements = [...prev, newElement]
+                                      console.log("프론트 요소 추가됨:", newElements.length)
+                                      return newElements
+                                    })
+                                  }
+
+                                  // 선택된 요소 ID 설정
+                                  setSelectedElementId(newElement.id)
+                                }}
+                                buttonText="변경하기"
                                 variant="outline"
-                                size="sm"
-                                onClick={() => backBackgroundInputRef.current?.click()}
-                              >
-                                변경하기
-                              </Button>
+                              />
                               <Button variant="outline" size="sm" onClick={handleRemoveBackgroundImage}>
                                 기본으로 변경
                               </Button>
@@ -958,12 +1212,12 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
                                 ></div>
                               </div>
                               <div className="grid grid-cols-2 gap-2">
-                                <Button variant="outline" size="sm" onClick={() => backgroundInputRef.current?.click()}>
-                                  변경하기
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={handleRemoveBackgroundImage}>
-                                  제거하기
-                                </Button>
+                                <ImageHandler
+                                  onImageSelected={(imageData) => {
+                                    setCustomBackground(imageData)
+                                  }}
+                                  buttonText="배경 이미지 선택"
+                                />
                               </div>
                             </div>
                           ) : (
@@ -997,6 +1251,7 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
                       </div>
                     </div>
                   </TabsContent>
+
 
                   <TabsContent value="stickers" className="h-[500px] overflow-y-auto pr-2">
                     <div className="flex flex-col space-y-4">
@@ -1087,27 +1342,30 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
                     <div className="flex flex-col space-y-4">
                       <h3 className="font-medium">{isFlipped ? "뒷면 도구" : "앞면 도구"}</h3>
                       <div className="grid gap-3">
-                        <Button
-                          variant="outline"
-                          className="justify-start"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 mr-2"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <polyline points="21 15 16 10 5 21" />
-                          </svg>
-                          사진 추가
-                        </Button>
+                      <ImageHandler
+                          onImageSelected={(imageData) => {
+                            const newElement: CardElementType = {
+                              id: uuidv4(),
+                              type: "image",
+                              src: imageData,
+                              x: 50,
+                              y: 50,
+                              width: 150,
+                              height: 150,
+                              rotation: 0,
+                              zIndex: isFlipped ? backElements.length + 1 : frontElements.length + 1,
+                            }
+
+                            if (isFlipped) {
+                              setBackElements((prev) => [...prev, newElement])
+                            } else {
+                              setFrontElements((prev) => [...prev, newElement])
+                            }
+
+                            setSelectedElementId(newElement.id)
+                          }}
+                          buttonText="사진 추가"
+                        />
                         <input
                           type="file"
                           ref={fileInputRef}
