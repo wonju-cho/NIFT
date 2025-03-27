@@ -1,0 +1,38 @@
+import { Card, CardContent } from "@/components/ui/card"
+import Image from "next/image"
+
+interface GiftProductInfoProps {
+  article: any
+}
+
+export function GiftProductInfo({ article }: GiftProductInfoProps) {
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <h2 className="text-xl font-bold mb-4">선물할 상품</h2>
+        <div className="flex gap-4">
+          <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border bg-gray-100">
+            <Image
+              src={article.image || "/placeholder.svg"}
+              alt={article.title}
+              fill
+              className="object-cover"
+            />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-medium">{article.title}</h3>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-lg font-bold">{article.price.toLocaleString()}원</span>
+              {article.originalPrice > article.price && (
+                <span className="text-sm text-gray-500 line-through">
+                  {article.originalPrice.toLocaleString()}원
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-sm text-gray-500">{article.description}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
