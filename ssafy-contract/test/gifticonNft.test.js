@@ -197,21 +197,91 @@ describe("GifticonNFT Full Coverage Test", function () {
     await expect(gifticonNFT.redeem(serial)).to.be.revertedWith("Expired");
   });
 
-  it("만료된 NFT는 reclaim 가능", async () => {
+  it("reclaim: notify 후 일정 시간이 지나야 회수 가능", async () => {
     const [serial] = await mintAndGetSerial();
+
+    // 선물 및 수령으로 원래 owner와 다르게 만들기
     await gifticonNFT.giftToFriend(serial, user.address);
     await gifticonNFT.connect(user).obtainGift(owner.address, serial);
+
+    // 만료 시점까지 시간 증가
     await ethers.provider.send("evm_increaseTime", [91 * 24 * 60 * 60]);
     await ethers.provider.send("evm_mine");
+
+    // notifyReclaim 호출 (회수 알림)
+    await gifticonNFT.notifyReclaim(serial);
+
+    // 대기 시간 3일 미만에서는 회수 실패
+    await ethers.provider.send("evm_increaseTime", [2 * 24 * 60 * 60]); // 2일
+    await ethers.provider.send("evm_mine");
+
+    await expect(gifticonNFT.reclaimExpiredNFT(serial)).to.be.revertedWith(
+      "Waiting period not over"
+    );
+
+    // 대기 시간 이후에는 회수 성공
+    await ethers.provider.send("evm_increaseTime", [2 * 24 * 60 * 60]); // 추가 2일
+    await ethers.provider.send("evm_mine");
+
     await gifticonNFT.reclaimExpiredNFT(serial);
+
     const ownerNow = await gifticonNFT.getOwnerOfSerial(serial);
     expect(ownerNow).to.equal(owner.address);
   });
 
-  it("reclaim 실패 - 이미 원 소유자인 경우", async () => {
+  it("notifyReclaim: 중복 호출 시 실패", async () => {
     const [serial] = await mintAndGetSerial();
+
+    await gifticonNFT.giftToFriend(serial, user.address);
+    await gifticonNFT.connect(user).obtainGift(owner.address, serial);
+
     await ethers.provider.send("evm_increaseTime", [91 * 24 * 60 * 60]);
     await ethers.provider.send("evm_mine");
+
+    await gifticonNFT.notifyReclaim(serial);
+    await expect(gifticonNFT.notifyReclaim(serial)).to.be.revertedWith(
+      "Already notified"
+    );
+  });
+
+  it("notifyReclaim: ReclaimNotice 이벤트 발생 확인", async () => {
+    const [serial] = await mintAndGetSerial();
+
+    await gifticonNFT.giftToFriend(serial, user.address);
+    await gifticonNFT.connect(user).obtainGift(owner.address, serial);
+
+    await ethers.provider.send("evm_increaseTime", [91 * 24 * 60 * 60]);
+    await ethers.provider.send("evm_mine");
+
+    const tx = await gifticonNFT.notifyReclaim(serial);
+    const receipt = await tx.wait();
+
+    const event = receipt.logs
+      .map((log) => {
+        try {
+          return gifticonNFT.interface.parseLog(log);
+        } catch (_) {
+          return null;
+        }
+      })
+      .find((e) => e?.name === "ReclaimNotice");
+
+    expect(event).to.exist;
+    expect(event.args.serialNumber.toString()).to.equal(serial.toString());
+  });
+
+  it("reclaim 실패 - 이미 원 소유자인 경우", async () => {
+    const [serial] = await mintAndGetSerial();
+
+    await ethers.provider.send("evm_increaseTime", [91 * 24 * 60 * 60]);
+    await ethers.provider.send("evm_mine");
+
+    await gifticonNFT.notifyReclaim(serial);
+
+    // ⏱️ notify 후 3일 경과시키기
+    await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60]);
+    await ethers.provider.send("evm_mine");
+
     await expect(gifticonNFT.reclaimExpiredNFT(serial)).to.be.revertedWith(
       "Already original owner"
     );
@@ -220,8 +290,16 @@ describe("GifticonNFT Full Coverage Test", function () {
   it("reclaim 실패 - 사용된 NFT", async () => {
     const [serial] = await mintAndGetSerial();
     await gifticonNFT.redeem(serial);
+
     await ethers.provider.send("evm_increaseTime", [91 * 24 * 60 * 60]);
     await ethers.provider.send("evm_mine");
+
+    await gifticonNFT.notifyReclaim(serial);
+
+    // ⏱️ notify 후 3일 경과시키기
+    await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60]);
+    await ethers.provider.send("evm_mine");
+
     await expect(gifticonNFT.reclaimExpiredNFT(serial)).to.be.revertedWith(
       "Already redeemed"
     );
