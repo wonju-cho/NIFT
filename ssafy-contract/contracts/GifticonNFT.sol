@@ -80,7 +80,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         string calldata name,
         string calldata description,
         string calldata metadataURI
-    ) public onlyOwner {
+    ) public onlyAuthorizedTransfer {
         require(amount > 0, "Amount must be > 0");
 
         // tokenId에 대한 메타 정보 저장
@@ -148,8 +148,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         require(success, "ERC20 payment failed");
 
         // 판매자로부터 구매자에게 직접 NFT 전송
-        safeTransferFrom(seller, address(this), tokenId, 1, "");
-        _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
+        _safeTransferFrom(seller, msg.sender, tokenId, 1, abi.encode(serialNumber, uint256(0)));
 
         // 상태 업데이트
         info.owner = msg.sender;
@@ -180,19 +179,11 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         // 판매자 확인
         require(info.seller == msg.sender, "Not the seller");
         require(!info.redeemed, "Already redeemed");
-
-        uint256 tokenId = _serialToTokenId[serialNumber];
         
-        // 컨트랙트가 토큰을 보유하고 있는지 확인
-        require(balanceOf(address(this), tokenId) >= 1, "Contract doesn't hold the NFT");
-
         // 내부 전송 전 상태 업데이트
         info.owner = msg.sender;
-        info.price = 0;
         info.seller = address(0);
-
-        // 토큰 전송
-        // _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
+        info.price = 0;
 
         emit CancelledSale(serialNumber);
     }
@@ -216,7 +207,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.price = 0;
 
         // 안전한 전송
-        _safeTransferFrom(msg.sender, to, tokenId, 1, "");
+        _safeTransferFrom(msg.sender, to, tokenId, 1, abi.encode(serialNumber, uint256(1)));
 
         emit SerialOwnershipTransferred(serialNumber, msg.sender, to);
         emit Gifted(msg.sender, to, serialNumber);
@@ -298,31 +289,49 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
     // 🛠️ 내부 함수
 
+    // 전송/민팅/소각 전 호출되는 훅 함수
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal override {
+        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+
+        // 민팅/소각이 아닌 경우에만 검사
+        if (from != address(0) && to != address(0)) {
+            require(ids.length == 1, "Batch transfer not supported for serial-based NFTs");
+
+            uint256 tokenId = ids[0];
+            require(data.length >= 32, "Not enough data");
+
+            // data: [serialNumber (32 bytes)] + [mode (32 bytes, optional)]
+            uint256 serial;
+            uint256 mode = 0; // 기본값: 일반 전송
+            assembly {
+                serial := mload(add(data, 32))
+                if iszero(lt(mload(data), 64)) {
+                    mode := mload(add(data, 64))
+                }
+            }
+
+            require(_serialToTokenId[serial] == tokenId, "Serial/tokenId mismatch");
+
+            SerialInfo memory info = _serialInfos[serial];
+            require(!info.redeemed, "Cannot transfer: already redeemed");
+
+            // mode가 1이 아닐 때만 판매 여부 검사 (0: 일반 전송, 1: 선물)
+            if (mode != 1) {
+                require(info.seller == address(0), "Cannot transfer: listed for sale");
+            }
+        }
+    }
+
     // 내부적으로 시리얼 넘버 생성
     function _generateNextSerial() internal returns (uint256) {
         _nextSerial += 1;
         return _nextSerial;
-    }
-
-    // 내부 토큰 전송 함수 (컨트랙트 권한으로 수행)
-    function _internalTransfer(
-        address from, 
-        address to, 
-        uint256 tokenId, 
-        uint256 amount
-    ) internal nonReentrant {
-        // 컨트랙트 내부 전송이거나 승인된 경우 허용
-        require(
-            from == address(this) || 
-            isApprovedForAll(from, address(this)) || 
-            from == msg.sender, 
-            "Transfer not authorized"
-        );
-
-        // 잔액 확인
-        require(balanceOf(from, tokenId) >= amount, "Insufficient balance");
-
-        // 안전한 전송
-        _safeTransferFrom(from, to, tokenId, amount, "");
     }
 }
