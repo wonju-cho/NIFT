@@ -74,6 +74,7 @@ public class LikeServiceImpl implements LikeService{
 
         Page<Like> likes = likeRepository.findByUser(user, pageable);
         return likes.map(like -> new ArticleLikeDTO(
+                like.getArticle().getArticleId(),
                 like.getArticle().getTitle(),
                 like.getArticle().getCountLikes(),
                 like.getArticle().getImageUrl(),
