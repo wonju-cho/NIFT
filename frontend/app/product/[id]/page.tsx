@@ -10,7 +10,6 @@ import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PopularProducts } from "@/components/home/popular-products"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SSF_CONTRACT_ADDRESS } from "@/lib/api/web3"
 import {
@@ -24,6 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
+import { PopularArticles } from "@/components/home/popular-articles"
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   // 실제 구현에서는 params.id를 사용하여 상품 데이터를 가져옵니다
@@ -408,7 +408,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
           <div className="mt-16">
             <h2 className="mb-8 text-2xl font-bold">비슷한 상품</h2>
-            <PopularProducts />
+            <PopularArticles />
           </div>
         </div>
       </main>
