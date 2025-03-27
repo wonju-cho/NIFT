@@ -43,8 +43,10 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     mapping(uint256 => uint256) private _serialToTokenId; // 시리얼 넘버 → tokenId
     mapping(uint256 => SerialInfo) private _serialInfos;    // 시리얼 넘버 → 시리얼 정보
     mapping(uint256 => TokenInfo) private _tokenInfos;      // tokenId → 메타 정보
-    mapping(address => uint256[]) private _ownedSerials;
+    mapping(address => uint256[]) private _ownedSerials;    // 특정 사용자가 소유하는 시리얼 넘버들
     mapping(address => bool) private _authorizedTransfers; // 안전한 전송을 위한 허용된 전송자
+    mapping(uint256 => bool) private _isReclaimNotified;    // 알림
+    mapping(uint256 => uint256) private _reclaimNoticeTime; // 알림 전송 시간
 
     IERC20 public ssfToken; // 결제에 사용될 ERC20 토큰
 
@@ -57,6 +59,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     event Gifted(address indexed sender, address indexed recipient, uint256 indexed serialNumber);
     event SerialOwnershipTransferred(uint256 indexed serialNumber, address indexed from, address indexed to);
     event GiftPending(address indexed sender, uint256 indexed serialNumber, address indexed recipient);
+    event ReclaimNotice(uint256 indexed serialNumber, address indexed currentOwner, address indexed originalOwner, uint256 reclaimableAt);
 
     // 🏗️ 생성자
     constructor(address _ssfToken) ERC1155("ipfs://bafkreidpioogd7mj4t5sovbw2nkn3tavw3zrq4qmqwvkxptm52scasxfl4") Ownable() {
@@ -261,19 +264,19 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
     function reclaimExpiredNFT(uint256 serialNumber) public nonReentrant {
         SerialInfo storage info = _serialInfos[serialNumber];
-        require(block.timestamp >= info.expirationDate, "NFT not expired yet");
+
+        require(_isReclaimNotified[serialNumber], "Not yet notified");
+        require(block.timestamp >= _reclaimNoticeTime[serialNumber], "Waiting period not over");
+
         require(!info.redeemed, "Already redeemed");
         require(info.owner != info.originalOwner, "Already original owner");
 
         address currentOwner = info.owner;
         address originalOwner = info.originalOwner;
-
         uint256 tokenId = _serialToTokenId[serialNumber];
 
-        // 안전하게 원래 소유자에게 전송
         _safeTransferFrom(currentOwner, originalOwner, tokenId, 1, abi.encode(serialNumber, uint256(TransferMode.Gift)));
 
-        // 상태 업데이트
         info.owner = originalOwner;
         info.seller = address(0);
         info.price = 0;
@@ -284,7 +287,22 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         _removeSerialFromOwner(currentOwner, serialNumber);
         _addSerialToOwner(originalOwner, serialNumber);
 
+        // 회수 상태 초기화
+        _isReclaimNotified[serialNumber] = false;
+        _reclaimNoticeTime[serialNumber] = 0;
+
         emit SerialOwnershipTransferred(serialNumber, currentOwner, originalOwner);
+    }
+
+    function notifyReclaim(uint256 serialNumber) public {
+        SerialInfo storage info = _serialInfos[serialNumber];
+        require(block.timestamp >= info.expirationDate, "NFT not expired yet");
+        require(!_isReclaimNotified[serialNumber], "Already notified");
+
+        _isReclaimNotified[serialNumber] = true;
+        _reclaimNoticeTime[serialNumber] = block.timestamp + 3 days;
+
+        emit ReclaimNotice(serialNumber, info.owner, info.originalOwner, _reclaimNoticeTime[serialNumber]);
     }
 
 
