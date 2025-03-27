@@ -260,4 +260,9 @@ contract GifticonNFT is ERC1155, Ownable {
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
     }
+
+    // 각자 지갑에서 NFT의 사진 불러오기
+    function uri(uint256 tokenId) public view override returns (string memory) {
+        return _tokenInfos[tokenId].metadataURI;
+    }
 }
