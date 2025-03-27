@@ -340,9 +340,8 @@ export function useCardEditor(giftId: string) {
   }
 
   // 받는 사람 변경 핸들러 - 뒷면에 받는 사람 자동 추가
-  const handleRecipientChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newRecipient = e.target.value
-    setRecipientName(newRecipient)
+  const handleRecipientChange = (name: string) => {
+    setRecipientName(name)
 
     // 뒷면에 받는 사람 요소가 있는지 확인
     const recipientElement = backElements.find((el) => el.id === "recipient-element")
@@ -350,15 +349,15 @@ export function useCardEditor(giftId: string) {
     if (recipientElement) {
       // 기존 받는 사람 요소 업데이트
       const updatedElements = backElements.map((el) =>
-        el.id === "recipient-element" ? { ...el, content: `To. ${newRecipient}` } : el,
+        el.id === "recipient-element" ? { ...el, content: `To. ${name}` } : el,
       )
       setBackElements(updatedElements)
-    } else if (newRecipient) {
+    } else if (name) {
       // 새 받는 사람 요소 추가
       const newElement: CardElementType = {
         id: "recipient-element",
         type: "text",
-        content: `To. ${newRecipient}`,
+        content: `To. ${name}`,
         x: 50,
         y: 50,
         width: 300,
