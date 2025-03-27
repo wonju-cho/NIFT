@@ -85,38 +85,22 @@ describe("GifticonNFT Full Test", function () {
   it("정상 구매 후 소유자 이전", async () => {
     const [serial] = await mintAndGetSerial();
 
-    // gifticonNFT에 대해 setApprovalForAll 호출하여 권한 부여
-    await gifticonNFT.setApprovalForAll(await gifticonNFT.getAddress(), true);
-    const isApproved = await gifticonNFT.isApprovedForAll(
-      owner.address,
-      await gifticonNFT.getAddress()
-    );
-    console.log("Approval for GifticonNFT:", isApproved);
-    expect(isApproved).to.equal(true);
-
-    // NFT를 판매 등록
     await gifticonNFT.listForSale(serial, price);
 
-    // 구매를 위한 SSF 토큰 승인
     await mockToken
       .connect(user)
       .approve(await gifticonNFT.getAddress(), price);
-    console.log("SSF approval done");
 
-    // approve가 완료될 때까지 기다림 (await 추가)
     const allowance = await mockToken.allowance(
       user.address,
       await gifticonNFT.getAddress()
     );
-    console.log("Allowance after approval:", allowance.toString());
     expect(allowance).to.equal(price);
 
-    // 구매 후 소유자 확인
     await gifticonNFT.connect(user).purchaseBySerial(serial);
     const ownerNow = await gifticonNFT.getOwnerOfSerial(serial);
-    console.log("Owner after purchase:", ownerNow); // 구매 후 소유자 확인
 
-    expect(ownerNow).to.equal(user.address); // 소유자가 user로 변경되어야 함
+    expect(ownerNow).to.equal(user.address);
   });
 
   it("판매 취소 후 소유자 복원", async () => {
@@ -129,9 +113,7 @@ describe("GifticonNFT Full Test", function () {
 
   it("선물 기능 정상 동작", async () => {
     const [serial] = await mintAndGetSerial();
-    await gifticonNFT
-      .connect(owner)
-      .setApprovalForAll(await gifticonNFT.getAddress(), true);
+    await gifticonNFT.setApprovalForAll(await gifticonNFT.getAddress(), true);
     await gifticonNFT.giftNFT(other.address, serial);
     const newOwner = await gifticonNFT.getOwnerOfSerial(serial);
     expect(newOwner).to.equal(other.address);

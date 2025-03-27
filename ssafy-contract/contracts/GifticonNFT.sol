@@ -33,11 +33,13 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
     // 시리얼 넘버 자동 증가용 변수 (100000번부터 시작)
     uint256 private _nextSerial = 100000;
+    enum TransferMode { Purchase, Gift } // 0: 구매 전송, 1: 선물
 
     // 매핑
     mapping(uint256 => uint256) private _serialToTokenId; // 시리얼 넘버 → tokenId
     mapping(uint256 => SerialInfo) private _serialInfos;    // 시리얼 넘버 → 시리얼 정보
     mapping(uint256 => TokenInfo) private _tokenInfos;      // tokenId → 메타 정보
+    mapping(address => uint256[]) private _ownedSerials;
     mapping(address => bool) private _authorizedTransfers; // 안전한 전송을 위한 허용된 전송자
 
     IERC20 public ssfToken; // 결제에 사용될 ERC20 토큰
@@ -54,6 +56,8 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     // 🏗️ 생성자
     constructor(address _ssfToken) ERC1155("ipfs://bafkreidpioogd7mj4t5sovbw2nkn3tavw3zrq4qmqwvkxptm52scasxfl4") Ownable() {
         ssfToken = IERC20(_ssfToken);
+        _authorizedTransfers[msg.sender] = true;       // 배포자
+        _authorizedTransfers[address(this)] = true;    // 컨트랙트 자기 자신
     }
 
     // 🛡️ 수정자
@@ -80,7 +84,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         string calldata name,
         string calldata description,
         string calldata metadataURI
-    ) public onlyOwner {
+    ) public onlyAuthorizedTransfer {
         require(amount > 0, "Amount must be > 0");
 
         // tokenId에 대한 메타 정보 저장
@@ -108,6 +112,8 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
                 redeemedAt: 0
             });
 
+            _addSerialToOwner(to, serial);
+
             emit Minted(to, tokenId, serial);
         }
     }
@@ -116,13 +122,15 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     function listForSale(uint256 serialNumber, uint256 price) public {
         SerialInfo storage info = _serialInfos[serialNumber];
         require(info.owner == msg.sender, "Not the owner");
+        require(info.seller == address(0), "Already listed for sale");
         require(!info.redeemed, "Already redeemed");
         require(price > 0, "Price must be > 0");
 
         // 컨트랙트에 대한 전체 토큰 전송 승인
-        _setApprovalForAll(msg.sender, address(this), true);
+        if (!isApprovedForAll(msg.sender, address(this))) {
+            _setApprovalForAll(msg.sender, address(this), true);
+        }
 
-        // NFT 전송 생략: 판매자가 계속 보유
         info.price = price;
         info.seller = msg.sender;
         
@@ -148,13 +156,15 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         require(success, "ERC20 payment failed");
 
         // 판매자로부터 구매자에게 직접 NFT 전송
-        safeTransferFrom(seller, address(this), tokenId, 1, "");
-        _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
+        _safeTransferFrom(seller, msg.sender, tokenId, 1, abi.encode(serialNumber, uint256(TransferMode.Purchase)));
 
         // 상태 업데이트
         info.owner = msg.sender;
         info.seller = address(0);
         info.price = 0;
+
+        _removeSerialFromOwner(seller, serialNumber);
+        _addSerialToOwner(msg.sender, serialNumber);
 
         emit NFTPurchased(msg.sender, serialNumber, purchasePrice);
         emit SerialOwnershipTransferred(serialNumber, seller, msg.sender);
@@ -180,19 +190,11 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         // 판매자 확인
         require(info.seller == msg.sender, "Not the seller");
         require(!info.redeemed, "Already redeemed");
-
-        uint256 tokenId = _serialToTokenId[serialNumber];
         
-        // 컨트랙트가 토큰을 보유하고 있는지 확인
-        require(balanceOf(address(this), tokenId) >= 1, "Contract doesn't hold the NFT");
-
         // 내부 전송 전 상태 업데이트
         info.owner = msg.sender;
-        info.price = 0;
         info.seller = address(0);
-
-        // 토큰 전송
-        // _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
+        info.price = 0;
 
         emit CancelledSale(serialNumber);
     }
@@ -216,7 +218,10 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.price = 0;
 
         // 안전한 전송
-        _safeTransferFrom(msg.sender, to, tokenId, 1, "");
+        _removeSerialFromOwner(msg.sender, serialNumber);
+        _addSerialToOwner(to, serialNumber);
+
+        _safeTransferFrom(msg.sender, to, tokenId, 1, abi.encode(serialNumber, uint256(TransferMode.Gift)));
 
         emit SerialOwnershipTransferred(serialNumber, msg.sender, to);
         emit Gifted(msg.sender, to, serialNumber);
@@ -277,52 +282,70 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
     // 특정 주소가 소유한 시리얼 넘버 목록 조회
     function getSerialsByOwner(address owner) public view returns (uint256[] memory) {
-        uint256 totalSerials = _nextSerial - 100000;
-        uint256[] memory temp = new uint256[](totalSerials);
-        uint256 count = 0;
-
-        for (uint256 serial = 100001; serial <= _nextSerial; serial++) {
-            if (_serialInfos[serial].owner == owner) {
-                temp[count] = serial;
-                count++;
-            }
-        }
-
-        uint256[] memory result = new uint256[](count);
-        for (uint256 i = 0; i < count; i++) {
-            result[i] = temp[i];
-        }
-
-        return result;
+        return _ownedSerials[owner];
     }
 
     // 🛠️ 내부 함수
+
+    // 전송/민팅/소각 전 호출되는 훅 함수
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal override {
+        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+
+        if (from != address(0) && to != address(0)) {
+            require(ids.length == 1, "Batch transfer not supported for serial-based NFTs");
+
+            uint256 tokenId = ids[0];
+            require(data.length >= 32, "Not enough data");
+
+            uint256 serial;
+            TransferMode mode = TransferMode.Purchase;
+
+            if (data.length >= 64) {
+                (serial, mode) = abi.decode(data, (uint256, TransferMode));
+            } else {
+                serial = abi.decode(data, (uint256));
+            }
+
+            require(_serialToTokenId[serial] == tokenId, "Serial/tokenId mismatch");
+
+            SerialInfo memory info = _serialInfos[serial];
+            require(!info.redeemed, "Cannot transfer: already redeemed");
+
+            if (mode == TransferMode.Gift) {
+                require(info.seller == address(0), "Cannot gift: listed for sale");
+            }
+        }
+    }
+
+    // 소유자의 시리얼 넘버 기반 토큰 정보 추가 
+    function _addSerialToOwner(address to, uint256 serial) internal {
+        _ownedSerials[to].push(serial);
+    }
+
+    // 소유자의 시리얼 넘버 기반 토큰 정보 삭제
+    function _removeSerialFromOwner(address from, uint256 serial) internal {
+        // 삭제 최적화 위해 'swap & pop' 방식 사용 가능
+        uint256[] storage list = _ownedSerials[from];
+        for (uint256 i = 0; i < list.length; i++) {
+            if (list[i] == serial) {
+                list[i] = list[list.length - 1];
+                list.pop();
+                break;
+            }
+        }
+    }
+
 
     // 내부적으로 시리얼 넘버 생성
     function _generateNextSerial() internal returns (uint256) {
         _nextSerial += 1;
         return _nextSerial;
-    }
-
-    // 내부 토큰 전송 함수 (컨트랙트 권한으로 수행)
-    function _internalTransfer(
-        address from, 
-        address to, 
-        uint256 tokenId, 
-        uint256 amount
-    ) internal nonReentrant {
-        // 컨트랙트 내부 전송이거나 승인된 경우 허용
-        require(
-            from == address(this) || 
-            isApprovedForAll(from, address(this)) || 
-            from == msg.sender, 
-            "Transfer not authorized"
-        );
-
-        // 잔액 확인
-        require(balanceOf(from, tokenId) >= amount, "Insufficient balance");
-
-        // 안전한 전송
-        _safeTransferFrom(from, to, tokenId, amount, "");
     }
 }
