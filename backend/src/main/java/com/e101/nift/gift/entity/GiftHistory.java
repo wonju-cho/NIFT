@@ -35,4 +35,7 @@ public class GiftHistory {
     @ManyToOne
     @JoinColumn(name = "gifticon_id", nullable = false)
     private Gifticon gifticon;
+
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isReceived = false;
 }
