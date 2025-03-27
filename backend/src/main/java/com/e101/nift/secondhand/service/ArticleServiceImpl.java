@@ -120,6 +120,7 @@ public class ArticleServiceImpl implements ArticleService {
 
         return new ArticleDetailDto(
                 article.getArticleId(),
+                article.getSerialNum(),
                 article.getTitle(),
                 article.getDescription(),
                 article.getUserId(),

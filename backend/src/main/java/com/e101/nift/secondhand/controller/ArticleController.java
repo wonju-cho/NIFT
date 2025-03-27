@@ -1,5 +1,6 @@
 package com.e101.nift.secondhand.controller;
 
+import com.e101.nift.common.security.CustomUserDetails;
 import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,17 +59,10 @@ public class ArticleController {
     @GetMapping("/{articleId}")
     @Operation(summary = "판매 게시글 상세조회", description = "판매중인 상품의 상세 정보를 조회합니다.")
     public ResponseEntity<ArticleDetailDto> getArticleById(
-            @PathVariable Long articleId,
-            HttpServletRequest request){
-        Long userId = null;
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("articleId") Long articleId){
 
-        try {
-            User user = jwtTokenProvider.getUserFromRequest(request);
-            userId = user.getUserId();
-        } catch (UsernameNotFoundException e){
-            log.warn("유효하지 않은 토큰입니다: {}", e.getMessage());
-        }
-
+        Long userId = (userDetails != null) ? userDetails.getUserId() : null;
         ArticleDetailDto dto = articleService.getArticleDetail(articleId, userId);
         return ResponseEntity.ok(dto);
     }

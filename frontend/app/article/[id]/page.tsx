@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ethers } from "ethers";
 import {
   ArrowLeft,
   Share2,
@@ -18,7 +17,7 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PopularArticles } from "@/components/home/popular-articles";
-import { SSF_CONTRACT_ADDRESS } from "@/lib/api/web3";
+import { buyNFT, fetchTokenInfoBySerial } from "@/lib/api/web3";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +33,7 @@ import { useLoading } from "@/components/LoadingContext";
 
 type ArticleDetail = {
   articleId: number;
+  serialNum: number;
   title: string;
   description: string;
   userId: number;
@@ -63,8 +63,6 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [countLikes, setLikeCount] = useState<number>(0);
   const { isLoading, setIsLoading } = useLoading();
-
-  const contractABI = ["function buyToken(uint256 amount) external payable"];
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -132,7 +130,17 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     }
   };
 
-  const buyNFT = async () => {
+  const incrementAmount = () => {
+    setAmount((prev) => prev + 1);
+  };
+
+  const decrementAmount = () => {
+    if (amount > 1) {
+      setAmount((prev) => prev - 1);
+    }
+  };
+
+  const handleBuyNFT = async (serialNumber: number) => {
     if (!window.ethereum) {
       setErrorMessage("MetaMask가 필요합니다.");
       setPurchaseStatus("error");
@@ -143,57 +151,29 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     setLoading(true);
 
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
       await window.ethereum.request({ method: "eth_requestAccounts" });
 
-      const signer = await provider.getSigner();
-      console.log("Connected Address:", await signer.getAddress());
+      const success = await buyNFT(serialNumber);
 
-      // 스마트 컨트랙트 인스턴스 생성
-      const contract = new ethers.Contract(
-        SSF_CONTRACT_ADDRESS,
-        contractABI,
-        signer
-      );
-
-      const pricePerToken = ethers.parseEther("0.000001");
-      const totalPrice = pricePerToken * BigInt(amount);
-      console.log("Sending ETH:", totalPrice.toString());
-
-      // estimateGas를 사용하여 가스비를 계산
-      let gasLimit;
-      try {
-        gasLimit = await contract.buyToken.estimateGas(amount, {
-          value: totalPrice,
-        });
-        console.log("Estimated Gas:", gasLimit.toString());
-      } catch (error) {
-        console.error("estimateGas 실패:", error);
-        setErrorMessage("가스비 계산 중 오류가 발생했습니다.");
-        setPurchaseStatus("error");
-        setLoading(false);
-        return;
-      }
-
-      // `gasLimit`이 예상보다 낮게 설정되는 경우 대비하여 여유롭게 증가
-      const gasBuffer = BigInt(50000);
-      const finalGasLimit = gasLimit + gasBuffer;
-
-      // 트랜잭션 실행
-      try {
-        const tx = await contract.buyToken(amount, {
-          value: totalPrice,
-          gasLimit: finalGasLimit,
-        });
-        await tx.wait();
+      if (success) {
         setPurchaseStatus("success");
-      } catch (error) {
-        console.error("구매 실패:", error);
-        setErrorMessage("구매 중 오류가 발생했습니다.");
+        const tokenInfo = await fetchTokenInfoBySerial(serialNumber);
+        if (tokenInfo) {
+          console.log("🧾 [Token Info]");
+          console.log("🎯 Token ID:", tokenInfo.tokenId.toString());
+          console.log("📛 이름:", tokenInfo.name);
+          console.log("📝 설명:", tokenInfo.description);
+          console.log("📦 총 발행량:", tokenInfo.totalSupply.toString());
+          console.log("🔗 메타데이터 URI:", tokenInfo.metadataURI);
+        } else {
+          console.warn("⚠️ 토큰 정보를 불러오지 못했습니다.");
+        }
+      } else {
+        setErrorMessage("구매에 실패했습니다.");
         setPurchaseStatus("error");
       }
     } catch (error) {
-      console.error("Ethereum 연결 오류:", error);
+      console.error("❌ Ethereum 연결 오류:", error);
       setErrorMessage("Ethereum 네트워크 연결 중 문제가 발생했습니다.");
       setPurchaseStatus("error");
     } finally {
@@ -369,7 +349,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                             취소
                           </Button>
                           <Button
-                            onClick={buyNFT}
+                            onClick={() => handleBuyNFT(article.serialNum)}
                             disabled={loading || purchaseStatus === "success"}
                           >
                             {loading ? (
