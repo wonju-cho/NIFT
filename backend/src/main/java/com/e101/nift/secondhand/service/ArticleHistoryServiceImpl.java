@@ -1,0 +1,91 @@
+package com.e101.nift.secondhand.service;
+
+import com.e101.nift.secondhand.entity.Article;
+import com.e101.nift.secondhand.entity.ArticleHistory;
+import com.e101.nift.secondhand.model.dto.response.PurchaseHistoryDto;
+import com.e101.nift.secondhand.model.dto.response.SaleHistoryDto;
+import com.e101.nift.secondhand.model.dto.response.ScrollDto;
+import com.e101.nift.secondhand.repository.ArticleHistoryRepository;
+import com.e101.nift.secondhand.repository.ArticleRepository;
+import com.e101.nift.user.entity.User;
+import com.e101.nift.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ArticleHistoryServiceImpl implements ArticleHistoryService {
+
+
+    private final ArticleHistoryRepository articleHistoryRepository;
+    private final ArticleRepository articleRepository;
+    private final UserRepository userRepository;
+
+    private static final short PURCHASE_TYPE = 1; // 구매 내역을 의미하는 타입
+
+
+    @Override
+    public ScrollDto<PurchaseHistoryDto> getPurchaseHistories(Long userId, Pageable pageable) {
+        Page<ArticleHistory> page = articleHistoryRepository
+                .findByUserIdAndHistoryType(userId, PURCHASE_TYPE, pageable);
+
+        List<PurchaseHistoryDto> responses = page.getContent().stream().map(history -> {
+            Article article = articleRepository.findById(history.getArticleId())
+                    .orElseThrow(() -> new RuntimeException("판매 목록을 조회할 수 없습니다."));
+
+            User seller = userRepository.findByUserId(article.getUserId())
+                    .orElseThrow(() -> new RuntimeException("조회되는 판매자가 없습니다."));
+
+            return new PurchaseHistoryDto(
+                    history.getArticleHistoryId(),
+                    article.getTitle(),
+                    article.getImageUrl(),
+                    article.getCurrentPrice(),
+                    seller.getNickName(),
+                    history.getCreatedAt()
+            );
+        }).collect(Collectors.toList());
+
+        return new ScrollDto<>(responses, page.hasNext());
+    }
+
+    @Override
+    public ScrollDto<SaleHistoryDto> getSalesHistories(Long sellerId, Pageable pageable) {
+        Page<Article> articlesPage = articleRepository.findByUserId(sellerId, pageable);
+
+        List<SaleHistoryDto> content = articlesPage.stream().map(article -> {
+            Optional<ArticleHistory> historyOpt = articleHistoryRepository.findByArticleId(article.getArticleId());
+
+            if (historyOpt.isPresent()) {
+                User buyer = userRepository.findById(historyOpt.get().getUserId())
+                        .orElseThrow(() -> new RuntimeException("구매자 정보를 찾을 수 없습니다."));
+                return new SaleHistoryDto(
+                        article.getArticleId(),
+                        article.getTitle(),
+                        article.getImageUrl(),
+                        article.getCurrentPrice(),
+                        buyer.getNickName(),
+                        historyOpt.get().getCreatedAt()
+                );
+            } else {
+                return new SaleHistoryDto(
+                        article.getArticleId(),
+                        article.getTitle(),
+                        article.getImageUrl(),
+                        article.getCurrentPrice(),
+                        null,
+                        null
+                );
+            }
+        }).toList();
+
+        return new ScrollDto<>(content, articlesPage.hasNext());
+    }
+}

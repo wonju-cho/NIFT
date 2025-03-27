@@ -47,4 +47,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
             "JOIN FETCH g.category c " +
             "WHERE a.articleId = :articleId")
     Optional<Article> findByIdWithGifticonBrandCategory(@Param("articleId") Long articleId);
+
+    // 중고 기프티콘 판매자의 ID와 페이지로 조회
+    Page<Article> findByUserId(Long userId, Pageable pageable);
 }
