@@ -106,7 +106,8 @@ public class ArticleServiceImpl implements ArticleService {
     // 중고 기프티콘의 상세 정보 조회
     @Override
     public ArticleDetailDto getArticleDetail(Long articleId, Long userId) {
-        Article article = articleRepository.findByIdWithGifticonBrandCategory(articleId)
+
+        Article article = articleRepository.findByArticleId(articleId)
                 .orElseThrow(() -> new RuntimeException("상품이 조회되지 않습니다."));
 
         Gifticon gifticon = article.getGifticon();

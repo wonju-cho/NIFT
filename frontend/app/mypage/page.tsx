@@ -59,6 +59,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { GiftCard } from "@/components/gift/gift-card";
+import { PurchaseHistory } from "@/components/mypage/purchase-history";
+import { SaleHistory } from "@/components/mypage/sale-history";
+import { SendGiftHistory } from "@/components/mypage/sendgift-history";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const getAccessToken = () => {
@@ -635,169 +638,36 @@ export default function MyPage() {
                               구매, 판매, 선물 내역을 확인 할 수 있습니다.
                             </p>
                           </div>
-                          <Accordion
-                            type="single"
-                            collapsible
-                            className="w-full"
-                          >
+                          <Accordion type="multiple" className="w-full">
                             <AccordionItem value="purchases">
                               <AccordionTrigger className="text-lg font-medium">
-                                구매내역 ({transactionHistory.purchases.length})
+                                구매내역
                               </AccordionTrigger>
                               <AccordionContent>
-                                {transactionHistory.purchases.length > 0 ? (
-                                  <div className="space-y-4">
-                                    {transactionHistory.purchases.map(
-                                      (item) => (
-                                        <div
-                                          key={item.id}
-                                          className="flex items-center gap-4 rounded-lg border bg-white p-4"
-                                        >
-                                          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                                            <Image
-                                              src={
-                                                item.imageUrl ||
-                                                "/placeholder.svg"
-                                              }
-                                              alt={item.title}
-                                              fill
-                                              className="object-cover"
-                                            />
-                                          </div>
-                                          <div className="flex-1">
-                                            <h3 className="font-medium">
-                                              {item.title}
-                                            </h3>
-                                            <div className="mt-1 text-sm text-gray-500">
-                                              <div>판매자: {item.seller}</div>
-                                              <div>구매일: {item.date}</div>
-                                            </div>
-                                          </div>
-                                          <div className="text-right">
-                                            <div className="font-bold">
-                                              {item.price.toLocaleString()}원
-                                            </div>
-                                            <div className="mt-1 text-sm text-primary">
-                                              {item.status}
-                                            </div>
-                                          </div>
-                                        </div>
-                                      )
-                                    )}
-                                  </div>
-                                ) : (
-                                  <div className="py-4 text-center text-gray-500">
-                                    구매 내역이 없습니다.
-                                  </div>
-                                )}
+                                <PurchaseHistory />
                               </AccordionContent>
                             </AccordionItem>
 
                             <AccordionItem value="sales">
                               <AccordionTrigger className="text-lg font-medium">
-                                판매내역 ({transactionHistory.sales.length})
+                                판매내역
                               </AccordionTrigger>
                               <AccordionContent>
-                                {transactionHistory.sales.length > 0 ? (
-                                  <div className="space-y-4">
-                                    {transactionHistory.sales.map((item) => (
-                                      <div
-                                        key={item.id}
-                                        className="flex items-center gap-4 rounded-lg border bg-white p-4"
-                                      >
-                                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                                          <Image
-                                            src={
-                                              item.imageUrl ||
-                                              "/placeholder.svg"
-                                            }
-                                            alt={item.title}
-                                            fill
-                                            className="object-cover"
-                                          />
-                                        </div>
-                                        <div className="flex-1">
-                                          <h3 className="font-medium">
-                                            {item.title}
-                                          </h3>
-                                          <div className="mt-1 text-sm text-gray-500">
-                                            <div>구매자: {item.buyer}</div>
-                                            <div>판매일: {item.date}</div>
-                                          </div>
-                                        </div>
-                                        <div className="text-right">
-                                          <div className="font-bold">
-                                            {item.price.toLocaleString()}원
-                                          </div>
-                                          <div className="mt-1 text-sm text-primary">
-                                            {item.status}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="py-4 text-center text-gray-500">
-                                    판매 내역이 없습니다.
-                                  </div>
-                                )}
+                                <SaleHistory />
                               </AccordionContent>
                             </AccordionItem>
 
                             <AccordionItem value="gifts">
                               <AccordionTrigger className="text-lg font-medium">
-                                보낸 선물 ({transactionHistory.gifts.length})
+                                보낸 선물
                               </AccordionTrigger>
                               <AccordionContent>
-                                {transactionHistory.gifts.length > 0 ? (
-                                  <div className="space-y-4">
-                                    {transactionHistory.gifts.map((item) => (
-                                      <div
-                                        key={item.id}
-                                        className="flex items-center gap-4 rounded-lg border bg-white p-4"
-                                      >
-                                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                                          <Image
-                                            src={
-                                              item.imageUrl ||
-                                              "/placeholder.svg"
-                                            }
-                                            alt={item.title}
-                                            fill
-                                            className="object-cover"
-                                          />
-                                        </div>
-                                        <div className="flex-1">
-                                          <h3 className="font-medium">
-                                            {item.title}
-                                          </h3>
-                                          <div className="mt-1 text-sm text-gray-500">
-                                            <div>
-                                              받는 사람: {item.recipient}
-                                            </div>
-                                            <div>선물일: {item.date}</div>
-                                          </div>
-                                        </div>
-                                        <div className="text-right">
-                                          <div className="font-bold">
-                                            {item.price.toLocaleString()}원
-                                          </div>
-                                          <div className="mt-1 text-sm text-primary">
-                                            {item.status}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="py-4 text-center text-gray-500">
-                                    보낸 선물이 없습니다.
-                                  </div>
-                                )}
+                                <SendGiftHistory />
                               </AccordionContent>
                             </AccordionItem>
                           </Accordion>
                         </TabsContent>
+
                         {/* 선물받은 카드 보관함 탭 */}
                         <TabsContent value="memories" className="mt-6">
                           <div>
