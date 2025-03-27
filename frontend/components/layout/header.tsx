@@ -12,14 +12,12 @@ import { cn } from "@/lib/utils"
 
 const navigation = [
   { name: "홈", href: "/" },
-  { name: "중고거래", href: "/trade" },
   { name: "마이페이지", href: "/mypage" },
   { name: "상품등록", href: "/register" },
 ]
 
 const categories = [
   { name: "전체상품보기", href: "/articles" },
-  { name: "내 주변", href: "/articles/nearby", highlight: true },
   { name: "커피/음료", href: "/articles/coffee" },
   { name: "상품권", href: "/articles/vouchers" },
   { name: "배달/배송", href: "/articles/delivery" },
