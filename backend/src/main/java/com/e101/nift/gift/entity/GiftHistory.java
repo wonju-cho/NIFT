@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "gift_histories")
 @Getter
@@ -19,7 +21,7 @@ public class GiftHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long giftHistoryId;
 
-    private String createdAt;
+    private LocalDateTime createdAt;
     private String mongoId;
 
     @ManyToOne
