@@ -68,8 +68,10 @@ export function GifticonCarousel({
                 className="object-cover rounded-md"
               />
               {gifticon.isSelling && (
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                  판매 등록 중
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold uppercase tracking-wide shadow-lg z-10">
+                    판매 등록 중
+                  </div>
                 </div>
               )}
               {selected === gifticon.serialNum && (
