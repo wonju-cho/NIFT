@@ -37,6 +37,7 @@ export function CardElement({
     },
     isCardFlipped: isCardFlipped,
     scale: scale,
+    containerRef: containerRef, // 컨테이너 참조 전달
   })
 
   const { size, handleResizeStart } = useResizable({
@@ -45,6 +46,8 @@ export function CardElement({
       onUpdate({ ...element, width: size.width, height: size.height })
     },
     scale: scale,
+    containerRef: containerRef, // 컨테이너 참조 전달
+    elementRef: containerRef, // 요소 참조 전달
   })
 
   // 회전 관련 상태 및 함수
@@ -137,6 +140,11 @@ export function CardElement({
           alt="User uploaded"
           className="w-full h-full object-contain"
           draggable={false}
+          crossOrigin="anonymous"
+          onError={(e) => {
+            console.error("이미지 로딩 오류:", element.id)
+            ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=100&width=100&text=이미지+오류"
+          }}
         />
       )}
 
@@ -157,6 +165,7 @@ export function CardElement({
               alt="Sticker"
               className="w-full h-full object-contain"
               draggable={false}
+              crossOrigin="anonymous" // CORS 이슈 방지를 위해 추가
             />
           )}
         </div>
