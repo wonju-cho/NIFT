@@ -33,7 +33,7 @@ import {
   ShoppingBag,
   User,
   Gift,
-  Clock
+  Clock,
 } from "lucide-react";
 import {
   Dialog,
@@ -52,10 +52,15 @@ import {
   fetchLikedArticles,
 } from "@/lib/api/mypage";
 import { useRouter } from "next/navigation";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { GiftCard } from "@/components/gift/gift-card"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { GiftCard } from "@/components/gift/gift-card";
 import { PurchaseHistory } from "@/components/mypage/purchase-history";
-import { SaleHistory } from "@/components/mypage/sale-history"
+import { SaleHistory } from "@/components/mypage/sale-history";
 import { SendGiftHistory } from "@/components/mypage/sendgift-history";
 import { WishList } from "@/components/mypage/wish-list";
 
@@ -93,7 +98,7 @@ export default function MyPage() {
   const [currentPage, setCurrentPage] = useState(0);
 
   // 임시 작성 코드
-  const [giftCardTab, setGiftCardTab] = useState("available")
+  const [giftCardTab, setGiftCardTab] = useState("available");
 
   const PAGE_GROUP_SIZE = 5; // 한 번에 표시할 페이지 수
   // 지금 페이지 그룹 계산
@@ -205,7 +210,7 @@ export default function MyPage() {
       const response = await fetch(`${BASE_URL}/users/me`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${accessToken}`, // JWT로 서버에서 사용자 인증
+          Authorization: `Bearer ${accessToken}`, // JWT로 서버에서 사용자 인증
           "Kakao-Authorization": `Bearer ${kakaoAccessToken}`, // kakao_access_token을 Authorization 헤더에 포함
           "Content-Type": "application/json",
         },
@@ -440,8 +445,7 @@ export default function MyPage() {
         imageUrl: "/placeholder.svg?height=100&width=100&text=BBQ",
       },
     ],
-  }
-
+  };
 
   const sidebarItems = [
     { icon: Gift, label: "보유 NIFT", value: "gifticons" },
@@ -579,19 +583,26 @@ export default function MyPage() {
                             </TabsTrigger>
                           ))}
                         </TabsList>
-                        
+
                         {/* 선물함 탭 */}
-                        <TabsContent value="gifticons" className="mt-6 space-y-6">
+                        <TabsContent
+                          value="gifticons"
+                          className="mt-6 space-y-6"
+                        >
                           <div>
                             <h2 className="mb-4 text-xl font-semibold">
                               NIFT함
                             </h2>
                             <p className="mb-6 text-sm text-muted-foreground">
-                              사용가능한 선물이 {availableGiftCards.length} 개 남아있어요.
+                              사용가능한 선물이 {availableGiftCards.length} 개
+                              남아있어요.
                             </p>
                           </div>
 
-                          <Tabs defaultValue="available" onValueChange={setGiftCardTab}>
+                          <Tabs
+                            defaultValue="available"
+                            onValueChange={setGiftCardTab}
+                          >
                             <TabsList className="w-full">
                               <TabsTrigger value="available" className="flex-1">
                                 사용가능 {availableGiftCards.length}
@@ -668,14 +679,16 @@ export default function MyPage() {
                               소중한 사람들과 주고받은 선물 추억을 확인해보세요.
                             </p>
                           </div>
-                          <div className="text-center py-12 text-gray-500">아직 선물 추억이 없습니다.</div>
+                          <div className="text-center py-12 text-gray-500">
+                            아직 선물 추억이 없습니다.
+                          </div>
                           {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                           {myArticles.slice(1, 4).map((article) => (
                             <ArticleCard key={article.id} {...article} />
                           ))}
                         </div> */}
                         </TabsContent>
-                        
+
                         {/* 찜한 상품 탭 */}
                         <WishList 
                           likedArticles={likedArticles}
@@ -699,20 +712,25 @@ export default function MyPage() {
                             <Card>
                               <CardHeader>
                                 <CardTitle>계정 정보</CardTitle>
-                                <CardDescription>개인 정보를 확인하고 수정할 수 있습니다.</CardDescription>
+                                <CardDescription>
+                                  개인 정보를 확인하고 수정할 수 있습니다.
+                                </CardDescription>
                               </CardHeader>
                               <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                   <Label htmlFor="name">닉네임</Label>
                                   <div className="flex gap-2">
-                                    <Input 
-                                        id="name" 
-                                        value={nickname} 
-                                        onChange={(e) => setNickname(e.target.value)} 
-                                      />
-                                    <Button 
-                                        className="whitespace-nowrap"
-                                        onClick={updateNickname}>
+                                    <Input
+                                      id="name"
+                                      value={nickname}
+                                      onChange={(e) =>
+                                        setNickname(e.target.value)
+                                      }
+                                    />
+                                    <Button
+                                      className="whitespace-nowrap"
+                                      onClick={updateNickname}
+                                    >
                                       수정
                                     </Button>
                                   </div>
@@ -725,22 +743,24 @@ export default function MyPage() {
                                       id="wallet"
                                       value={
                                         walletAddress
-                                            ? walletAddress
-                                            : "연결되지 않음"
-                                        }
+                                          ? walletAddress
+                                          : "연결되지 않음"
+                                      }
                                       readOnly
                                       className="bg-muted"
                                     />
                                     <Button
-                                        variant="outline"
-                                        className="whitespace-nowrap" 
-                                        onClick={connectOrUpdateWallet}>
+                                      variant="outline"
+                                      className="whitespace-nowrap"
+                                      onClick={connectOrUpdateWallet}
+                                    >
                                       {walletAddress ? "변경하기" : "연결하기"}
                                     </Button>
                                     <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={copyToClipboard}>
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={copyToClipboard}
+                                    >
                                       <Copy className="h-4 w-4" />
                                     </Button>
                                     <Button

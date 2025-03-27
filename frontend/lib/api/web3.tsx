@@ -25,6 +25,10 @@ const NFT_ABI = [
   "function getTokenIdBySerial(uint256 serialNumber) view returns (uint256)",
   "function getTokenInfo(uint256 tokenId) view returns (string name, string description, uint256 totalSupply, string metadataURI)",
   "function isApprovedForAll(address account, address operator) view returns (bool)",
+
+  "function listForSale(uint256 serialNumber, uint256 price)",
+  "function getSerialsByOwner(address owner) view returns (uint256[])",
+  "function cancelSale(uint256 serialNumber)",
 ];
 
 // const ETH_ABI = [
@@ -78,82 +82,6 @@ export async function getSSFBalance(userAddress: string): Promise<string> {
     return "0";
   }
 }
-
-// /**
-//  * ✅ 사용자의 NFT 기프티콘 목록을 JSON 형식으로 가져오기
-//  * @param userAddress - 조회할 사용자 지갑 주소
-//  * @param tokenIds - 조회할 NFT 토큰 ID 배열 (예: [1, 2, 3, 4, 5])
-//  * @returns {Promise<any[]>} - NFT 기프티콘 JSON 데이터
-//  */
-// // ✅ NFT 메타데이터 가져오기
-// export const fetchMetadata = async (metadataUrl: string) => {
-//   try {
-//     const response = await fetch(convertIpfsUrl(metadataUrl));
-//     const metadata = await response.json();
-
-//     // ✅ attributes에서 필요한 정보 추출
-//     const attributes = metadata.attributes || [];
-//     const brandAttr = attributes.find(
-//       (attr: any) => attr.trait_type === "Brand"
-//     );
-//     const expiryAttr = attributes.find(
-//       (attr: any) => attr.trait_type === "Valid Until"
-//     );
-//     const serialAttr = attributes.find(
-//       (attr: any) => attr.trait_type === "Gifticon Code"
-//     );
-
-//     return {
-//       id: metadata.id || "Unknown", // 메타데이터에 ID가 없는 경우 대비
-//       serialNum: serialAttr ? serialAttr.value : `NFT-${Math.random()}`, // 시리얼 넘버 없으면 랜덤 생성
-//       title: metadata.name || `NFT 기프티콘`,
-//       brand: brandAttr ? brandAttr.value : "알 수 없음",
-//       category: "디지털 상품권",
-//       expiryDate: expiryAttr ? expiryAttr.value : "무제한",
-//       image: convertIpfsUrl(metadata.image), // IPFS 이미지 변환
-//     };
-//   } catch (error) {
-//     console.error("❌ NFT 메타데이터 로딩 실패:", error);
-//     return null;
-//   }
-// };
-
-// // ✅ 사용자의 NFT 기프티콘 목록을 가져오기
-// export async function getUserNFTsAsJson(
-//   userAddress: string,
-//   tokenIds: number[]
-// ): Promise<any[]> {
-//   const provider = new ethers.BrowserProvider(window.ethereum);
-//   if (!provider) return [];
-
-//   try {
-//     const signer = await provider.getSigner();
-//     const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
-
-//     const balances = await contract.balanceOfBatch(
-//       Array(tokenIds.length).fill(userAddress),
-//       tokenIds
-//     );
-
-//     const nftData = await Promise.all(
-//       tokenIds.map(async (id, index) => {
-//         const amount = Number(balances[index]);
-//         if (amount === 0) return null;
-
-//         const metadataUrl = await contract.uri(id);
-//         const metadata = await fetchMetadata(metadataUrl);
-//         if (!metadata) return null;
-
-//         return metadata; // ✅ 메타데이터에서 직접 추출한 정보 사용
-//       })
-//     );
-
-//     return nftData.filter((nft) => nft !== null);
-//   } catch (error) {
-//     console.error("❌ NFT 조회 실패:", error);
-//     return [];
-//   }
-// }
 
 // ✅ IPFS 주소 변환 유틸
 export const convertIpfsUrl = (url: string): string => {
@@ -386,73 +314,6 @@ export async function buyNFT(serialNumber: number): Promise<boolean> {
   }
 }
 
-// export async function buyETH(serialNumber: number): Promise<boolean> {
-//   const provider = new ethers.BrowserProvider(window.ethereum);
-//   if (!provider) return false;
-
-//   try {
-//     const signer = await provider.getSigner();
-
-//     if (!NFT_CONTRACT_ADDRESS) {
-//       console.error("❌ 컨트랙트 주소가 설정되지 않았습니다.");
-//       return false;
-//     }
-
-//     const nftContract = new ethers.Contract(
-//       NFT_CONTRACT_ADDRESS,
-//       ETH_ABI,
-//       signer
-//     );
-
-//     const [price, seller, owner, expirationDate, isRedeemed, redeemedAt] =
-//       (await nftContract.getSerialInfo(serialNumber)) as [
-//         bigint,
-//         string,
-//         string,
-//         bigint,
-//         boolean,
-//         bigint
-//       ];
-
-//     if (seller === ethers.ZeroAddress) {
-//       throw new Error("❌ 판매되지 않은 NFT입니다.");
-//     }
-//     if (isRedeemed) {
-//       throw new Error("❌ 이미 사용된 NFT입니다.");
-//     }
-//     if (price <= 0n) {
-//       throw new Error("❌ 가격이 설정되지 않은 NFT입니다.");
-//     }
-
-//     const buyer = await signer.getAddress();
-
-//     console.log("💰 구매 금액 (ETH):", ethers.formatUnits(price, 18));
-//     console.log(`NFT 가격 (ETH): ${ethers.formatUnits(price, 18)}`);
-//     const balance = await provider.getBalance(buyer);
-//     console.log(
-//       `보유한 이더리움 잔액 (ETH): ${ethers.formatUnits(balance, 18)}`
-//     );
-
-//     if (balance < price) {
-//       console.error("❌ 이더리움 잔액이 부족합니다.");
-//       return false;
-//     }
-
-//     // ✅ 컨트랙트에 직접 결제하며 호출
-//     const tx = await nftContract.purchaseBySerial(serialNumber, {
-//       value: price, // 컨트랙트가 price만큼 받음
-//     });
-
-//     await tx.wait();
-//     console.log("✅ NFT 구매 완료");
-
-//     return true;
-//   } catch (error) {
-//     console.error("❌ NFT 구매 실패:", error);
-//     return false;
-//   }
-// }
-
 export async function fetchTokenInfoBySerial(serialNumber: number) {
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
@@ -478,4 +339,39 @@ export async function fetchTokenInfoBySerial(serialNumber: number) {
     console.error("❌ [fetchTokenInfoBySerial] 토큰 정보 조회 실패:", error);
     return null;
   }
+}
+
+// NFT 상태 [판매중] -> [판매중] 취소
+export async function cancelSale(serialNumber: number): Promise<boolean> {
+  if (!window.ethereum) {
+    console.error("Metamask not found");
+    return false;
+  }
+
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
+
+    const tx = await contract.cancelSale(serialNumber);
+    await tx.wait();
+
+    console.log("✅ 판매 취소 완료!");
+    return true;
+  } catch (error) {
+    console.error("❌ 판매 취소 실패:", error);
+    return false;
+  }
+}
+
+export async function isSellingNFT(serialNumber: number): Promise<boolean> {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
+
+  const [price, seller] = await contract.getSerialInfo(serialNumber);
+
+  return (
+    Number(price) > 0 && seller !== "0x0000000000000000000000000000000000000000"
+  );
 }

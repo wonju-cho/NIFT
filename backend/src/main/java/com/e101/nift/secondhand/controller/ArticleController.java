@@ -68,8 +68,8 @@ public class ArticleController {
     }
 
 
-    @Operation(summary = "게시글 쓰기", description = "기프티콘 판매 게시글을 작성합니다.")
     @PostMapping
+    @Operation(summary = "게시글 쓰기", description = "기프티콘 판매 게시글을 작성합니다.")
     public ResponseEntity<?> PostArticles(
             HttpServletRequest request,
             @RequestBody PostArticleDto postArticleDto
@@ -80,6 +80,22 @@ public class ArticleController {
         }
 
         articleService.createArticle(postArticleDto, userId);
+        return ResponseEntity.status(201).build();
+    }
+
+
+    @DeleteMapping("/{articleId}")
+    @Operation(summary = "게시글 삭제", description = "기프티콘 판매 게시글을 삭제합니다.")
+    public ResponseEntity<?> deleteArticles(
+            HttpServletRequest request,
+            @PathVariable Long articleId)
+        {
+        Long userId = jwtTokenProvider.getUserFromRequest(request).getUserId();
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
+        }
+
+        articleService.deleteArticle(articleId);
         return ResponseEntity.status(201).build();
     }
 
