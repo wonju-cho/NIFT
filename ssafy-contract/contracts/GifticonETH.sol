@@ -3,19 +3,18 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
- * @title GifticonNFT
+ * @title GifticonETH
  * @dev ERC1155 구조에서 시리얼 넘버 단위 NFT를 관리하고, tokenId에 대한 메타 정보도 포함하는 스마트 컨트랙트
  */
-contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
+contract GifticonETH is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     // ⚙️ 상태 변수
     // 시리얼 넘버 단위 개별 NFT에 대한 정보
     struct SerialInfo {
-        uint256 price;              // 판매 가격
+        uint256 price;              // 판매 가격 (ETH로 변경)
         address seller;             // 판매자 주소
         address owner;              // 현재 소유자 주소
         uint256 expirationDate;     // 만료일 (timestamp)
@@ -40,8 +39,6 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     mapping(uint256 => TokenInfo) private _tokenInfos;      // tokenId → 메타 정보
     mapping(address => bool) private _authorizedTransfers; // 안전한 전송을 위한 허용된 전송자
 
-    IERC20 public ssfToken; // 결제에 사용될 ERC20 토큰
-
     // 📢 이벤트 선언
     event Minted(address indexed owner, uint256 indexed tokenId, uint256 serialNumber);
     event ListedForSale(uint256 indexed serialNumber, uint256 price, address indexed seller);
@@ -52,12 +49,9 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     event SerialOwnershipTransferred(uint256 indexed serialNumber, address indexed from, address indexed to);
 
     // 🏗️ 생성자
-    constructor(address _ssfToken) ERC1155("ipfs://bafkreidpioogd7mj4t5sovbw2nkn3tavw3zrq4qmqwvkxptm52scasxfl4") Ownable() {
-        ssfToken = IERC20(_ssfToken);
-    }
+    constructor() ERC1155("ipfs://bafkreifj53t5ciradsorecuagrasftt4pfercqvjuhyrhks2piwokho2iy") Ownable() {}
 
     // 🛡️ 수정자
-    // 안전한 전송을 위해 함수 실행 전후 authorizedTransfers를 설정
     modifier onlyAuthorizedTransfer() {
         require(_authorizedTransfers[msg.sender] || msg.sender == address(this), "Unauthorized transfer");
         _;
@@ -119,18 +113,23 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         require(!info.redeemed, "Already redeemed");
         require(price > 0, "Price must be > 0");
 
-        // 컨트랙트에 대한 전체 토큰 전송 승인
-        _setApprovalForAll(msg.sender, address(this), true);
+        uint256 tokenId = _serialToTokenId[serialNumber];
 
-        // NFT 전송 생략: 판매자가 계속 보유
+        // 소유자 → 컨트랙트로 NFT 전송
+        _authorizedTransfers[msg.sender] = true;
+        safeTransferFrom(msg.sender, address(this), tokenId, 1, "");
+        _authorizedTransfers[msg.sender] = false;
+
+        // 정보 업데이트
         info.price = price;
         info.seller = msg.sender;
-        
+        info.owner = address(this); // 소유자는 컨트랙트로 변경
+
         emit ListedForSale(serialNumber, price, msg.sender);
     }
 
     // 시리얼 넘버 기반으로 NFT 구매
-    function purchaseBySerial(uint256 serialNumber) public nonReentrant {
+    function purchaseBySerial(uint256 serialNumber) public payable nonReentrant {
         SerialInfo storage info = _serialInfos[serialNumber];
         require(info.seller != address(0), "Not listed");
         require(!info.redeemed, "Already redeemed");
@@ -138,17 +137,17 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
         uint256 tokenId = _serialToTokenId[serialNumber];
         address seller = info.seller;
-        uint256 purchasePrice = info.price;
+        uint256 salePrice = info.price;  // 가격을 별도 변수로 저장
 
-        // 판매자가 실제 NFT를 가지고 있는지 확인
-        require(balanceOf(seller, tokenId) >= 1, "Seller doesn't own the token");
+        require(balanceOf(address(this), tokenId) >= 1, "NFT not held by contract");
 
-        // SSF 토큰 결제: 구매자가 판매자에게 직접 송금
-        bool success = ssfToken.transferFrom(msg.sender, seller, info.price);
-        require(success, "ERC20 payment failed");
+        // ETH 결제
+        require(msg.value == salePrice, "Incorrect value sent");
 
-        // 판매자로부터 구매자에게 직접 NFT 전송
-        safeTransferFrom(seller, address(this), tokenId, 1, "");
+        // 판매자에게 ETH 전송
+        payable(seller).transfer(msg.value);
+
+        // NFT 전송
         _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
 
         // 상태 업데이트
@@ -156,7 +155,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.seller = address(0);
         info.price = 0;
 
-        emit NFTPurchased(msg.sender, serialNumber, purchasePrice);
+        emit NFTPurchased(msg.sender, serialNumber, salePrice);
         emit SerialOwnershipTransferred(serialNumber, seller, msg.sender);
     }
 
@@ -192,7 +191,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.seller = address(0);
 
         // 토큰 전송
-        // _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
+        _safeTransferFrom(address(this), msg.sender, tokenId, 1, "");
 
         emit CancelledSale(serialNumber);
     }
@@ -302,27 +301,5 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     function _generateNextSerial() internal returns (uint256) {
         _nextSerial += 1;
         return _nextSerial;
-    }
-
-    // 내부 토큰 전송 함수 (컨트랙트 권한으로 수행)
-    function _internalTransfer(
-        address from, 
-        address to, 
-        uint256 tokenId, 
-        uint256 amount
-    ) internal nonReentrant {
-        // 컨트랙트 내부 전송이거나 승인된 경우 허용
-        require(
-            from == address(this) || 
-            isApprovedForAll(from, address(this)) || 
-            from == msg.sender, 
-            "Transfer not authorized"
-        );
-
-        // 잔액 확인
-        require(balanceOf(from, tokenId) >= amount, "Insufficient balance");
-
-        // 안전한 전송
-        _safeTransferFrom(from, to, tokenId, amount, "");
     }
 }

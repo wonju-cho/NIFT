@@ -2,10 +2,10 @@ const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0x46c6440c021A3AE0e3eBE83A76bd3f53A3b3c7CA";
-  const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
+  const contractAddress = "0x6F55cffCff54cA706623CF9A17C6fC5e0b21955e";
+  const sellerAddress = "0xE0bA992C60406310372Df97f4c218fBb8eaf8271";
 
-  const tokenId = 4;
+  const tokenId = 2;
   const mintAmount = 4;
 
   const ssfDecimals = 0; // ✅ SSF 소수점이 없으면 0, 있으면 18로 설정
@@ -14,7 +14,7 @@ async function main() {
   const name = "스타벅스 기프티콘";
   const description = "아메리카노 T size";
   const metadataURI =
-    "ipfs://bafkreidpioogd7mj4t5sovbw2nkn3tavw3zrq4qmqwvkxptm52scasxfl4";
+    "ipfs://bafkreifj53t5ciradsorecuagrasftt4pfercqvjuhyrhks2piwokho2iy";
 
   const gifticonNFT = await ethers.getContractAt(
     "GifticonNFT",
@@ -51,29 +51,46 @@ async function main() {
   console.log("🚚 판매자에게 NFT 전송 중...");
   for (const serial of serials) {
     const serialInfo = await gifticonNFT.getSerialInfo(serial);
-    const actualOwner = serialInfo.owner;
-    const expectedOwner = deployer.address;
+    const actualOwner = serialInfo.owner; // 실제 소유자 확인
+    const expectedOwner = sellerAddress; // 판매자 주소
 
     console.log(`📌 Serial ${serial} - 실제 소유자: ${actualOwner}`);
-    console.log(`🤖 deployer 주소: ${expectedOwner}`);
+    console.log(`🤖 기대하는 판매자 주소: ${expectedOwner}`);
 
+    // 트랜잭션을 보내는 부분
     const tx = await gifticonNFT
       .connect(deployer)
       .giftNFT(sellerAddress, serial);
-    await tx.wait();
-    console.log(`🔄 전송 완료: Serial ${serial}`);
-  }
 
+    const receipt = await tx.wait(); // 트랜잭션이 완료되었는지 기다림
+    console.log(
+      `🔄 전송 완료: Serial ${serial} - 트랜잭션 해시: ${receipt.transactionHash}`
+    );
+
+    // 다시 소유자 확인
+    const newSerialInfo = await gifticonNFT.getSerialInfo(serial);
+    const newOwner = newSerialInfo.owner;
+
+    if (newOwner.toLowerCase() === expectedOwner.toLowerCase()) {
+      console.log(
+        `✅ Serial ${serial} - NFT가 정상적으로 판매자에게 전송되었습니다.`
+      );
+    } else {
+      console.log(
+        `❌ Serial ${serial} - NFT가 판매자에게 전송되지 않았습니다. 현재 소유자: ${newOwner}`
+      );
+    }
+  }
   // ✅ 자동 판매 등록
   console.log("🎉 전송 완료! 이제 전부 자동 판매 등록 시작");
 
   const sellPrice = ethers.parseUnits("1", ssfDecimals); // 등록 가격 (1 SSF)
 
   for (const serial of serials) {
-    console.log(`🚀 listForSale.js 실행 중 (Serial: ${serial})`);
+    console.log(`🚀 listForSale_ganache.js 실행 중 (Serial: ${serial})`);
     try {
       execSync(
-        `node scripts/listForSale.js ${serial} ${sellPrice.toString()}`,
+        `node scripts/listForSale_ganache.js ${serial} ${sellPrice.toString()}`,
         {
           stdio: "inherit",
         }
