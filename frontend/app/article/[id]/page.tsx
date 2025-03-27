@@ -245,6 +245,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                   <DeleteArticleButton
                     articleId={article.articleId}
                     articleUserId={article.userId}
+                    serialNum={article.serialNum}
                   />
                 </div>
               </div>

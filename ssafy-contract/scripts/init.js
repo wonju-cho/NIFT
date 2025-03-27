@@ -2,10 +2,10 @@ const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0x2eEec309CCDA1BCd19040ee78D0623D93Ae3fCb1";
+  const contractAddress = "0x252eA9Eb8d64A9C05013f7c503E84408357A811a";
   const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
 
-  const tokenId = 4;
+  const tokenId = 1;
   const mintAmount = 4;
 
   const ssfDecimals = 0; // ✅ SSF 소수점이 없으면 0, 있으면 18로 설정

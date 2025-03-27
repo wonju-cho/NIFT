@@ -184,20 +184,27 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     }
 
     // 판매 취소 처리
-    function cancelSale(uint256 serialNumber) public nonReentrant {
-        SerialInfo storage info = _serialInfos[serialNumber];
-        
-        // 판매자 확인
-        require(info.seller == msg.sender, "Not the seller");
-        require(!info.redeemed, "Already redeemed");
-        
-        // 내부 전송 전 상태 업데이트
-        info.owner = msg.sender;
-        info.seller = address(0);
-        info.price = 0;
+ function cancelSale(uint256 serialNumber) public nonReentrant {
+    SerialInfo storage info = _serialInfos[serialNumber];
 
-        emit CancelledSale(serialNumber);
-    }
+    // 판매자 검증
+    require(info.seller == msg.sender, "Not the seller");
+    require(!info.redeemed, "Already redeemed");
+
+    // 판매자가 NFT를 소유 중인지 확인
+    uint256 tokenId = _serialToTokenId[serialNumber];
+    require(
+        balanceOf(msg.sender, tokenId) >= 1,
+        "You must own the NFT to cancel sale"
+    );
+
+    // 상태 초기화
+    info.owner = msg.sender;
+    info.seller = address(0);
+    info.price = 0;
+
+    emit CancelledSale(serialNumber);
+}
 
     // 다른 사용자에게 NFT 선물
     function giftNFT(address to, uint256 serialNumber) public nonReentrant {
