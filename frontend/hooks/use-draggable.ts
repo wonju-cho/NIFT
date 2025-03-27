@@ -77,10 +77,30 @@ export function useDraggable({
       const scaledDeltaX = deltaX / scale
       const scaledDeltaY = deltaY / scale
 
-      const newPosition = {
-        x: positionRef.current.x + scaledDeltaX,
-        y: positionRef.current.y + scaledDeltaY,
+      // 새 위치 계산
+      let newX = positionRef.current.x + scaledDeltaX
+      let newY = positionRef.current.y + scaledDeltaY
+
+      // 카드 경계 체크 (요소가 카드 밖으로 나가지 않도록)
+      if (elementRef.current && containerRef?.current) {
+        const elementRect = elementRef.current.getBoundingClientRect()
+        const containerRect = containerRef.current.getBoundingClientRect()
+
+        const elementWidth = elementRect.width / scale
+        const elementHeight = elementRect.height / scale
+
+        // 카드 크기 (기본값 400x300)
+        const cardWidth = 400
+        const cardHeight = 300
+
+        // 경계 체크 및 조정 - 더 엄격하게 제한
+        newX = Math.max(0, newX)
+        newY = Math.max(0, newY)
+        newX = Math.min(cardWidth - elementWidth, newX)
+        newY = Math.min(cardHeight - elementHeight, newY)
       }
+
+      const newPosition = { x: newX, y: newY }
 
       setPosition(newPosition)
       dragStartRef.current = { x: e.clientX, y: e.clientY }
@@ -96,10 +116,30 @@ export function useDraggable({
       const scaledDeltaX = deltaX / scale
       const scaledDeltaY = deltaY / scale
 
-      const newPosition = {
-        x: positionRef.current.x + scaledDeltaX,
-        y: positionRef.current.y + scaledDeltaY,
+      // 새 위치 계산
+      let newX = positionRef.current.x + scaledDeltaX
+      let newY = positionRef.current.y + scaledDeltaY
+
+      // 카드 경계 체크 (요소가 카드 밖으로 나가지 않도록)
+      if (elementRef.current && containerRef?.current) {
+        const elementRect = elementRef.current.getBoundingClientRect()
+        const containerRect = containerRef.current.getBoundingClientRect()
+
+        const elementWidth = elementRect.width / scale
+        const elementHeight = elementRect.height / scale
+
+        // 카드 크기 (기본값 400x300)
+        const cardWidth = 400
+        const cardHeight = 300
+
+        // 경계 체크 및 조정 - 더 엄격하게 제한
+        newX = Math.max(0, newX)
+        newY = Math.max(0, newY)
+        newX = Math.min(cardWidth - elementWidth, newX)
+        newY = Math.min(cardHeight - elementHeight, newY)
       }
+
+      const newPosition = { x: newX, y: newY }
 
       setPosition(newPosition)
       dragStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }

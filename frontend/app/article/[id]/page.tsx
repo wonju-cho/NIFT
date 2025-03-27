@@ -26,43 +26,51 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useLoading } from "@/components/LoadingContext";
+} from "@/components/ui/dialog"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useLoading } from "@/components/LoadingContext"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
 
 type ArticleDetail = {
-  articleId: number;
-  serialNum: number;
-  title: string;
-  description: string;
-  userId: number;
-  expirationDate: string;
-  imageUrl: string;
-  countLikes: number;
-  currentPrice: number;
-  createAt: string;
-  viewCnt: number;
-  giftiPrice: number;
-  brandName: string;
-  categoryName: string;
-  isLiked: boolean;
+  articleId: number
+  serialNum: number
+  title: string
+  description: string
+  userId: number
+  expirationDate: string
+  imageUrl: string
+  countLikes: number
+  currentPrice: number
+  createAt: string
+  viewCnt: number
+  originalPrice: number
+  brandName: string
+  categoryName: string
+  isLiked: boolean
+  userNickName: string
+  profileImage : string
+
 };
 
 export default function ArticlePage({ params }: { params: { id: string } }) {
   const { id } = params;
 
-  const [amount, setAmount] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [showPurchaseDialog, setShowPurchaseDialog] = useState<boolean>(false);
-  const [purchaseStatus, setPurchaseStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const [article, setArticle] = useState<ArticleDetail | null>(null);
-  const [isLiked, setIsLiked] = useState<boolean>(false);
-  const [countLikes, setLikeCount] = useState<number>(0);
-  const { isLoading, setIsLoading } = useLoading();
+
+  const [amount, setAmount] = useState<number>(1)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [showPurchaseDialog, setShowPurchaseDialog] = useState<boolean>(false)
+  const [purchaseStatus, setPurchaseStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+  const [errorMessage, setErrorMessage] = useState<string>("")
+  const [article, setArticle] = useState<ArticleDetail | null>(null)
+  const [isLiked, setIsLiked] = useState<boolean>(false)
+  const [countLikes, setLikeCount] = useState<number>(0)
+  const { isLoading, setIsLoading } = useLoading()
+
+
+  const contractABI = ["function buyToken(uint256 amount) external payable"]
+  console.log(article)
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -231,19 +239,14 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
               </h1>
 
               <div className="mb-6">
-                <span className="text-3xl font-bold">
-                  {(article.currentPrice ?? 0).toLocaleString()}원
-                </span>
-                {article.giftiPrice > article.currentPrice && (
+                <span className="text-3xl font-bold">{(article.currentPrice ?? 0).toLocaleString()}원</span>
+                {article.originalPrice > article.currentPrice && (
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="text-sm line-through text-muted-foreground">
-                      {article.giftiPrice.toLocaleString()}원
+                      {article.originalPrice.toLocaleString()}원
                     </span>
                     <span className="text-sm text-primary">
-                      {Math.round(
-                        (1 - article.currentPrice / article.giftiPrice) * 100
-                      )}
-                      % 할인
+                      {Math.round((1 - article.currentPrice / article.originalPrice) * 100)}% 할인
                     </span>
                   </div>
                 )}
@@ -255,6 +258,14 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                   등록일: {article.createAt} · 조회 {article.viewCnt}회 · 관심{" "}
                   {countLikes}
                 </span>
+              </div>
+
+              <h1 className="font-bold mb-2 mt-6">상품 상세 설명</h1>
+              <div className="mb-6 rounded-lg bg-gray-50 p-4">
+                <p className="text-sm text-gray-600 mb-4">{article.description}</p>
+                <div className="mt-3 text-sm">
+                  <span className="font-medium">유효기간:</span> {article.expirationDate}
+                </div>
               </div>
 
               <div className="mt-auto">
@@ -430,39 +441,38 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
           </div>
 
           <div className="mt-8">
-            <Tabs defaultValue="description" className="w-full">
+          <Tabs defaultValue="seller" className="w-full">
               <TabsList className="w-full justify-start border-b bg-transparent p-0">
-                <TabsTrigger
-                  value="description"
-                  className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-                >
-                  상품 설명
-                </TabsTrigger>
                 <TabsTrigger
                   value="seller"
                   className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
                 >
                   판매자 정보
                 </TabsTrigger>
-                <TabsTrigger
-                  value="reviews"
-                  className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-                >
-                  거래 후기
-                </TabsTrigger>
               </TabsList>
 
-              <TabsContent
-                value="description"
-                className="mt-6 rounded-lg bg-white p-6 shadow-sm"
-              >
-                <div className="prose max-w-none">
-                  <p>{article.description}</p>
-                  <ul>
-                    <li>유효기간: {article.expirationDate}</li>
-                    <li>사용 가능 매장: 전국 스타벅스 매장</li>
-                    <li>교환 및 환불: 구매 후 7일 이내 가능</li>
-                  </ul>
+              <TabsContent value="seller" className="mt-6 rounded-lg bg-white p-6 shadow-sm">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage src={article.profileImage} alt={article.profileImage} />
+                      <AvatarFallback>{article.userNickName}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="text-lg font-medium">{article.userNickName}</h3>
+                      {/* 거래 횟수가 없는거 같아서 임시로 viewCnt로 해놨음 */}
+                      <p className="text-sm text-muted-foreground">
+                        거래 {article.viewCnt}회 
+                        {/* · */}
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium">판매자의 다른 상품</h4>
+                    <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                      {/* 판매자의 다른 상품들 */}
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>

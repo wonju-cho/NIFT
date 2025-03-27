@@ -28,7 +28,7 @@ export default function Home() {
         <FeaturedCategories />
         <RecentlyListed />
         <PopularArticles />
-        <NearbyItems />
+        {/* <NearbyItems /> */}
       </main>
       <Footer />
     </div>
