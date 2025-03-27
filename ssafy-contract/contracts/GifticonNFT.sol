@@ -38,6 +38,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     mapping(uint256 => uint256) private _serialToTokenId; // 시리얼 넘버 → tokenId
     mapping(uint256 => SerialInfo) private _serialInfos;    // 시리얼 넘버 → 시리얼 정보
     mapping(uint256 => TokenInfo) private _tokenInfos;      // tokenId → 메타 정보
+    mapping(address => uint256[]) private _ownedSerials;
     mapping(address => bool) private _authorizedTransfers; // 안전한 전송을 위한 허용된 전송자
 
     IERC20 public ssfToken; // 결제에 사용될 ERC20 토큰
@@ -54,6 +55,8 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     // 🏗️ 생성자
     constructor(address _ssfToken) ERC1155("ipfs://bafkreidpioogd7mj4t5sovbw2nkn3tavw3zrq4qmqwvkxptm52scasxfl4") Ownable() {
         ssfToken = IERC20(_ssfToken);
+        _authorizedTransfers[msg.sender] = true;       // 배포자
+        _authorizedTransfers[address(this)] = true;    // 컨트랙트 자기 자신
     }
 
     // 🛡️ 수정자
@@ -108,6 +111,8 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
                 redeemedAt: 0
             });
 
+            _addSerialToOwner(to, serial);
+
             emit Minted(to, tokenId, serial);
         }
     }
@@ -116,13 +121,15 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     function listForSale(uint256 serialNumber, uint256 price) public {
         SerialInfo storage info = _serialInfos[serialNumber];
         require(info.owner == msg.sender, "Not the owner");
+        require(info.seller == address(0), "Already listed for sale");
         require(!info.redeemed, "Already redeemed");
         require(price > 0, "Price must be > 0");
 
         // 컨트랙트에 대한 전체 토큰 전송 승인
-        _setApprovalForAll(msg.sender, address(this), true);
+        if (!isApprovedForAll(msg.sender, address(this))) {
+            _setApprovalForAll(msg.sender, address(this), true);
+        }
 
-        // NFT 전송 생략: 판매자가 계속 보유
         info.price = price;
         info.seller = msg.sender;
         
@@ -154,6 +161,9 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.owner = msg.sender;
         info.seller = address(0);
         info.price = 0;
+
+        _removeSerialFromOwner(seller, serialNumber);
+        _addSerialToOwner(msg.sender, serialNumber);
 
         emit NFTPurchased(msg.sender, serialNumber, purchasePrice);
         emit SerialOwnershipTransferred(serialNumber, seller, msg.sender);
@@ -207,6 +217,9 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.price = 0;
 
         // 안전한 전송
+        _removeSerialFromOwner(msg.sender, serialNumber);
+        _addSerialToOwner(to, serialNumber);
+
         _safeTransferFrom(msg.sender, to, tokenId, 1, abi.encode(serialNumber, uint256(1)));
 
         emit SerialOwnershipTransferred(serialNumber, msg.sender, to);
@@ -268,23 +281,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
     // 특정 주소가 소유한 시리얼 넘버 목록 조회
     function getSerialsByOwner(address owner) public view returns (uint256[] memory) {
-        uint256 totalSerials = _nextSerial - 100000;
-        uint256[] memory temp = new uint256[](totalSerials);
-        uint256 count = 0;
-
-        for (uint256 serial = 100001; serial <= _nextSerial; serial++) {
-            if (_serialInfos[serial].owner == owner) {
-                temp[count] = serial;
-                count++;
-            }
-        }
-
-        uint256[] memory result = new uint256[](count);
-        for (uint256 i = 0; i < count; i++) {
-            result[i] = temp[i];
-        }
-
-        return result;
+        return _ownedSerials[owner];
     }
 
     // 🛠️ 내부 함수
@@ -322,12 +319,32 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
             SerialInfo memory info = _serialInfos[serial];
             require(!info.redeemed, "Cannot transfer: already redeemed");
 
-            // mode가 1이 아닐 때만 판매 여부 검사 (0: 일반 전송, 1: 선물)
-            if (mode != 1) {
-                require(info.seller == address(0), "Cannot transfer: listed for sale");
+            // mode가 1이 아닐 때만 판매 여부 검사 (0: 구매 전송, 1: 선물)
+            if (mode == 1) {
+                // 선물 모드 → 판매 중이면 막아야 함
+                require(info.seller == address(0), "Cannot gift: listed for sale");
             }
         }
     }
+
+    // 소유자의 시리얼 넘버 기반 토큰 정보 추가 
+    function _addSerialToOwner(address to, uint256 serial) internal {
+        _ownedSerials[to].push(serial);
+    }
+
+    // 소유자의 시리얼 넘버 기반 토큰 정보 삭제
+    function _removeSerialFromOwner(address from, uint256 serial) internal {
+        // 삭제 최적화 위해 'swap & pop' 방식 사용 가능
+        uint256[] storage list = _ownedSerials[from];
+        for (uint256 i = 0; i < list.length; i++) {
+            if (list[i] == serial) {
+                list[i] = list[list.length - 1];
+                list.pop();
+                break;
+            }
+        }
+    }
+
 
     // 내부적으로 시리얼 넘버 생성
     function _generateNextSerial() internal returns (uint256) {
