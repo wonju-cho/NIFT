@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("solidity-coverage");
 require("dotenv").config();
 
 module.exports = {
@@ -26,5 +27,13 @@ module.exports = {
       gasPrice: 0, // ✅ 기본 통화를 SSF로 사용하려면 gasPrice를 0으로 설정
     },
   },
-  solidity: "0.8.20",
+  solidity: {
+    version: "0.8.20", // 현재 사용하는 버전 유지
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 50, // 낮을수록 코드 사이즈 줄어듦
+      },
+    },
+  },
 };
