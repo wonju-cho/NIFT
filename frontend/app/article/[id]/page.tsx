@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ethers } from "ethers";
 import {
   ArrowLeft,
   Share2,
@@ -18,11 +17,7 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PopularArticles } from "@/components/home/popular-articles";
-import {
-  buyNFT,
-  fetchTokenInfoBySerial,
-  SSF_CONTRACT_ADDRESS,
-} from "@/lib/api/web3";
+import { buyNFT, fetchTokenInfoBySerial } from "@/lib/api/web3";
 import {
   Dialog,
   DialogContent,
