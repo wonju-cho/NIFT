@@ -158,11 +158,11 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     try {
       await window.ethereum.request({ method: "eth_requestAccounts" });
 
-      const success = await buyNFT(100007);
+      const success = await buyNFT(serialNumber);
 
       if (success) {
         setPurchaseStatus("success");
-        const tokenInfo = await fetchTokenInfoBySerial(100007);
+        const tokenInfo = await fetchTokenInfoBySerial(serialNumber);
         if (tokenInfo) {
           console.log("🧾 [Token Info]");
           console.log("🎯 Token ID:", tokenInfo.tokenId.toString());

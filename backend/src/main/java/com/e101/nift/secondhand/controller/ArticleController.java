@@ -62,7 +62,8 @@ public class ArticleController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("articleId") Long articleId){
 
-        ArticleDetailDto dto = articleService.getArticleDetail(articleId, userDetails.getUserId());
+        Long userId = (userDetails != null) ? userDetails.getUserId() : null;
+        ArticleDetailDto dto = articleService.getArticleDetail(articleId, userId);
         return ResponseEntity.ok(dto);
     }
 

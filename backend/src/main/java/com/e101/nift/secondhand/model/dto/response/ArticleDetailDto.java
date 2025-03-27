@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -14,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ArticleDetailDto {
     private Long articleId;
+    private Long serialNum;
     private String title;
     private String description;
     private Long userId;
