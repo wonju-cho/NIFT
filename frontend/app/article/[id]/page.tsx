@@ -19,6 +19,7 @@ import { ArticleLikeAndShare } from "@/components/articleDetail/ArticleLikeAndSh
 import { ArticlePurchaseDialog } from "@/components/articleDetail/ArticlePurchaseDialog";
 import { ArticleSellerTab } from "@/components/articleDetail/ArticleSellerTab";
 import { ArticleSimilarList } from "@/components/articleDetail/ArticleSimilarList";
+import { DeleteArticleButton } from "@/components/articleDetail/DeleteArticleButton";
 
 type ArticleDetail = {
   articleId: number;
@@ -236,6 +237,14 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                     isLiked={isLiked}
                     onLikeToggle={handleLikeToggle}
                     onShare={shareBtn}
+                  />
+                </div>
+
+                {/* ✅ 삭제 버튼은 여기! */}
+                <div className="mt-3">
+                  <DeleteArticleButton
+                    articleId={article.articleId}
+                    articleUserId={article.userId}
                   />
                 </div>
               </div>
