@@ -14,11 +14,7 @@ pipeline {
 					echo "🚀 Branch: ${branch}"
 
 					if (!params.ENV || params.ENV.trim() == '') {
-						if (branch == 'develop') {
-							env.ENV = 'dev'
-						} else {
-							env.ENV = 'production'
-						}
+						env.ENV = (branch == 'develop') ? 'dev' : 'production'
 						echo "🔄 ENV auto-detected as: ${env.ENV}"
 					} else {
 						env.ENV = params.ENV
@@ -48,10 +44,15 @@ pipeline {
 						echo "🔍 Reading DB_CRED_FILE"
 
 						def json = readJSON file: "${DB_CRED_FILE}"
-						json.each { key, value -> env[key] = value }
 
+						// .env 파일 작성
 						def envContent = json.collect { key, value -> "${key}=${value}" }.join('\n')
 						writeFile file: '.env', text: envContent
+
+						// 사용할 변수 저장
+						env.MYSQL_USER = json["MYSQL_USER"]
+						env.MYSQL_PASSWORD = json["MYSQL_PASSWORD"]
+						env.MYSQL_DATABASE = json["MYSQL_DATABASE"]
 					}
 				}
 			}
