@@ -1,6 +1,7 @@
 package com.e101.nift.gift.service;
 
 import com.e101.nift.gift.entity.GiftHistory;
+import com.e101.nift.gift.model.dto.request.SendGiftDto;
 import com.e101.nift.gifticon.entity.Gifticon;
 import com.e101.nift.gifticon.repository.GifticonRepository;
 import com.e101.nift.secondhand.model.dto.response.ScrollDto;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -44,5 +46,21 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
         }).toList();
 
         return new ScrollDto<>(content, historiesPage.hasNext());
+    }
+
+    @Override
+    public void sendGiftHistory(User user, SendGiftDto request) {
+        Gifticon gifticon = gifticonRepository.findByGifticonId(request.getGifticonId())
+                .orElseThrow(() -> new IllegalArgumentException("기프티콘이 존재하지 않습니다."));
+
+        GiftHistory giftHistory = GiftHistory.builder()
+                .fromUserId(user)
+                .toUserKakaoId(request.getToUserKakaoId())
+                .gifticon(gifticon)
+                .mongoId(request.getMongoId())
+                .isReceived(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+        giftHistoryRepository.save(giftHistory);
     }
 }
