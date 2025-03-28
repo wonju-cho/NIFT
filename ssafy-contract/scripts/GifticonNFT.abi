@@ -43,6 +43,12 @@
         "internalType": "uint256",
         "name": "serialNumber",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transactionTime",
+        "type": "uint256"
       }
     ],
     "name": "CancelledSale",
@@ -68,6 +74,12 @@
         "internalType": "address",
         "name": "recipient",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transactionTime",
+        "type": "uint256"
       }
     ],
     "name": "GiftPending",
@@ -92,6 +104,12 @@
         "indexed": true,
         "internalType": "uint256",
         "name": "serialNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transactionTime",
         "type": "uint256"
       }
     ],
@@ -118,6 +136,12 @@
         "internalType": "address",
         "name": "seller",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transactionTime",
+        "type": "uint256"
       }
     ],
     "name": "ListedForSale",
@@ -143,6 +167,12 @@
         "internalType": "uint256",
         "name": "serialNumber",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transactionTime",
+        "type": "uint256"
       }
     ],
     "name": "Minted",
@@ -167,6 +197,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "price",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transactionTime",
         "type": "uint256"
       }
     ],
@@ -206,6 +242,12 @@
         "internalType": "uint256",
         "name": "serialNumber",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transactionTime",
+        "type": "uint256"
       }
     ],
     "name": "Redeemed",
@@ -231,6 +273,12 @@
         "internalType": "address",
         "name": "to",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transactionTime",
+        "type": "uint256"
       }
     ],
     "name": "SerialOwnershipTransferred",

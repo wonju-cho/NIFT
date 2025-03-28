@@ -18,8 +18,6 @@ public class DotenvConfig {
     @PostConstruct
     public void init() {
         Dotenv dotenv = Dotenv.load();
-        System.setProperty("web3j.rpc.url", dotenv.get("WEB3J_RPC_URL"));
-        System.setProperty("web3j.contract.address", dotenv.get("CONTRACT_ADDRESS"));
         System.setProperty("web3j.private.key", dotenv.get("PRIVATE_KEY"));
     }
 }
