@@ -77,7 +77,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        BUILD_MODE: production
+        NODE_ENV: production
     restart: always
     container_name: frontend
     depends_on: 

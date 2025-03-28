@@ -4,6 +4,10 @@ FROM node:18
 # 작업 디렉토리 설정
 WORKDIR /app
 
+# Docker Compose에서 넘긴 NODE_ENV를 받음
+ARG NODE_ENV
+ENV NODE_ENV=$NODE_ENV
+
 # package.json과 package-lock.json 복사
 COPY package*.json ./
 
@@ -14,8 +18,8 @@ RUN npm ci
 COPY . .
 
 # NODE_ENV에 따라 build 분기
-RUN if [ "$BUILD_MODE" = "dev" ]; then \
-    npm run build:dev --verbose; \
+RUN if [ "$NODE_ENV" = "development" ]; then \
+    npm run build --verbose; \
   else \
     npm run build; \
   fi
