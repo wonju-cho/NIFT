@@ -70,97 +70,86 @@ export function CardCanvas({
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-
+  
     const ctx = canvas.getContext("2d")
     if (!ctx) return
-
-    // 캔버스 초기화
+  
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-    // 배경 그리기
+  
     if (background.startsWith("linear-gradient") || background.startsWith("radial-gradient")) {
-      // 그라디언트 배경 처리
-      const tempDiv = document.createElement("div")
-      tempDiv.style.background = background
-      tempDiv.style.width = `${canvas.width}px`
-      tempDiv.style.height = `${canvas.height}px`
-      document.body.appendChild(tempDiv)
-      const computedStyle = window.getComputedStyle(tempDiv)
-      const backgroundImage = computedStyle.backgroundImage
-      document.body.removeChild(tempDiv)
-
-      // 그라디언트를 캔버스에 적용하는 로직 (간소화)
-      ctx.fillStyle = "#f8f9fa" // 기본 배경색
+      ctx.fillStyle = "#f8f9fa"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
     } else if (background.startsWith("#") || background.startsWith("rgb")) {
-      // 단색 배경
       ctx.fillStyle = background
       ctx.fillRect(0, 0, canvas.width, canvas.height)
     } else if (background.startsWith("url(") || background.startsWith("data:")) {
-      // 이미지 배경
-      const imgUrl = background.replace(/^url$$['"]?|['"]?$$$/g, "")
+      const imgUrl = background.slice(4, -1).replace(/['"]/g, "")
       const img = new Image()
       img.crossOrigin = "anonymous"
       img.onload = () => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+        const ctx = canvas.getContext("2d")
+        if (!ctx) return
+  
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        drawElements() // 배경 로드 후 요소 그리기
+        drawElements(ctx)
       }
       img.src = imgUrl
-      return // 이미지 로드 후 drawElements가 호출되므로 여기서 리턴
+      return
     }
-
-    // 요소 그리기
-    drawElements()
-
-    function drawElements() {
-      // 요소를 zIndex 순으로 정렬
+  
+    drawElements(ctx)
+  
+    function drawElements(ctx: CanvasRenderingContext2D) {
       const sortedElements = [...elements].sort((a, b) => a.zIndex - b.zIndex)
-
+  
       for (const element of sortedElements) {
-        // 요소의 위치와 크기를 스케일에 맞게 조정
         const x = element.x * scale
         const y = element.y * scale
         const width = element.width * scale
         const height = element.height * scale
-
-        // 회전 적용
+  
         ctx.save()
         ctx.translate(x + width / 2, y + height / 2)
         ctx.rotate((element.rotation * Math.PI) / 180)
-
-        if (element.type === "image" || element.type === "sticker") {
-          if (element.src) {
-            const img = new Image()
-            img.crossOrigin = "anonymous"
-            img.onload = () => {
-              ctx.drawImage(img, -width / 2, -height / 2, width, height)
-
-              // 선택된 요소 표시
-              if (element.id === selectedElementId) {
-                drawSelectionBorder(-width / 2, -height / 2, width, height)
-                drawResizeHandle(width / 2, height / 2)
-                drawRotateHandle(0, -height / 2 - 30)
-                drawDeleteHandle(-width / 2, -height / 2)
-              }
-
-              ctx.restore()
+  
+        if ((element.type === "image" || element.type === "sticker") && element.src) {
+          const img = new Image()
+          img.crossOrigin = "anonymous"
+          img.onload = () => {
+            const canvas = canvasRef.current
+            if (!canvas) return
+            const ctx = canvas.getContext("2d")
+            if (!ctx) return
+  
+            ctx.save()
+            ctx.translate(x + width / 2, y + height / 2)
+            ctx.rotate((element.rotation * Math.PI) / 180)
+            ctx.drawImage(img, -width / 2, -height / 2, width, height)
+  
+            if (element.id === selectedElementId) {
+              drawSelectionBorder(ctx, -width / 2, -height / 2, width, height)
+              drawResizeHandle(ctx, width / 2, height / 2)
+              drawRotateHandle(ctx, 0, -height / 2 - 30)
+              drawDeleteHandle(ctx, -width / 2, -height / 2)
             }
-            img.src = element.src
+  
+            ctx.restore()
           }
+          img.src = element.src
         } else if (element.type === "text") {
-          // 텍스트 그리기
           ctx.fillStyle = "#000000"
           ctx.font = `${Math.min(width / 10, height / 2)}px ${element.fontFamily || "Arial"}`
           ctx.textAlign = "center"
           ctx.textBaseline = "middle"
-
-          // 텍스트 줄바꿈 처리
+  
           const text = element.content || ""
           const words = text.split(" ")
           let line = ""
           const lines = []
           const lineHeight = Math.min(width / 10, height / 2) * 1.2
-
+  
           for (const word of words) {
             const testLine = line + word + " "
             const metrics = ctx.measureText(testLine)
@@ -172,36 +161,32 @@ export function CardCanvas({
             }
           }
           lines.push(line)
-
-          // 텍스트 그리기
-          let y = -height / 2 + lineHeight
+  
+          let yOffset = -height / 2 + lineHeight
           for (const line of lines) {
-            ctx.fillText(line, 0, y)
-            y += lineHeight
+            ctx.fillText(line, 0, yOffset)
+            yOffset += lineHeight
           }
-
-          // 선택된 요소 표시
+  
           if (element.id === selectedElementId) {
-            drawSelectionBorder(-width / 2, -height / 2, width, height)
-            drawResizeHandle(width / 2, height / 2)
-            drawRotateHandle(0, -height / 2 - 30)
-            drawDeleteHandle(-width / 2, -height / 2)
+            drawSelectionBorder(ctx, -width / 2, -height / 2, width, height)
+            drawResizeHandle(ctx, width / 2, height / 2)
+            drawRotateHandle(ctx, 0, -height / 2 - 30)
+            drawDeleteHandle(ctx, -width / 2, -height / 2)
           }
         }
-
+  
         ctx.restore()
       }
     }
-
-    // 선택 테두리 그리기
-    function drawSelectionBorder(x: number, y: number, width: number, height: number) {
+  
+    function drawSelectionBorder(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {
       ctx.strokeStyle = "#3b82f6"
       ctx.lineWidth = 2
       ctx.strokeRect(x, y, width, height)
     }
-
-    // 리사이즈 핸들 그리기
-    function drawResizeHandle(x: number, y: number) {
+  
+    function drawResizeHandle(ctx: CanvasRenderingContext2D, x: number, y: number) {
       ctx.fillStyle = "#ffffff"
       ctx.strokeStyle = "#3b82f6"
       ctx.lineWidth = 2
@@ -210,9 +195,8 @@ export function CardCanvas({
       ctx.fill()
       ctx.stroke()
     }
-
-    // 회전 핸들 그리기
-    function drawRotateHandle(x: number, y: number) {
+  
+    function drawRotateHandle(ctx: CanvasRenderingContext2D, x: number, y: number) {
       ctx.fillStyle = "#ffffff"
       ctx.strokeStyle = "#3b82f6"
       ctx.lineWidth = 2
@@ -220,16 +204,14 @@ export function CardCanvas({
       ctx.arc(x, y, 10, 0, Math.PI * 2)
       ctx.fill()
       ctx.stroke()
-
-      // 회전 아이콘 그리기 (간소화)
+  
       ctx.strokeStyle = "#3b82f6"
       ctx.beginPath()
       ctx.arc(x, y, 5, 0, Math.PI * 1.5)
       ctx.stroke()
     }
-
-    // 삭제 핸들 그리기
-    function drawDeleteHandle(x: number, y: number) {
+  
+    function drawDeleteHandle(ctx: CanvasRenderingContext2D, x: number, y: number) {
       ctx.fillStyle = "#ffffff"
       ctx.strokeStyle = "#ef4444"
       ctx.lineWidth = 2
@@ -237,8 +219,7 @@ export function CardCanvas({
       ctx.arc(x, y, 8, 0, Math.PI * 2)
       ctx.fill()
       ctx.stroke()
-
-      // X 아이콘 그리기
+  
       ctx.strokeStyle = "#ef4444"
       ctx.beginPath()
       ctx.moveTo(x - 3, y - 3)
