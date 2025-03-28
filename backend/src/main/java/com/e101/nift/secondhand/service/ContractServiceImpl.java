@@ -36,5 +36,6 @@ public class ContractServiceImpl implements ContractService {
                         .userId(userId)
                         .build()
         );
+
     }
 }
