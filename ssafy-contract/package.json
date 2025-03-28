@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "dotenv": "^16.4.7",
-    "Hardhat": "npm:hardhat@^2.22.19"
+    "Hardhat": "npm:hardhat@^2.22.19",
+    "ethers": "^6.13.5"
   }
 }
