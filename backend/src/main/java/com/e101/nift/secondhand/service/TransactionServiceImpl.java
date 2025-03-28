@@ -11,6 +11,7 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,4 +48,5 @@ public class TransactionServiceImpl implements TransactionService{
                 .map(TransactionReceipt::getLogs)
                 .orElseThrow(() -> new ArticleException(ArticleErrorCode.UNPROCESSABLE_TRANSACTION));
     }
+
 }

@@ -9,4 +9,5 @@ public interface UserService {
     void deleteUser(String jwtToken, String kakaoToken);
     String getKakaoId(String accessToken);
     UserInfoDto getUserInfoByUser(User user);
+    Long getUserIdByWalletAddress(String walletAddress);
 }

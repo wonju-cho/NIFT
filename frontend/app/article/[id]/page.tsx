@@ -121,9 +121,28 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
 
     try {
       await window.ethereum.request({ method: "eth_requestAccounts" });
-      const success = await buyNFT(serialNumber);
 
-      if (success) {
+      const txHash = await buyNFT(serialNumber);
+
+      if (txHash && article?.articleId) {
+        // ✅ txHash를 서버로 POST 전송
+        const accessToken = localStorage.getItem("access_token");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles/${article.articleId}/purchase`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ txHash }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("트랜잭션 저장 실패");
+        }
+
         setPurchaseStatus("success");
         const tokenInfo = await fetchTokenInfoBySerial(serialNumber);
         console.log("Token Info:", tokenInfo);

@@ -137,17 +137,16 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
       serials.map(async (serialBigNum: any) => {
         const serial = serialBigNum;
 
-        // tokenId 및 메타데이터 URI 조회
-        const tokenId = await contract.getTokenIdBySerial(serial);
+        const tokenId = await contract.getTokenIdBySerial(Number(serial));
         const [price, seller] = await contract.getSerialInfo(serial);
         const [, , , metadataURI] = await contract.getTokenInfo(tokenId);
 
-        const metadata = await fetchMetadata(metadataURI, serial);
-        console.log("🪙 토큰 정보: ", metadata);
+        const metadata = await fetchMetadata(metadataURI, Number(serial));
+        console.log(`🪙 토큰 정보 [Token ID: ${tokenId}]:`, metadata);
 
         return {
           ...metadata,
-          id: Number(tokenId),
+          id: tokenId,
           serialNum: serial,
           price: Number(price),
           seller: seller,
@@ -208,16 +207,16 @@ export async function isSellerApprovedForSerial(
   }
 }
 
-export async function buyNFT(serialNumber: number): Promise<boolean> {
+export async function buyNFT(serialNumber: number): Promise<string | null> {
   const provider = new ethers.BrowserProvider(window.ethereum);
-  if (!provider) return false;
+  if (!provider) return null;
 
   try {
     const signer = await provider.getSigner();
 
     if (!NFT_CONTRACT_ADDRESS || !SSF_CONTRACT_ADDRESS) {
       console.error("❌ 컨트랙트 주소가 설정되지 않았습니다.");
-      return false;
+      return null;
     }
 
     const nftContract = new ethers.Contract(
@@ -299,7 +298,7 @@ export async function buyNFT(serialNumber: number): Promise<boolean> {
     await tx.wait();
     console.log("✅ SSF로 NFT 구매 완료");
 
-    return true;
+    return tx.hash;
   } catch (error) {
     console.error("❌ NFT 구매 실패:", error);
 
@@ -310,7 +309,7 @@ export async function buyNFT(serialNumber: number): Promise<boolean> {
     //   );
     // }
 
-    return false;
+    return null;
   }
 }
 

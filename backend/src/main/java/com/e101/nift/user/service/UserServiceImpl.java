@@ -84,6 +84,13 @@ public class UserServiceImpl implements UserService{
                 .build();
     }
 
+    @Override
+    public Long getUserIdByWalletAddress(String walletAddress) {
+        return userRepository.findByWalletAddress(walletAddress)
+                .map(User::getUserId)
+                .orElse(null); // 또는 예외 던져도 됨
+    }
+
 
     private boolean unlinkedKakaoInfo(String accessToken) {
         log.info("🔍 [UserService] Kakao Unlink API 요청");

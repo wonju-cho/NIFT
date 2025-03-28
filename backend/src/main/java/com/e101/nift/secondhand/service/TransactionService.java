@@ -3,6 +3,7 @@ package com.e101.nift.secondhand.service;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
