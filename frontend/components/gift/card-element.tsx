@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useCallback, memo } from "react"
 import { useDraggable } from "@/hooks/use-draggable"
 import { useResizable } from "@/hooks/use-resizable"
 import type { CardElement as CardElementType } from "@/types/gift-card"
@@ -18,7 +18,7 @@ interface CardElementProps {
   scale?: number
 }
 
-export function CardElement({
+export const CardElement = memo(function CardElement({
   element,
   isSelected,
   onSelect,
@@ -53,51 +53,57 @@ export function CardElement({
   // 회전 관련 상태 및 함수
   const [rotation, setRotation] = useState(element.rotation)
 
-  const handleRotateStart = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    e.stopPropagation()
-    setIsRotating(true)
+  const handleRotateStart = useCallback(
+    (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+      e.stopPropagation()
+      setIsRotating(true)
 
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return
+      const rect = containerRef.current?.getBoundingClientRect()
+      if (!rect) return
 
-    const centerX = rect.left + rect.width / 2
-    const centerY = rect.top + rect.height / 2
+      const centerX = rect.left + rect.width / 2
+      const centerY = rect.top + rect.height / 2
 
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY
 
-    const startAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI)
+      const startAngle = Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI)
 
-    const handleRotateMove = (moveEvent: MouseEvent | TouchEvent) => {
-      const moveClientX = "touches" in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX
-      const moveClientY = "touches" in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY
+      const handleRotateMove = (moveEvent: MouseEvent | TouchEvent) => {
+        const moveClientX = "touches" in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX
+        const moveClientY = "touches" in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY
 
-      const angle = Math.atan2(moveClientY - centerY, moveClientX - centerX) * (180 / Math.PI)
-      const newRotation = element.rotation + (angle - startAngle)
+        const angle = Math.atan2(moveClientY - centerY, moveClientX - centerX) * (180 / Math.PI)
+        const newRotation = element.rotation + (angle - startAngle)
 
-      setRotation(newRotation)
-      onUpdate({ ...element, rotation: newRotation })
-    }
+        setRotation(newRotation)
+        onUpdate({ ...element, rotation: newRotation })
+      }
 
-    const handleRotateEnd = () => {
-      setIsRotating(false)
-      document.removeEventListener("mousemove", handleRotateMove)
-      document.removeEventListener("touchmove", handleRotateMove)
-      document.removeEventListener("mouseup", handleRotateEnd)
-      document.removeEventListener("touchend", handleRotateEnd)
-    }
+      const handleRotateEnd = () => {
+        setIsRotating(false)
+        document.removeEventListener("mousemove", handleRotateMove)
+        document.removeEventListener("touchmove", handleRotateMove)
+        document.removeEventListener("mouseup", handleRotateEnd)
+        document.removeEventListener("touchend", handleRotateEnd)
+      }
 
-    document.addEventListener("mousemove", handleRotateMove)
-    document.addEventListener("touchmove", handleRotateMove)
-    document.addEventListener("mouseup", handleRotateEnd)
-    document.addEventListener("touchend", handleRotateEnd)
-  }
+      document.addEventListener("mousemove", handleRotateMove)
+      document.addEventListener("touchmove", handleRotateMove)
+      document.addEventListener("mouseup", handleRotateEnd)
+      document.addEventListener("touchend", handleRotateEnd)
+    },
+    [element, onUpdate],
+  )
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Delete" || e.key === "Backspace") {
-      onDelete()
-    }
-  }
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        onDelete()
+      }
+    },
+    [onDelete],
+  )
 
   return (
     <div
@@ -141,6 +147,8 @@ export function CardElement({
           className="w-full h-full object-contain"
           draggable={false}
           crossOrigin="anonymous"
+          loading="lazy"
+          decoding="async"
           onError={(e) => {
             console.error("이미지 로딩 오류:", element.id)
             ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=100&width=100&text=이미지+오류"
@@ -266,5 +274,4 @@ export function CardElement({
       )}
     </div>
   )
-}
-
+})

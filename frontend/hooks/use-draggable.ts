@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 
 interface Position {
   x: number
@@ -66,8 +66,9 @@ export function useDraggable({
     dragStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
   }
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+  // 드래그 이벤트 핸들러 최적화
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
       if (!isDragging) return
 
       const deltaX = e.clientX - dragStartRef.current.x
@@ -100,13 +101,15 @@ export function useDraggable({
         newY = Math.min(cardHeight - elementHeight, newY)
       }
 
-      const newPosition = { x: newX, y: newY }
-
-      setPosition(newPosition)
+      setPosition({ x: newX, y: newY })
       dragStartRef.current = { x: e.clientX, y: e.clientY }
-    }
+    },
+    [isDragging, scale, containerRef],
+  )
 
-    const handleTouchMove = (e: TouchEvent) => {
+  // 터치 이벤트 핸들러 최적화
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
       if (!isDragging) return
 
       const deltaX = e.touches[0].clientX - dragStartRef.current.x
@@ -139,12 +142,13 @@ export function useDraggable({
         newY = Math.min(cardHeight - elementHeight, newY)
       }
 
-      const newPosition = { x: newX, y: newY }
-
-      setPosition(newPosition)
+      setPosition({ x: newX, y: newY })
       dragStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-    }
+    },
+    [isDragging, scale, containerRef],
+  )
 
+  useEffect(() => {
     const handleMouseUp = () => {
       if (isDragging) {
         setIsDragging(false)
@@ -163,7 +167,7 @@ export function useDraggable({
       document.removeEventListener("touchmove", handleTouchMove)
       document.removeEventListener("touchend", handleMouseUp)
     }
-  }, [isDragging, onDragEnd, isCardFlipped, scale])
+  }, [isDragging, onDragEnd, isCardFlipped, scale, handleMouseMove, handleTouchMove])
 
   return {
     position,
