@@ -20,11 +20,12 @@ module.exports = {
       ],
     },
     ssafy: {
-      url: "https://rpc.ssafy-blockchain.com", // SSAFY 네트워크 RPC URL
-      accounts: [process.env.PRIVATE_KEY], // Metamask Private Key
-      chainId: 31221, // SSAFY 네트워크 Chain ID
-      gas: "auto", // ✅ 자동 설정
-      gasPrice: 0, // ✅ 기본 통화를 SSF로 사용하려면 gasPrice를 0으로 설정
+      url: "https://rpc.ssafy-blockchain.com",
+      accounts: [process.env.PRIVATE_KEY],
+      chainId: 31221,
+      gas: "auto",
+      gasPrice: 0,
+      timeout: 120000, // <-- 2분까지 여유
     },
   },
   solidity: {

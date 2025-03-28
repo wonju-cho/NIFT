@@ -16,6 +16,7 @@ import { ToolsPanel } from "@/components/gift/tools-panel"
 import { MessageForm } from "@/components/gift/message-form"
 import { v4 as uuidv4 } from "uuid"
 import { cn } from "@/lib/utils"
+import type { CardElementType } from "@/types"
 
 export default function GiftCardCustomizePage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -73,7 +74,7 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
 
   // 이미지 추가 핸들러 (ImageHandler 컴포넌트에서 사용)
   const handleAddImageFromHandler = (imageData: string) => {
-    const newElement = {
+    const newElement: CardElementType = {
       id: uuidv4(),
       type: "image",
       src: imageData,
@@ -86,9 +87,9 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
     }
 
     if (isFlipped) {
-      setBackElements((prev) => [...prev, newElement])
+      setBackElements((prev: CardElementType[]) => [...prev, newElement])
     } else {
-      setFrontElements((prev) => [...prev, newElement])
+      setFrontElements((prev: CardElementType[]) => [...prev, newElement])
     }
 
     setSelectedElementId(newElement.id)

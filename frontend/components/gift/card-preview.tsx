@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Repeat } from "lucide-react"
+import type { CardElement } from "@/types/gift-card"
 
 interface CardPreviewProps {
   cardData: any
@@ -98,6 +99,8 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
                   alt="Background"
                   className="w-full h-full object-cover"
                   crossOrigin="anonymous"
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => {
                     console.error("배경 이미지 로딩 오류")
                     ;(e.target as HTMLImageElement).style.display = "none"
@@ -107,7 +110,7 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
             )}
 
             {/* 앞면 요소들을 표시 - 스케일 적용 */}
-            {frontElements.map((element) => (
+            {frontElements.map((element: CardElement) => (
               <div
                 key={element.id}
                 className="absolute"
@@ -119,6 +122,7 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
                   transform: `rotate(${element.rotation}deg)`,
                   zIndex: element.zIndex || 1,
                   transformOrigin: "center center",
+                  willChange: "transform", // 성능 최적화
                 }}
               >
                 {element.type === "text" && (
@@ -144,6 +148,8 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
                       className="w-full h-full object-contain"
                       style={{ maxWidth: "100%", maxHeight: "100%" }}
                       crossOrigin="anonymous"
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         console.error("이미지 로딩 오류:", element.id)
                         ;(e.target as HTMLImageElement).src = "/placeholder.svg?height=100&width=100&text=이미지+오류"
@@ -169,6 +175,8 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
                         alt="Sticker"
                         className="w-full h-full object-contain"
                         crossOrigin="anonymous"
+                        loading="lazy"
+                        decoding="async"
                       />
                     )}
                   </div>
@@ -190,7 +198,7 @@ export function CardPreview({ cardData, className }: CardPreviewProps) {
           >
             {/* 뒷면 요소들을 감싸는 컨테이너 추가 - 반전 효과 상쇄 */}
             <div className="relative w-full h-full overflow-visible" style={{ transform: "rotateY(180deg)" }}>
-              {backElements.map((element) => (
+              {backElements.map((element: CardElement) => (
                 <div
                   key={element.id}
                   className="absolute"

@@ -4,7 +4,7 @@ export interface CardElement {
     src?: string
     content?: string
     x: number
-    y: number
+    y: number 
     width: number
     height: number
     rotation: number

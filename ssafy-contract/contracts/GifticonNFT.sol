@@ -37,7 +37,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
     // 시리얼 넘버 자동 증가용 변수 (100000번부터 시작)
     uint256 private _nextSerial = 100000;
-    enum TransferMode { Purchase, Gift } // 0: 구매 전송, 1: 선물
+    enum TransferMode { Purchase, Gift, Admin } // 0: 구매 전송, 1: 선물, 2: 관리자 소유권 이전
 
     // 매핑
     mapping(uint256 => uint256) private _serialToTokenId; // 시리얼 넘버 → tokenId
@@ -191,6 +191,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     // 기프티콘 사용 처리
     function redeem(uint256 serialNumber) public {
         SerialInfo storage info = _serialInfos[serialNumber];
+        require(info.redeemedAt == 0, "redeemedAt should not be set before");
         require(info.owner == msg.sender, "Not owner");
         require(!info.redeemed, "Already redeemed");
         require(!info.isPending, "Pending because it is send to someone");
@@ -257,7 +258,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         require(block.timestamp < info.pendingDate, "Gift state is Expired");
         
         // 친구에게 선물 전달
-        _internalTransfer(from, msg.sender, serialNumber);
+        _internalTransfer(from, msg.sender, serialNumber, TransferMode.Gift);
 
         info.isPending = false;
         info.pendingDate = 0;
@@ -357,32 +358,40 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         return _ownedSerials[owner];
     }
 
+    // 허용된 사용자만 특정 시리얼 넘버의 NFT를 강제 전송할 수 있음
+    function authorizedTransferBySerial(address from, address to, uint256 serialNumber) external onlyAuthorizedTransfer {
+        uint256 tokenId = _serialToTokenId[serialNumber];
+        require(balanceOf(from, tokenId) >= 1, "Sender doesn't own the token");
+        _internalTransfer(from, to, serialNumber, TransferMode.Admin);
+    }
+
     // 🛠️ 내부 함수
 
     // 다른 사용자에게 NFT 전달
-    function _internalTransfer(address from, address to, uint256 serialNumber) internal {
+    function _internalTransfer(address from, address to, uint256 serialNumber, TransferMode mode) internal {
         SerialInfo storage info = _serialInfos[serialNumber];
-        
-        // require 소유주 확인 필요
+
         require(info.owner == from, "Not owner");
         require(!info.redeemed, "Already redeemed");
 
         uint256 tokenId = _serialToTokenId[serialNumber];
+        require(balanceOf(from, tokenId) >= 1, "Sender doesn't own the token");
+
+        _safeTransferFrom(from, to, tokenId, 1, abi.encode(serialNumber, uint256(mode)));
 
         // 상태 업데이트
         info.owner = to;
         info.seller = address(0);
         info.price = 0;
+        info.isPending = false;
+        info.pendingDate = 0;
+        info.pendingRecipient = address(0);
 
-        // 안전한 전송
         _removeSerialFromOwner(from, serialNumber);
         _addSerialToOwner(to, serialNumber);
 
-        _safeTransferFrom(from, to, tokenId, 1, abi.encode(serialNumber, uint256(TransferMode.Gift)));
-
         emit SerialOwnershipTransferred(serialNumber, from, to);
     }
-
 
     // 전송/민팅/소각 전 호출되는 훅 함수
     function _beforeTokenTransfer(
