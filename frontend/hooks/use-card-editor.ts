@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { v4 as uuidv4 } from "uuid"
 import type { CardElement as CardElementType } from "@/types/gift-card"
 import { cardTemplates } from "@/data/card-templates"
@@ -32,120 +32,151 @@ export function useCardEditor(giftId: string) {
   const editorRef = useRef<HTMLDivElement>(null)
 
   // 선택된 요소 가져오기
-  const selectedElement = isFlipped
-    ? backElements.find((el) => el.id === selectedElementId)
-    : frontElements.find((el) => el.id === selectedElementId)
+  const selectedElement = useMemo(() => {
+    return isFlipped
+      ? backElements.find((el) => el.id === selectedElementId)
+      : frontElements.find((el) => el.id === selectedElementId)
+  }, [isFlipped, backElements, frontElements, selectedElementId])
 
   // 요소 선택 핸들러
-  const handleSelectElement = (id: string) => {
-    setSelectedElementId(id)
+  const handleSelectElement = useCallback(
+    (id: string) => {
+      setSelectedElementId(id)
 
-    const element = isFlipped ? backElements.find((el) => el.id === id) : frontElements.find((el) => el.id === id)
+      const element = isFlipped ? backElements.find((el) => el.id === id) : frontElements.find((el) => el.id === id)
 
-    if (element?.type === "text") {
-      setEditingTextId(id)
-      setEditingTextContent(element.content || "")
-      // 도구 탭으로 자동 전환
-      setActiveTab("tools")
-    } else {
-      setEditingTextId(null)
-    }
-  }
+      if (element?.type === "text") {
+        setEditingTextId(id)
+        setEditingTextContent(element.content || "")
+        // 도구 탭으로 자동 전환
+        setActiveTab("tools")
+      } else {
+        setEditingTextId(null)
+      }
+    },
+    [isFlipped, backElements, frontElements],
+  )
 
   // 요소 업데이트 핸들러
-  const handleUpdateElement = (updatedElement: CardElementType) => {
-    if (isFlipped) {
-      setBackElements(backElements.map((el) => (el.id === updatedElement.id ? updatedElement : el)))
-    } else {
-      setFrontElements(frontElements.map((el) => (el.id === updatedElement.id ? updatedElement : el)))
-    }
-  }
+  const handleUpdateElement = useCallback(
+    (updatedElement: CardElementType) => {
+      if (isFlipped) {
+        setBackElements((prev) => prev.map((el) => (el.id === updatedElement.id ? updatedElement : el)))
+      } else {
+        setFrontElements((prev) => prev.map((el) => (el.id === updatedElement.id ? updatedElement : el)))
+      }
+    },
+    [isFlipped],
+  )
 
   // 요소 삭제 핸들러
-  const handleDeleteElement = (id: string) => {
-    if (isFlipped) {
-      setBackElements(backElements.filter((el) => el.id !== id))
-    } else {
-      setFrontElements(frontElements.filter((el) => el.id !== id))
-    }
+  const handleDeleteElement = useCallback(
+    (id: string) => {
+      if (isFlipped) {
+        setBackElements((prev) => prev.filter((el) => el.id !== id))
+      } else {
+        setFrontElements((prev) => prev.filter((el) => el.id !== id))
+      }
 
-    if (selectedElementId === id) {
-      setSelectedElementId(null)
-      setEditingTextId(null)
-    }
-  }
+      if (selectedElementId === id) {
+        setSelectedElementId(null)
+        setEditingTextId(null)
+      }
+    },
+    [isFlipped, selectedElementId],
+  )
 
   // 이미지 추가 핸들러
-  const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleAddImage = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
 
-    // 파일 크기 제한 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert("이미지 크기는 5MB 이하여야 합니다.")
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      if (!event.target?.result) {
-        console.error("이미지를 읽을 수 없습니다.")
+      // 파일 크기 제한 (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("이미지 크기는 5MB 이하여야 합니다.")
         return
       }
 
-      try {
-        const imageData = event.target.result as string
-
-        // 이미지 데이터 유효성 검사
-        if (!imageData.startsWith("data:image/")) {
-          throw new Error("유효하지 않은 이미지 형식입니다.")
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        if (!event.target?.result) {
+          console.error("이미지를 읽을 수 없습니다.")
+          return
         }
 
-        console.log("이미지 데이터 로드 성공:", imageData.substring(0, 50) + "...")
+        try {
+          const imageData = event.target.result as string
 
-        // 이미지 미리 로드하여 유효성 확인
-        const img = new Image()
-        img.onload = () => {
-          const newElement: CardElementType = {
-            id: uuidv4(),
-            type: "image",
-            src: imageData,
-            x: 50,
-            y: 50,
-            width: 150,
-            height: 150,
-            rotation: 0,
-            zIndex: isFlipped ? backElements.length + 1 : frontElements.length + 1,
+          // 이미지 데이터 유효성 검사
+          if (!imageData.startsWith("data:image/")) {
+            throw new Error("유효하지 않은 이미지 형식입니다.")
           }
 
-          if (isFlipped) {
-            setBackElements((prev) => [...prev, newElement])
-          } else {
-            setFrontElements((prev) => [...prev, newElement])
+          // 이미지 최적화 (크기 조정)
+          const img = new Image()
+          img.onload = () => {
+            // 이미지 크기 최적화
+            const canvas = document.createElement("canvas")
+            const maxSize = 1200
+            let width = img.width
+            let height = img.height
+
+            if (width > maxSize || height > maxSize) {
+              if (width > height) {
+                height = Math.round((height * maxSize) / width)
+                width = maxSize
+              } else {
+                width = Math.round((width * maxSize) / height)
+                height = maxSize
+              }
+            }
+
+            canvas.width = width
+            canvas.height = height
+            const ctx = canvas.getContext("2d")
+            ctx?.drawImage(img, 0, 0, width, height)
+
+            // 최적화된 이미지 데이터
+            const optimizedImageData = canvas.toDataURL("image/jpeg", 0.85)
+
+            const newElement: CardElementType = {
+              id: uuidv4(),
+              type: "image",
+              src: optimizedImageData,
+              x: 50,
+              y: 50,
+              width: 150,
+              height: 150,
+              rotation: 0,
+              zIndex: isFlipped ? backElements.length + 1 : frontElements.length + 1,
+            }
+
+            if (isFlipped) {
+              setBackElements((prev) => [...prev, newElement])
+            } else {
+              setFrontElements((prev) => [...prev, newElement])
+            }
+
+            setSelectedElementId(newElement.id)
           }
 
-          setSelectedElementId(newElement.id)
+          img.src = imageData
+        } catch (error) {
+          console.error("이미지 처리 중 오류 발생:", error)
+          alert("이미지를 처리하는 중 오류가 발생했습니다.")
         }
-
-        img.onerror = () => {
-          console.error("이미지 로드 실패")
-          alert("이미지를 로드할 수 없습니다. 다른 이미지를 선택해주세요.")
-        }
-
-        img.src = imageData
-      } catch (error) {
-        console.error("이미지 처리 중 오류 발생:", error)
-        alert("이미지를 처리하는 중 오류가 발생했습니다.")
       }
-    }
 
-    reader.onerror = (error) => {
-      console.error("이미지 읽기 오류:", error)
-      alert("이미지를 읽을 수 없습니다.")
-    }
+      reader.onerror = (error) => {
+        console.error("이미지 읽기 오류:", error)
+        alert("이미지를 읽을 수 없습니다.")
+      }
 
-    reader.readAsDataURL(file)
-  }
+      reader.readAsDataURL(file)
+    },
+    [isFlipped, backElements.length, frontElements.length],
+  )
 
   // 배경 이미지 추가 핸들러
   const handleAddBackgroundImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,31 +209,34 @@ export function useCardEditor(giftId: string) {
   }
 
   // 스티커 추가 핸들러
-  const handleAddSticker = (sticker: { id: string; src: string }) => {
-    // 카드 중앙에 스티커 배치
-    const newElement: CardElementType = {
-      id: uuidv4(),
-      type: "sticker",
-      src: sticker.src,
-      x: 160, // 카드 중앙 (400/2 - 40)
-      y: 110, // 카드 중앙 (300/2 - 40)
-      width: 80,
-      height: 80,
-      rotation: 0,
-      zIndex: isFlipped ? backElements.length + 1 : frontElements.length + 1,
-    }
+  const handleAddSticker = useCallback(
+    (sticker: { id: string; src: string }) => {
+      // 카드 중앙에 스티커 배치
+      const newElement: CardElementType = {
+        id: uuidv4(),
+        type: "sticker",
+        src: sticker.src,
+        x: 160, // 카드 중앙 (400/2 - 40)
+        y: 110, // 카드 중앙 (300/2 - 40)
+        width: 80,
+        height: 80,
+        rotation: 0,
+        zIndex: isFlipped ? backElements.length + 1 : frontElements.length + 1,
+      }
 
-    if (isFlipped) {
-      setBackElements((prev) => [...prev, newElement])
-    } else {
-      setFrontElements((prev) => [...prev, newElement])
-    }
+      if (isFlipped) {
+        setBackElements((prev) => [...prev, newElement])
+      } else {
+        setFrontElements((prev) => [...prev, newElement])
+      }
 
-    setSelectedElementId(newElement.id)
-  }
+      setSelectedElementId(newElement.id)
+    },
+    [isFlipped, backElements.length, frontElements.length],
+  )
 
   // 텍스트 추가 핸들러
-  const handleAddText = () => {
+  const handleAddText = useCallback(() => {
     const newElement: CardElementType = {
       id: uuidv4(),
       type: "text",
@@ -227,7 +261,7 @@ export function useCardEditor(giftId: string) {
     setEditingTextContent(newElement.content || "")
     // 도구 탭으로 자동 전환
     setActiveTab("tools")
-  }
+  }, [isFlipped, backElements.length, frontElements.length])
 
   // 텍스트 내용 변경 핸들러 - 입력 필드 값이 변경될 때마다 호출
   const handleTextContentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -270,21 +304,24 @@ export function useCardEditor(giftId: string) {
   }
 
   // 템플릿 변경 핸들러
-  const handleChangeTemplate = (template: typeof selectedTemplate) => {
-    if (isFlipped) {
-      setSelectedBackTemplate(template)
-      // 사용자 정의 템플릿이 아닌 경우 배경 이미지 초기화
-      if (!template.isCustom) {
-        setCustomBackBackground(null)
+  const handleChangeTemplate = useCallback(
+    (template: typeof selectedTemplate) => {
+      if (isFlipped) {
+        setSelectedBackTemplate(template)
+        // 사용자 정의 템플릿이 아닌 경우 배경 이미지 초기화
+        if (!template.isCustom) {
+          setCustomBackBackground(null)
+        }
+      } else {
+        setSelectedTemplate(template)
+        // 사용자 정의 템플릿이 아닌 경우 배경 이미지 초기화
+        if (!template.isCustom) {
+          setCustomBackground(null)
+        }
       }
-    } else {
-      setSelectedTemplate(template)
-      // 사용자 정의 템플릿이 아닌 경우 배경 이미지 초기화
-      if (!template.isCustom) {
-        setCustomBackground(null)
-      }
-    }
-  }
+    },
+    [isFlipped],
+  )
 
   // 카드 외부 클릭 시 선택 해제
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -295,7 +332,7 @@ export function useCardEditor(giftId: string) {
   }
 
   // 카드 뒤집기 핸들러
-  const handleFlipCard = () => {
+  const handleFlipCard = useCallback(() => {
     setIsFlipping(true)
     setSelectedElementId(null)
     setEditingTextId(null)
@@ -305,7 +342,7 @@ export function useCardEditor(giftId: string) {
       setIsFlipped((prev) => !prev)
       setIsFlipping(false)
     }, 400)
-  }
+  }, [])
 
   // 메시지 변경 핸들러 - 뒷면에 메시지 자동 추가
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -371,7 +408,7 @@ export function useCardEditor(giftId: string) {
   }
 
   // 선물 카드 저장 및 다음 단계로 이동
-  const saveCardData = () => {
+  const saveCardData = useCallback(() => {
     try {
       // 이미지 데이터 크기 확인 및 경고
       let totalSize = 0
@@ -461,12 +498,6 @@ export function useCardEditor(giftId: string) {
         recipientName,
       }
 
-      // 디버깅용 로그 추가
-      console.log("저장할 카드 데이터:", JSON.stringify(cardData).substring(0, 200) + "...")
-      console.log("총 데이터 크기:", JSON.stringify(cardData).length / 1024 / 1024, "MB")
-      console.log("프론트 요소 수:", finalFrontElements.length)
-      console.log("백 요소 수:", finalBackElements.length)
-
       // localStorage에 카드 데이터 저장
       try {
         localStorage.setItem(`card-data-${giftId}`, JSON.stringify(cardData))
@@ -482,7 +513,18 @@ export function useCardEditor(giftId: string) {
       alert("카드 데이터 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
       return false
     }
-  }
+  }, [
+    frontElements,
+    backElements,
+    customBackground,
+    customBackBackground,
+    selectedTemplate,
+    selectedBackTemplate,
+    isFlipped,
+    message,
+    recipientName,
+    giftId,
+  ])
 
   // 페이지 로드 시 localStorage에서 카드 데이터 불러오기
   useEffect(() => {
@@ -709,6 +751,10 @@ export function useCardEditor(giftId: string) {
     handleMessageChange,
     handleRecipientChange,
     saveCardData,
+    // 추가: 외부에서 필요한 상태 설정 함수들 노출
+    setSelectedElementId,
+    setFrontElements,
+    setBackElements,
   }
 }
 

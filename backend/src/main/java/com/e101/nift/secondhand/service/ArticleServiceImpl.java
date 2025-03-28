@@ -161,4 +161,9 @@ public class ArticleServiceImpl implements ArticleService {
 
         articleRepository.save(article);
     }
+
+    @Override
+    public void deleteArticle(Long id) {
+        articleRepository.deleteById(id);
+    }
 }

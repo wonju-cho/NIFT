@@ -59,7 +59,7 @@ export const ArticleService = {
     }
   },
 
-  // 게시글 작성성
+  // 게시글 작성
   async createArticle(postData: {
     title: string;
     description: string;
@@ -94,6 +94,30 @@ export const ArticleService = {
       return response.data;
     } catch (error) {
       console.error("게시글 등록 중 오류 발생:", error);
+      throw error;
+    }
+  },
+
+  // 게시글 삭제
+  async deleteArticle(articleId: number): Promise<void> {
+    const accessToken =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
+
+    if (!accessToken) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_BASE_URL}/secondhand-articles/${articleId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+    } catch (error) {
+      console.error("게시글 삭제 중 오류 발생:", error);
       throw error;
     }
   },
