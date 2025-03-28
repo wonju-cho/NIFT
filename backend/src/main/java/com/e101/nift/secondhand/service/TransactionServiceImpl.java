@@ -33,6 +33,8 @@ public class TransactionServiceImpl implements TransactionService{
     @Override
     public String getTxStatus(String txHash) {
         Optional<TransactionReceipt> receiptOpt = getTransactionReceipt(txHash);
-        return receiptOpt.filter(TransactionReceipt::isStatusOK).map(receipt -> ContractStatus.SUCCESS.getType()).orElse(ContractStatus.FAILED.getType());
+        return receiptOpt.filter(TransactionReceipt::isStatusOK)
+                .map(receipt -> ContractStatus.SUCCESS.getType())
+                .orElse(ContractStatus.FAILED.getType());
     }
 }
