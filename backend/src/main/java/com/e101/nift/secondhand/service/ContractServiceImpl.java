@@ -9,6 +9,9 @@ import com.e101.nift.secondhand.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.web3j.protocol.core.methods.response.Log;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -22,7 +25,7 @@ public class ContractServiceImpl implements ContractService {
     public void addArticleHistory(Long articleId, String txHash, Long userId) {
         articleRepository.findById(articleId).orElseThrow(() -> new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND));
 
-        String status = transactionService.getTxStatus(txHash);
+        List<Log> logs = transactionService.getTransactionLogs(txHash);
 
         articleHistoryRepository.save(
                 ArticleHistory.builder()
