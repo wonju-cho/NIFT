@@ -60,14 +60,13 @@ public class ContractServiceImpl implements ContractService {
                         NFT_PURCHASED_EVENT.getNonIndexedParameters()
                 );
 
-                BigInteger serialNumber = (BigInteger) decoded.get(0).getValue();
-                BigInteger price = (BigInteger) decoded.get(1).getValue();
+//                BigInteger serialNumber = (BigInteger) decoded.get(0).getValue();
+//                BigInteger price = (BigInteger) decoded.get(1).getValue();
 
                 System.out.println(" ❤️❤️❤️ addArticleHistory 진입 - articleId: " + articleId + ", txHash: " + txHash);
 
                 Long buyerId = userService.getUserIdByWalletAddress(buyerWallet);
                 if (buyerId == null) {
-//                    log.warn("⚠️ 구매자의 wallet address로 userId 조회 실패: {}", buyerWallet);
                     throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
                 }
                 // 구매자 기록 저장
