@@ -375,3 +375,13 @@ export async function isSellingNFT(serialNumber: number): Promise<boolean> {
     Number(price) > 0 && seller !== "0x0000000000000000000000000000000000000000"
   );
 }
+
+// 시리얼 넘버로 tokenID 가져오기
+export async function getTokenIdBySerial(serialNumber: number): Promise<number> {
+  const provider = new ethers.BrowserProvider(window.ethereum)
+  const signer = await provider.getSigner()
+  const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer)
+
+  const tokenId = await contract.getTokenIdBySerial(serialNumber)
+  return Number(tokenId)
+}

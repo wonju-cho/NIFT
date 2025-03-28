@@ -219,7 +219,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
 
                   <div className="col-span-5">
                     <Link
-                      href={`/gift/${params.id}/customize`}
+                      href={`/gift/${params.id}/customize?type=article`}
                       className="block"
                     >
                       <Button

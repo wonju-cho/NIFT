@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0x252eA9Eb8d64A9C05013f7c503E84408357A811a";
+  const contractAddress = "0x2302f332B8c84CECDD7b2D9d162EeFD8AA140d02";
   const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
 
   const tokenId = 1;

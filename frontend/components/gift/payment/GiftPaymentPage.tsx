@@ -11,7 +11,13 @@ import { GiftPaymentSummary } from "./GiftPaymentSummary"
 import { v4 as uuidv4 } from "uuid"
 import { Button } from "@/components/ui/button"
 
-export default function GiftPaymentPageContent({ params }: { params: { id: string } }) {
+export default function GiftPaymentPageContent({ 
+  params,
+  type,
+}: { 
+  params: { id: string };
+  type: string;
+}) {
   const router = useRouter()
   const [article, setArticle] = useState<any>(null)
   const [cardData, setCardData] = useState<any>(null)
