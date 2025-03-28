@@ -1,5 +1,7 @@
 package com.e101.nift.secondhand.service;
 
+import com.e101.nift.secondhand.exception.ArticleErrorCode;
+import com.e101.nift.secondhand.exception.ArticleException;
 import com.e101.nift.secondhand.model.state.ContractStatus;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.Web3j;
@@ -19,20 +21,18 @@ public class TransactionServiceImpl implements TransactionService{
     }
 
     @Override
-    public Optional<TransactionReceipt> getTransactionReceipt(String txHash) throws IOException {
-        EthGetTransactionReceipt receiptResponse = web3j.ethGetTransactionReceipt(txHash).send();
-        return receiptResponse.getTransactionReceipt();
+    public Optional<TransactionReceipt> getTransactionReceipt(String txHash) {
+        try {
+            EthGetTransactionReceipt receiptResponse = web3j.ethGetTransactionReceipt(txHash).send();
+            return receiptResponse.getTransactionReceipt();
+        } catch (IOException e) {
+            throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
+        }
     }
 
     @Override
-    public String getTxStatus(String txHash) throws IOException {
+    public String getTxStatus(String txHash) {
         Optional<TransactionReceipt> receiptOpt = getTransactionReceipt(txHash);
-        if (receiptOpt.isPresent()) {
-            TransactionReceipt receipt = receiptOpt.get();
-            boolean isSuccess = receipt.isStatusOK();
-            return isSuccess ? ContractStatus.SUCCESS.getType() : ContractStatus.FAILED.getType();
-        } else {
-            return ContractStatus.FAILED.getType();
-        }
+        return receiptOpt.filter(TransactionReceipt::isStatusOK).map(receipt -> ContractStatus.SUCCESS.getType()).orElse(ContractStatus.FAILED.getType());
     }
 }
