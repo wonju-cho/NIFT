@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y findutils
 
 # Docker compose에서 설정한 env 전달 받기
 ARG BUILD_MODE
-ENV BUILD_MODE=${BUILD_MODE}
 
 # Gradle 실행에 필요한 파일만 먼저 복사
 COPY gradlew gradlew
