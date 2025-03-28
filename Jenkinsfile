@@ -94,9 +94,34 @@ pipeline {
 	}
 
 	post {
-		always {
-			sh 'rm -f .env'
-		}
+	    always {
+	        script {
+	            def issues = recordIssues(tools: [
+	            java(),
+	            eslint(pattern: 'eslint-report.json')
+	            ]) 
+
+	            def count = issues.totalSize
+	            def analysisUrl = "${env.BUILD_URL}warnings-ng/"
+
+	            def emoji = (count > 0) ? ":warning:" : ":white_check_mark:"
+	            def statusMsg = (count > 0) ? "경고 ${count}개 발생" : "경고 없음"
+
+	            def message = """
+	            ${emoji} *Static Analysis Report*
+	            - Job: ${env.JOB_NAME}
+	            - Build: #${env.BUILD_NUMBER}
+	            - Result: ${statusMsg}
+	            - [경고 리포트 보기](${analysisUrl})
+	            """
+
+	            sh """
+	            curl -X POST -H 'Content-Type: application/json' \\
+	            -d '{ "text": "${message.replaceAll("\n", "\\\\n")}" }' \\
+	            https://meeting.ssafy.com/hooks/ejx88yy1m3f4jqnuu84u4artye
+	            """
+	        }
+	    }
 
 		success {
 			script {
