@@ -35,18 +35,25 @@ pipeline {
 		    steps {
 		        withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
 		            script {
+		                echo "🔍 Reading DB_CRED_FILE: ${DB_CRED_FILE}"
+		                sh "cat ${DB_CRED_FILE} || echo ❌ Can't read file"
+
 		                def json = readJSON file: "${DB_CRED_FILE}"
 
-		                json.each { 
-		                	key, value -> env[key] = value
+		                json.each { key, value ->
+		                    echo "📦 ${key}=${value}"
 		                }
 
 		                def envContent = json.collect { key, value -> "${key}=${value}" }.join('\n')
 		                writeFile file: '.env', text: envContent
+
+		                echo ".env file written!"
+		                sh "cat .env"
 		            }
 		        }
 		    }
 		}
+
 
 
 		stage('Reset containers') {
