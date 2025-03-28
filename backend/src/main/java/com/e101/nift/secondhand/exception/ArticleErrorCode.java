@@ -9,7 +9,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum ArticleErrorCode implements BaseErrorCode {
     ARTICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
-    TRANSACTION_EXCEPTION(HttpStatus.BAD_GATEWAY, "Tx Receipt 조회 실패");
+    TRANSACTION_EXCEPTION(HttpStatus.BAD_GATEWAY, "Tx Receipt 조회 실패"),
+    UNPROCESSABLE_TRANSACTION(HttpStatus.UNPROCESSABLE_ENTITY, "실패한 트랜잭션입니다. 정상적인 트랜잭션을 전송해주세요");
 
     private final HttpStatus status;
     private final String message;
