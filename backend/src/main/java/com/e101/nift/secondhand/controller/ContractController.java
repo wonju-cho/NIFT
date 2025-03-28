@@ -1,6 +1,7 @@
 package com.e101.nift.secondhand.controller;
 
 import com.e101.nift.common.security.CustomUserDetails;
+import com.e101.nift.secondhand.model.dto.request.TxHashDTO;
 import com.e101.nift.secondhand.service.ContractService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -10,10 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/secondhand-articles")
@@ -35,9 +33,10 @@ public class ContractController {
     public ResponseEntity<?> createContract(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(name = "articleId", description = "거래할 게시글 ID", example = "1")
-            @PathVariable("articleId") Long articleId
-    ) {
-        contractService.addArticleHistory(articleId, userDetails.getUserId());
+            @PathVariable("articleId") Long articleId,
+            @RequestBody TxHashDTO hashDTO
+        ) {
+        contractService.addArticleHistory(articleId, hashDTO.getTxHash(), userDetails.getUserId());
 
         return ResponseEntity.noContent().build();
     }
