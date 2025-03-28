@@ -1,4 +1,6 @@
 import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { getTokenIdBySerial } from "@/lib/api/web3"
 
 interface GiftCardProps {
   title: string
@@ -6,9 +8,23 @@ interface GiftCardProps {
   expiryDays?: string
   imageUrl: string
   usedDate?: string | null
+  serialNum: number
 }
 
-export function GiftCard({ title, brand, expiryDays, imageUrl, usedDate = null }: GiftCardProps) {
+export function GiftCard({ title, brand, expiryDays, imageUrl, usedDate = null, serialNum }: GiftCardProps & {serialNum: number}) {
+  const router = useRouter()
+
+  const handleGift = async (serialNum: number) => {
+    try {
+      const tokenId = await getTokenIdBySerial(serialNum)
+      router.push(`/gift/${tokenId}/customize?type=gifticon`)
+    } catch (error) {
+      console.error("gifticonId 조회 실패:", error)
+      alert("기프티콘 정보를 가져오지 못했습니다.")
+    }
+  }
+  
+  
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-white transition-all hover:shadow-md">
       <div className="relative aspect-square overflow-hidden">
@@ -48,7 +64,10 @@ export function GiftCard({ title, brand, expiryDays, imageUrl, usedDate = null }
           <button className="rounded border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary hover:text-white transition-colors">
             사용하기
           </button>
-          <button className="rounded border border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-700 hover:text-white transition-colors">
+          <button 
+            className="rounded border border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-700 hover:text-white transition-colors"
+            onClick={() => handleGift(serialNum)}
+          >
             선물하기
           </button>
         </div>

@@ -18,7 +18,14 @@ import { v4 as uuidv4 } from "uuid"
 import { cn } from "@/lib/utils"
 import type { CardElementType } from "@/types"
 
-export default function GiftCardCustomizePage({ params }: { params: { id: string } }) {
+export default function GiftCardCustomizePage({ 
+  params,
+  searchParams,
+}: { 
+  params: { id: string };
+  searchParams: {type: string};
+}) {
+  const type = searchParams.type
   const router = useRouter()
   const {
     activeTab,
@@ -68,7 +75,7 @@ export default function GiftCardCustomizePage({ params }: { params: { id: string
   // 선물 카드 저장 및 다음 단계로 이동
   const handleSaveCard = () => {
     if (saveCardData()) {
-      router.push(`/gift/${params.id}/payment`)
+      router.push(`/gift/${params.id}/payment?type=${type}`)
     }
   }
 

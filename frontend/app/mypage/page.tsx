@@ -666,6 +666,7 @@ export default function MyPage() {
                                   .map((card) => (
                                     <GiftCard
                                       key={card.serialNum}
+                                      serialNum={card.serialNum}
                                       title={card.title}
                                       brand={card.brand}
                                       imageUrl={card.image}
@@ -728,6 +729,7 @@ export default function MyPage() {
                                   .map((card) => (
                                     <GiftCard
                                       key={card.serialNum}
+                                      serialNum={card.serialNum}
                                       title={card.title}
                                       brand={card.brand}
                                       imageUrl={card.image}
