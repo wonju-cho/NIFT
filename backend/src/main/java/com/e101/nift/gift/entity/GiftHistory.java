@@ -3,10 +3,7 @@ package com.e101.nift.gift.entity;
 import com.e101.nift.gifticon.entity.Gifticon;
 import com.e101.nift.user.entity.User;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class GiftHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,10 +27,16 @@ public class GiftHistory {
     private User fromUserId;
 
     @ManyToOne
-    @JoinColumn(name = "to_user_id", nullable = false)
+    @JoinColumn(name = "to_user_id", nullable = true)
     private User toUserId;
+
+    @Column(name = "to_user_kakao_id", nullable = false)
+    private Long toUserKakaoId;
 
     @ManyToOne
     @JoinColumn(name = "gifticon_id", nullable = false)
     private Gifticon gifticon;
+
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isReceived = false;
 }

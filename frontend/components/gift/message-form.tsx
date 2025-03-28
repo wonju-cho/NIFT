@@ -9,7 +9,7 @@ import { Mail, User } from "lucide-react"
 interface MessageFormProps {
   recipientName: string
   message: string
-  onRecipientChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onRecipientChange: (name: string) => void
   onMessageChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 }
 
@@ -26,7 +26,7 @@ export function MessageForm({ recipientName, message, onRecipientChange, onMessa
             id="recipient"
             placeholder="받는 사람의 이름을 입력하세요"
             value={recipientName}
-            onChange={onRecipientChange}
+            onChange={(e) => onRecipientChange(e.target.value)} // 여기!
           />
         </div>
         <div>
@@ -45,4 +45,3 @@ export function MessageForm({ recipientName, message, onRecipientChange, onMessa
     </div>
   )
 }
-

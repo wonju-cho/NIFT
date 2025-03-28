@@ -41,4 +41,7 @@ public class Article {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isSold = false; // 판매 완료 여부 표시
 }
