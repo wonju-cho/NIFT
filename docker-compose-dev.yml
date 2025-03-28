@@ -54,7 +54,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       args:
-        BUILD_MODE: dev
+        BUILD_MODE: development
     restart: always
     container_name: backend
     env_file:
@@ -77,7 +77,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        BUILD_MODE: dev
+        NODE_ENV: development
     restart: always
     container_name: frontend
     depends_on: 
