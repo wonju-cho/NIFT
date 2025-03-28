@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -24,18 +22,14 @@ public class ContractServiceImpl implements ContractService {
     public void addArticleHistory(Long articleId, String txHash, Long userId) {
         articleRepository.findById(articleId).orElseThrow(() -> new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND));
 
-        try {
-            String status = transactionService.getTxStatus(txHash);
+        String status = transactionService.getTxStatus(txHash);
 
-            articleHistoryRepository.save(
-                    ArticleHistory.builder()
-                            .articleId(articleId)
-                            .historyType(ContractType.PURCHASE.getType())
-                            .userId(userId)
-                            .build()
-            );
-
-        } catch (IOException e) {
-        }
+        articleHistoryRepository.save(
+                ArticleHistory.builder()
+                        .articleId(articleId)
+                        .historyType(ContractType.PURCHASE.getType())
+                        .userId(userId)
+                        .build()
+        );
     }
 }
