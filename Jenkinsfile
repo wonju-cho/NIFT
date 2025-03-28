@@ -5,46 +5,56 @@ pipeline {
 		choice(name: 'ENV', choices: ['dev', 'production'], description: 'Select environment')
 	}
 
-	stages{
+	stages {
 
 		stage('Decide Environment') {
 			steps {
 				script {
-					//브랜치 이름
 					def branch = env.BRANCH_NAME ? env.BRANCH_NAME : env.GIT_BRANCH
-
 					echo "🚀 Branch: ${branch}"
 
-                    // 자동 설정: ENV 파라미터가 비어 있으면 브랜치 기준으로 할당
-                    if (!params.ENV || params.ENV.trim() == '') {
-                        if (branch == 'develop') {
-                            env.ENV = 'dev'
-                        } else {
-                            env.ENV = 'production'
-                        }
-                        echo "🔄 ENV auto-detected as: ${env.ENV}"
-                    } else {
-                        env.ENV = params.ENV
-                        echo "✅ ENV manually selected: ${env.ENV}"
-                    }
+					if (!params.ENV || params.ENV.trim() == '') {
+						if (branch == 'develop') {
+							env.ENV = 'dev'
+						} else {
+							env.ENV = 'production'
+						}
+						echo "🔄 ENV auto-detected as: ${env.ENV}"
+					} else {
+						env.ENV = params.ENV
+						echo "✅ ENV manually selected: ${env.ENV}"
+					}
+				}
+			}
+		}
+
+		stage('Check DB_CRED File') {
+			steps {
+				withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
+					sh '''
+						echo "📁 DB_CRED_FILE 경로: $DB_CRED_FILE"
+						ls -l $DB_CRED_FILE
+						echo "📄 DB_CRED_FILE 내용:"
+						cat $DB_CRED_FILE
+					'''
 				}
 			}
 		}
 
 		stage('Parse and Write .env') {
-		    steps {
-		        withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
-		            script {
-		                echo "🔍 Reading DB_CRED_FILE"
+			steps {
+				withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
+					script {
+						echo "🔍 Reading DB_CRED_FILE"
 
-		                def json = readJSON file: "${DB_CRED_FILE}"
-		                json.each { key, value -> env[key] = value }
+						def json = readJSON file: "${DB_CRED_FILE}"
+						json.each { key, value -> env[key] = value }
 
-		                def envContent = json.collect { key, value -> "${key}=${value}" }.join('\n')
-		                writeFile file: '.env', text: envContent
-		            }
-		        }
-		    }
+						def envContent = json.collect { key, value -> "${key}=${value}" }.join('\n')
+						writeFile file: '.env', text: envContent
+					}
+				}
+			}
 		}
 
 
@@ -52,9 +62,8 @@ pipeline {
 		stage('Reset containers') {
 			steps {
 				script {
-					if(params.ENV == 'dev')
-					{
-						sh 'docker-compose --env-file .env down -v'		
+					if (params.ENV == 'dev') {
+						sh 'docker-compose --env-file .env down -v'
 					}
 				}
 			}
@@ -88,27 +97,23 @@ pipeline {
 			sh 'rm -f .env'
 		}
 
-		//빌드 실패시 자동 롤백을 위한 step
 		success {
 			script {
-				if(params.ENV == 'production')
-				{
+				if (params.ENV == 'production') {
 					echo '✅ Build succeeded, tagging as stable...'
-			        sh '''
-			            docker tag backend backend:stable
-			            docker tag frontend frontend:stable
-			            docker push backend:stable
-			            docker push frontend:stable
-			        '''	
+					sh '''
+						docker tag backend backend:stable
+						docker tag frontend frontend:stable
+						docker push backend:stable
+						docker push frontend:stable
+					'''
 				}
 			}
 		}
 
 		failure {
 			script {
-				if(params.ENV == 'production')
-				{
-					//stop -> rm -> pull  -> run
+				if (params.ENV == 'production') {
 					echo '❗ Build failed. Rolling back to stable image...'
 					sh '''
 						docker stop backend || true
@@ -119,7 +124,7 @@ pipeline {
 						docker pull frontend:stable
 						docker run -d --name backend --network backend-tier -p 8081:8081 backend:stable
 						docker run -d --name frontend --network frontend-tier -p 3000:3000 frontend:stable
-					'''		
+					'''
 				}
 			}
 		}
