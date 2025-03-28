@@ -6,8 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ContractType {
-    SALE(Short.parseShort("1")),
-    PURCHASE(Short.parseShort("2"));
+    PURCHASE(Short.parseShort("1")),
+    SALE(Short.parseShort("2")),
+    GIFT(Short.parseShort("3"));
 
     private final short type;
 }

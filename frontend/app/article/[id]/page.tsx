@@ -144,7 +144,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     try {
       await window.ethereum.request({ method: "eth_requestAccounts" });
 
-      const data = await buyNFT(100010);
+      const data = await buyNFT(100019);
 
       if (data.success) {
         setPurchaseStatus("success");

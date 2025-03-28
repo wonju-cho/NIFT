@@ -28,7 +28,6 @@ public class TransactionServiceImpl implements TransactionService {
     private final String privateKey;
     private final String contractAddress;
 
-    // 생성자에서 @Value를 통해 직접 주입
     public TransactionServiceImpl(@Value("${web3j.rpc.url}") String rpcUrl,
                                   @Value("${web3j.contract.address}") String contractAddress,
                                   @Value("${web3j.private.key}") String privateKey) {
@@ -65,7 +64,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .map(receipt -> ContractStatus.SUCCESS.getType())
                 .orElseThrow(() -> {
                     log.error("Transaction failed or not processed: {}", txHash);
-                    throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
+                    return new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
                 });
     }
 
@@ -75,7 +74,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .map(TransactionReceipt::getLogs)
                 .orElseThrow(() -> {
                     log.error("No logs found for transaction: {}", txHash);
-                    throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
+                    return new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
                 });
     }
 
@@ -86,7 +85,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .filter(TransactionReceipt::isStatusOK)
                 .orElseThrow(() -> {
                     log.error("Transaction failed or not processed: {}", txHash);
-                    throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
+                    return new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
                 });
 
         List<GifticonNFT.NFTPurchasedEventResponse> events = GifticonNFT.getNFTPurchasedEvents(receipt);

@@ -8,11 +8,10 @@ import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.state.ContractType;
 import com.e101.nift.secondhand.repository.ArticleHistoryRepository;
 import com.e101.nift.secondhand.repository.ArticleRepository;
+import com.e101.nift.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -21,19 +20,30 @@ public class ContractServiceImpl implements ContractService {
     private final ArticleHistoryRepository articleHistoryRepository;
     private final ArticleRepository articleRepository;
     private final TransactionService transactionService;
+    private final UserService userService;
 
     @Override
-    public void addArticleHistory(Long articleId, String txHash, Long userId) {
+    public void addArticleHistory(Long articleId, String txHash, Long loginUser) {
         articleRepository.findById(articleId).orElseThrow(() -> new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND));
 
-        List<GifticonNFT.NFTPurchasedEventResponse> logs = transactionService.getPurchaseEventsByTxHash(txHash);
 
-        log.info("[ContractService] 트랜잭션 로그 확인: {}",logs);
-        log.info("[ContractService] 트랜잭션 발생 시간: {}", TimeUtil.convertTimestampToLocalTime(logs.get(0).transactionTime));
+        GifticonNFT.NFTPurchasedEventResponse purchasedEventResponse = transactionService.getPurchaseEventsByTxHash(txHash).getFirst();
+
+        log.info("[ContractService] 트랜잭션 로그 확인: {}",purchasedEventResponse);
+        log.info("[ContractService] 트랜잭션 발생 시간: {}", TimeUtil.convertTimestampToLocalTime(purchasedEventResponse.transactionTime));
+        log.info("[ContractService] 트랜잭션 유저 지갑 주소: {}", purchasedEventResponse.buyer);
+        Long userId = userService.findUserIdByAddress(purchasedEventResponse.buyer)
+                .orElseThrow(() -> new ArticleException(ArticleErrorCode.CANNOT_FIND_BY_ADDRESS));
+
+        if(!userId.equals(loginUser)) {
+            log.info("[ContractService] 트랜잭션 유저 정보: {} {}", userId, loginUser);
+            throw new ArticleException(ArticleErrorCode.USER_MISMATCH);
+        }
 
         articleHistoryRepository.save(
                 ArticleHistory.builder()
                         .articleId(articleId)
+                        .createdAt(TimeUtil.convertTimestampToLocalTime(purchasedEventResponse.transactionTime))
                         .historyType(ContractType.PURCHASE.getType())
                         .userId(userId)
                         .build()
