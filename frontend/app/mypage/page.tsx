@@ -33,7 +33,7 @@ import {
   ShoppingBag,
   User,
   Gift,
-  Clock
+  Clock,
 } from "lucide-react";
 import {
   Dialog,
@@ -52,9 +52,17 @@ import {
   fetchLikedArticles,
 } from "@/lib/api/mypage";
 import { useRouter } from "next/navigation";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { GiftCard } from "@/components/gift/gift-card"
-
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { GiftCard } from "@/components/gift/gift-card";
+import { PurchaseHistory } from "@/components/mypage/purchase-history";
+import { SaleHistory } from "@/components/mypage/sale-history";
+import { SendGiftHistory } from "@/components/mypage/sendgift-history";
+import { WishList } from "@/components/mypage/wish-list";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const getAccessToken = () => {
@@ -90,7 +98,7 @@ export default function MyPage() {
   const [currentPage, setCurrentPage] = useState(0);
 
   // 임시 작성 코드
-  const [giftCardTab, setGiftCardTab] = useState("available")
+  const [giftCardTab, setGiftCardTab] = useState("available");
 
   const PAGE_GROUP_SIZE = 5; // 한 번에 표시할 페이지 수
   // 지금 페이지 그룹 계산
@@ -202,7 +210,7 @@ export default function MyPage() {
       const response = await fetch(`${BASE_URL}/users/me`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${accessToken}`, // JWT로 서버에서 사용자 인증
+          Authorization: `Bearer ${accessToken}`, // JWT로 서버에서 사용자 인증
           "Kakao-Authorization": `Bearer ${kakaoAccessToken}`, // kakao_access_token을 Authorization 헤더에 포함
           "Content-Type": "application/json",
         },
@@ -437,8 +445,7 @@ export default function MyPage() {
         imageUrl: "/placeholder.svg?height=100&width=100&text=BBQ",
       },
     ],
-  }
-
+  };
 
   const sidebarItems = [
     { icon: Gift, label: "보유 NIFT", value: "gifticons" },
@@ -576,19 +583,26 @@ export default function MyPage() {
                             </TabsTrigger>
                           ))}
                         </TabsList>
-                        
+
                         {/* 선물함 탭 */}
-                        <TabsContent value="gifticons" className="mt-6 space-y-6">
+                        <TabsContent
+                          value="gifticons"
+                          className="mt-6 space-y-6"
+                        >
                           <div>
                             <h2 className="mb-4 text-xl font-semibold">
                               NIFT함
                             </h2>
                             <p className="mb-6 text-sm text-muted-foreground">
-                              사용가능한 선물이 {availableGiftCards.length} 개 남아있어요.
+                              사용가능한 선물이 {availableGiftCards.length} 개
+                              남아있어요.
                             </p>
                           </div>
 
-                          <Tabs defaultValue="available" onValueChange={setGiftCardTab}>
+                          <Tabs
+                            defaultValue="available"
+                            onValueChange={setGiftCardTab}
+                          >
                             <TabsList className="w-full">
                               <TabsTrigger value="available" className="flex-1">
                                 사용가능 {availableGiftCards.length}
@@ -625,119 +639,36 @@ export default function MyPage() {
                               구매, 판매, 선물 내역을 확인 할 수 있습니다.
                             </p>
                           </div>
-                          <Accordion type="single" collapsible className="w-full">
+                          <Accordion type="multiple" className="w-full">
                             <AccordionItem value="purchases">
                               <AccordionTrigger className="text-lg font-medium">
-                                구매내역 ({transactionHistory.purchases.length})
+                                구매내역
                               </AccordionTrigger>
                               <AccordionContent>
-                                {transactionHistory.purchases.length > 0 ? (
-                                  <div className="space-y-4">
-                                    {transactionHistory.purchases.map((item) => (
-                                      <div key={item.id} className="flex items-center gap-4 rounded-lg border bg-white p-4">
-                                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                                          <Image
-                                            src={item.imageUrl || "/placeholder.svg"}
-                                            alt={item.title}
-                                            fill
-                                            className="object-cover"
-                                          />
-                                        </div>
-                                        <div className="flex-1">
-                                          <h3 className="font-medium">{item.title}</h3>
-                                          <div className="mt-1 text-sm text-gray-500">
-                                            <div>판매자: {item.seller}</div>
-                                            <div>구매일: {item.date}</div>
-                                          </div>
-                                        </div>
-                                        <div className="text-right">
-                                          <div className="font-bold">{item.price.toLocaleString()}원</div>
-                                          <div className="mt-1 text-sm text-primary">{item.status}</div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="py-4 text-center text-gray-500">구매 내역이 없습니다.</div>
-                                )}
+                                <PurchaseHistory />
                               </AccordionContent>
                             </AccordionItem>
 
                             <AccordionItem value="sales">
                               <AccordionTrigger className="text-lg font-medium">
-                                판매내역 ({transactionHistory.sales.length})
+                                판매내역
                               </AccordionTrigger>
                               <AccordionContent>
-                                {transactionHistory.sales.length > 0 ? (
-                                  <div className="space-y-4">
-                                    {transactionHistory.sales.map((item) => (
-                                      <div key={item.id} className="flex items-center gap-4 rounded-lg border bg-white p-4">
-                                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                                          <Image
-                                            src={item.imageUrl || "/placeholder.svg"}
-                                            alt={item.title}
-                                            fill
-                                            className="object-cover"
-                                          />
-                                        </div>
-                                        <div className="flex-1">
-                                          <h3 className="font-medium">{item.title}</h3>
-                                          <div className="mt-1 text-sm text-gray-500">
-                                            <div>구매자: {item.buyer}</div>
-                                            <div>판매일: {item.date}</div>
-                                          </div>
-                                        </div>
-                                        <div className="text-right">
-                                          <div className="font-bold">{item.price.toLocaleString()}원</div>
-                                          <div className="mt-1 text-sm text-primary">{item.status}</div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="py-4 text-center text-gray-500">판매 내역이 없습니다.</div>
-                                )}
+                                <SaleHistory />
                               </AccordionContent>
                             </AccordionItem>
 
                             <AccordionItem value="gifts">
                               <AccordionTrigger className="text-lg font-medium">
-                                보낸 선물 ({transactionHistory.gifts.length})
+                                보낸 선물
                               </AccordionTrigger>
                               <AccordionContent>
-                                {transactionHistory.gifts.length > 0 ? (
-                                  <div className="space-y-4">
-                                    {transactionHistory.gifts.map((item) => (
-                                      <div key={item.id} className="flex items-center gap-4 rounded-lg border bg-white p-4">
-                                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                                          <Image
-                                            src={item.imageUrl || "/placeholder.svg"}
-                                            alt={item.title}
-                                            fill
-                                            className="object-cover"
-                                          />
-                                        </div>
-                                        <div className="flex-1">
-                                          <h3 className="font-medium">{item.title}</h3>
-                                          <div className="mt-1 text-sm text-gray-500">
-                                            <div>받는 사람: {item.recipient}</div>
-                                            <div>선물일: {item.date}</div>
-                                          </div>
-                                        </div>
-                                        <div className="text-right">
-                                          <div className="font-bold">{item.price.toLocaleString()}원</div>
-                                          <div className="mt-1 text-sm text-primary">{item.status}</div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="py-4 text-center text-gray-500">보낸 선물이 없습니다.</div>
-                                )}
+                                <SendGiftHistory />
                               </AccordionContent>
                             </AccordionItem>
                           </Accordion>
                         </TabsContent>
+
                         {/* 선물받은 카드 보관함 탭 */}
                         <TabsContent value="memories" className="mt-6">
                           <div>
@@ -748,81 +679,27 @@ export default function MyPage() {
                               소중한 사람들과 주고받은 선물 추억을 확인해보세요.
                             </p>
                           </div>
-                          <div className="text-center py-12 text-gray-500">아직 선물 추억이 없습니다.</div>
+                          <div className="text-center py-12 text-gray-500">
+                            아직 선물 추억이 없습니다.
+                          </div>
                           {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                           {myArticles.slice(1, 4).map((article) => (
                             <ArticleCard key={article.id} {...article} />
                           ))}
                         </div> */}
                         </TabsContent>
-                        
+
                         {/* 찜한 상품 탭 */}
-                        <TabsContent value="favorites" className="mt-6">
-                          <div>
-                            <h2 className="mb-4 text-xl font-semibold">
-                              찜한 상품
-                            </h2>
-                            <p className="mb-6 text-sm text-muted-foreground">
-                              관심 있는 기프티콘을 모아볼 수 있습니다.
-                            </p>
-                          </div>
+                        <WishList 
+                          likedArticles={likedArticles}
+                          currentPage={currentPage}
+                          setCurrentPage={setCurrentPage}
+                          startPage={startPage}
+                          endPage={endPage}
+                          totalPage={totalPage}
+                        />
 
-                          {/* 찜한 상품 목록 표시 */}
-                          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                            {likedArticles?.length > 0 ? (
-                              likedArticles.map((article) => (
-                                <ArticleCard
-                                  key={article.articleId}
-                                  {...article}
-                                />
-                              ))
-                            ) : (
-                              <p className="text-center text-gray-500">
-                                찜한 상품이 없습니다.
-                              </p>
-                            )}
-                          </div>
 
-                          {/* 페이지네이션 */}
-                          <div className="mt-8 flex justify-center items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              disabled={currentPage === 0}
-                              onClick={() =>
-                                setCurrentPage((prev) => Math.max(prev - 1, 0))
-                              }
-                            >
-                              ‹ 이전
-                            </Button>
-
-                            {Array.from(
-                              { length: endPage - startPage },
-                              (_, i) => startPage + i
-                            ).map((pageNum) => (
-                              <Button
-                                key={pageNum}
-                                variant={
-                                  currentPage === pageNum ? "default" : "ghost"
-                                }
-                                onClick={() => setCurrentPage(pageNum)}
-                              >
-                                {pageNum + 1} {/* 1부터 표시 */}
-                              </Button>
-                            ))}
-
-                            <Button
-                              variant="ghost"
-                              disabled={currentPage === totalPage - 1}
-                              onClick={() =>
-                                setCurrentPage((prev) =>
-                                  Math.min(prev + 1, totalPage - 1)
-                                )
-                              }
-                            >
-                              다음 ›
-                            </Button>
-                          </div>
-                        </TabsContent>
                         {/* 설정 탭 */}
                         <TabsContent value="settings" className="mt-6">
                           <div>
@@ -835,20 +712,25 @@ export default function MyPage() {
                             <Card>
                               <CardHeader>
                                 <CardTitle>계정 정보</CardTitle>
-                                <CardDescription>개인 정보를 확인하고 수정할 수 있습니다.</CardDescription>
+                                <CardDescription>
+                                  개인 정보를 확인하고 수정할 수 있습니다.
+                                </CardDescription>
                               </CardHeader>
                               <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                   <Label htmlFor="name">닉네임</Label>
                                   <div className="flex gap-2">
-                                    <Input 
-                                        id="name" 
-                                        value={nickname} 
-                                        onChange={(e) => setNickname(e.target.value)} 
-                                      />
-                                    <Button 
-                                        className="whitespace-nowrap"
-                                        onClick={updateNickname}>
+                                    <Input
+                                      id="name"
+                                      value={nickname}
+                                      onChange={(e) =>
+                                        setNickname(e.target.value)
+                                      }
+                                    />
+                                    <Button
+                                      className="whitespace-nowrap"
+                                      onClick={updateNickname}
+                                    >
                                       수정
                                     </Button>
                                   </div>
@@ -861,22 +743,24 @@ export default function MyPage() {
                                       id="wallet"
                                       value={
                                         walletAddress
-                                            ? walletAddress
-                                            : "연결되지 않음"
-                                        }
+                                          ? walletAddress
+                                          : "연결되지 않음"
+                                      }
                                       readOnly
                                       className="bg-muted"
                                     />
                                     <Button
-                                        variant="outline"
-                                        className="whitespace-nowrap" 
-                                        onClick={connectOrUpdateWallet}>
+                                      variant="outline"
+                                      className="whitespace-nowrap"
+                                      onClick={connectOrUpdateWallet}
+                                    >
                                       {walletAddress ? "변경하기" : "연결하기"}
                                     </Button>
                                     <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={copyToClipboard}>
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={copyToClipboard}
+                                    >
                                       <Copy className="h-4 w-4" />
                                     </Button>
                                     <Button

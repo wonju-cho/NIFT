@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ArticleLikeDTO {
+    private Long articleId;
     private String title;
     private int countLikes;
     private String imageUrl;

@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface GifticonRepository extends JpaRepository<Gifticon, Long> {
     Optional<Gifticon> findById(Long gifticonId);
+    Optional<Gifticon> findByGifticonId(Long gifticonId);
 }
