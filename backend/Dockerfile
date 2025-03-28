@@ -15,14 +15,14 @@ COPY gradle gradle
 COPY build.gradle build.gradle
 COPY settings.gradle settings.gradle
 
-# 실행 권한 부여
-RUN chmod +x gradlew
-
 # 의존성 미리 다운로드 (캐시 활용)
 RUN ./gradlew dependencies --no-daemon
 
 # 전체 프로젝트 복사
 COPY . .
+
+# 실행 권한 부여는 전체 복사 후에
+RUN chmod +x gradlew
 
 # BUILD_MODE에 따라 다르게 실행
 RUN if [ "$BUILD_MODE" = "dev" ]; then \

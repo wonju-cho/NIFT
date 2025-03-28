@@ -64,7 +64,7 @@ pipeline {
 			steps {
 				script {
 					if (params.ENV == 'dev') {
-						sh 'docker-compose --env-file .env down -v'
+						sh 'docker-compose -f docker-compose-dev.yml --env-file .env down -v'
 					}
 				}
 			}
