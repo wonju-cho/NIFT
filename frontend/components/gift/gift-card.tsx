@@ -3,15 +3,12 @@ import Image from "next/image"
 interface GiftCardProps {
   title: string
   brand: string
-  price: number
-  sender: string
-  date: string
   expiryDays?: string
   imageUrl: string
   usedDate?: string | null
 }
 
-export function GiftCard({ title, brand, price, sender, date, expiryDays, imageUrl, usedDate = null }: GiftCardProps) {
+export function GiftCard({ title, brand, expiryDays, imageUrl, usedDate = null }: GiftCardProps) {
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-white transition-all hover:shadow-md">
       <div className="relative aspect-square overflow-hidden">
@@ -26,22 +23,36 @@ export function GiftCard({ title, brand, price, sender, date, expiryDays, imageU
           <div className="absolute left-2 top-2 rounded bg-gray-700 px-2 py-1 text-xs text-white">{expiryDays}</div>
         )}
         {usedDate && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-            <div className="rounded-full border-4 border-white p-3 text-xl font-bold text-white">사용완료</div>
-          </div>
+          <>
+            <div className="absolute inset-0 bg-black/30"></div>
+            <div
+              className="absolute left-2 top-2 rounded px-2 py-1 text-xs text-white font-medium"
+              style={{ backgroundColor: "#dd5851" }}
+            >
+              사용 완료
+            </div>
+          </>
         )}
       </div>
       <div className="p-3">
         <div className="text-xs text-gray-500">{brand}</div>
         <h3 className="line-clamp-2 text-sm font-medium">{title}</h3>
-        <div className="mt-2 flex items-baseline gap-1">
-          <span className="text-base font-bold">{price.toLocaleString()}원</span>
-        </div>
-        <div className="mt-2 text-xs text-gray-500">
-          <div>from. {sender}</div>
-          <div>{usedDate ? `사용일: ${usedDate}` : `받은날: ${date}`}</div>
-        </div>
+        {usedDate && (
+          <div className="mt-2 text-xs text-gray-500">
+            <div>사용일: {usedDate}</div>
+          </div>
+        )}
       </div>
+      {!usedDate && (
+        <div className="grid grid-cols-2 gap-2 p-3 pt-0">
+          <button className="rounded border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary hover:text-white transition-colors">
+            사용하기
+          </button>
+          <button className="rounded border border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-700 hover:text-white transition-colors">
+            선물하기
+          </button>
+        </div>
+      )}
     </div>
   )
 }
