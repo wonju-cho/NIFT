@@ -5,10 +5,6 @@ pipeline {
 		choice(name: 'ENV', choices: ['dev', 'production'], description: 'Select environment')
 	}
 
-	environment{
-		ENV_JSON = credentials('DB_CRED')
-	}
-
 	stages{
 
 		stage('Decide Environment') {
@@ -36,27 +32,22 @@ pipeline {
 		}
 
 		stage('Parse and Write .env') {
-			steps {
-				script {
-					try{
-						def json = readJSON text: ENV_JSON
-						
-						//다른 stages에서도 값을 사용하려면 env[]에 저장해줘야함.
-						//빌드 끝나면 사라지기 때문에 괜찮음.
-						json.each {key, value -> 
-							env[key] = value;
-						}
+		    steps {
+		        withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
+		            script {
+		                def json = readJSON file: "${DB_CRED_FILE}"
 
-						def envContent = json.collect { key, value -> "${key}=${value}" }.join('\n')
-	                    writeFile file: '.env', text: envContent	
-	                }
-	                catch (e) {
-	                	echo "❌ Error parsing JSON or writing .env file: ${e.getMessage()}"
-		                error 'Failed to parse crendital JSON file'
-	                }
-				}
-			}
+		                json.each { 
+		                	key, value -> env[key] = value
+		                }
+
+		                def envContent = json.collect { key, value -> "${key}=${value}" }.join('\n')
+		                writeFile file: '.env', text: envContent
+		            }
+		        }
+		    }
 		}
+
 
 		stage('Reset containers') {
 			steps {
