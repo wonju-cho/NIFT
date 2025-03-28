@@ -2,12 +2,12 @@ require("dotenv").config();
 const { ethers } = require("hardhat");
 
 async function main() {
-  const nftContractAddress = "0x46c6440c021A3AE0e3eBE83A76bd3f53A3b3c7CA"; // GifticonNFT
+  const nftContractAddress = "0x6940cA1302256204E62D158AF5C835AE3e491d18"; // GifticonNFT
   const targetAddress = "0xe911090F1ca13EE23f3C1eE964c5d4e323987e9f";
   const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
   const ssfDecimals = 0;
 
-  const serialNumber = BigInt(process.argv[2]).toString();
+  const serialNumber = process.argv[2];
   const sellPrice = ethers.parseUnits(process.argv[3] || "1", ssfDecimals);
 
   if (!serialNumber || !sellPrice) {
@@ -46,7 +46,7 @@ async function main() {
     console.log(`📌 tokenId: ${tokenId}`);
 
     const serialInfo = await gifticonNFT.getSerialInfo(serialNumber);
-    const redeemed = serialInfo[4];
+    const redeemed = serialInfo[5]; // ✅ 사용 여부
     const seller = serialInfo[1];
 
     if (redeemed) throw new Error("❌ 이미 사용된 NFT입니다.");
@@ -66,9 +66,10 @@ async function main() {
     console.log(
       `💰 판매 가격: ${ethers.formatUnits(updatedPrice, ssfDecimals)} SSF`
     );
+
     const isApprovedAfter = await gifticonNFT.isApprovedForAll(
       sellerAddress,
-      nftContractAddress
+      targetAddress
     );
     console.log(
       `🔍 승인 상태 확인 결과: ${

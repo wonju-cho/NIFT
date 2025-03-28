@@ -35,11 +35,10 @@ pipeline {
 		    steps {
 		        withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
 		            script {
-		                def json = readJSON file: "${DB_CRED_FILE}"
+		                echo "🔍 Reading DB_CRED_FILE"
 
-		                json.each { 
-		                	key, value -> env[key] = value
-		                }
+		                def json = readJSON file: "${DB_CRED_FILE}"
+		                json.each { key, value -> env[key] = value }
 
 		                def envContent = json.collect { key, value -> "${key}=${value}" }.join('\n')
 		                writeFile file: '.env', text: envContent
@@ -47,6 +46,7 @@ pipeline {
 		        }
 		    }
 		}
+
 
 
 		stage('Reset containers') {
@@ -72,18 +72,12 @@ pipeline {
 		stage('Insert Dummy Data') {
 			steps {
 				script {
-					//sh안에서는 저 env.어쩌고가 공유가 안됨.
-					//그래서 Groovy에서 먼저 값 받고 sh에 넘겨줘야함.
 					def user = env.MYSQL_USER
 					def password = env.MYSQL_PASSWORD
 					def database = env.MYSQL_DATABASE
-					
-					//sh문의 '''이 부분은 Groovy변수를 사용할 수 없기 때문에 """을써야 치환됨.
-					sh """
-						echo "Insert dummy data"
-						docker exec mysql bash -c \\
-			  			"mysql -u${user} -p${password} ${database} < /docker-entrypoint-initdb./init.sql"
-					"""
+
+					def command = "mysql -u${user} -p${password} ${database} < /docker-entrypoint-initdb./init.sql"
+					sh "docker exec mysql bash -c '${command}'"
 				}
 			}
 		}
