@@ -26,41 +26,8 @@ export function ImageHandler({ onImageSelected, buttonText = "이미지 추가",
     const img = new Image()
     img.onload = () => {
       console.log("이미지 로드 성공:", img.width, "x", img.height)
-      onImageSelected((imageData) => {
-        console.log("이미지 선택됨:", imageData.substring(0, 50) + "...")
-
-        // 새 요소 생성 - 카드 중앙에 배치
-        // const newElement: CardElementType = { // CardElementType and uuidv4 are not defined in this component.  This will cause an error.  Removing this section.
-        //   id: uuidv4(),
-        //   type: "image",
-        //   src: imageData,
-        //   x: 125, // 카드 중앙 (400/2 - 75)
-        //   y: 75, // 카드 중앙 (300/2 - 75)
-        //   width: 150,
-        //   height: 150,
-        //   rotation: 0,
-        //   zIndex: isFlipped ? backElements.length + 1 : frontElements.length + 1,
-        // };
-
-        // 요소 배열에 추가
-        // if (isFlipped) {
-        //   setBackElements((prev) => {
-        //     const newElements = [...prev, newElement];
-        //     console.log("백 요소 추가됨:", newElements.length);
-        //     return newElements;
-        //   });
-        // } else {
-        //   setFrontElements((prev) => {
-        //     const newElements = [...prev, newElement];
-        //     console.log("프론트 요소 추가됨:", newElements.length);
-        //     return newElements;
-        //   });
-        // }
-
-        // 선택된 요소 ID 설정
-        // setSelectedElementId(newElement.id);
-        onImageSelected(imageData)
-      })
+      console.log("이미지 선택됨:", compressedImage.substring(0, 50) + "...")
+      onImageSelected(compressedImage)
       setIsOpen(false)
     }
 
