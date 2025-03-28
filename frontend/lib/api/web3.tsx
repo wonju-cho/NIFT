@@ -22,6 +22,7 @@ const NFT_ABI = [
   "function uri(uint256 id) view returns (string)",
   "function purchaseBySerial(uint256 serialNumber)",
   "function getSerialInfo(uint256 serialNumber) view returns (uint256 price, address seller, address owner, uint256 expirationDate, bool isRedeemed, uint256 redeemedAt)",
+  "function getSerialsByOwner(address) view returns (uint256[])",
   "function getTokenIdBySerial(uint256 serialNumber) view returns (uint256)",
   "function getTokenInfo(uint256 tokenId) view returns (string name, string description, uint256 totalSupply, string metadataURI)",
   "function isApprovedForAll(address account, address operator) view returns (bool)",
@@ -138,16 +139,15 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
         const serial = serialBigNum;
 
         // tokenId 및 메타데이터 URI 조회
-        const tokenId = await contract.getTokenIdBySerial(serial);
+        const tokenId = await contract.getTokenIdBySerial(Number(serial));
         const [price, seller] = await contract.getSerialInfo(serial);
         const [, , , metadataURI] = await contract.getTokenInfo(tokenId);
 
         const metadata = await fetchMetadata(metadataURI, serial);
-        console.log("🪙 토큰 정보: ", metadata);
+        console.log(`🪙 토큰 정보: tokenId: ${ tokenId}`, metadata);
 
         return {
           ...metadata,
-          id: Number(tokenId),
           serialNum: serial,
           price: Number(price),
           seller: seller,
