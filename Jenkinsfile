@@ -5,8 +5,6 @@ pipeline {
 		choice(name: 'ENV', choices: ['dev', 'production'], description: 'Select environment')
 	}
 
-	environment { }
-
 	stages{
 
 		stage('Decide Environment') {
