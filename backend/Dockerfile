@@ -32,7 +32,7 @@ COPY . .
 RUN chmod +x gradlew
 
 # BUILD_MODE에 따라 다르게 실행
-RUN if [ "$BUILD_MODE" = "dev" ]; then \
+RUN if [ "$BUILD_MODE" = "development" ]; then \
       ./gradlew build --info --stacktrace --no-daemon ; \
     else \
       ./gradlew build --no-daemon ; \
