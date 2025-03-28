@@ -32,8 +32,8 @@ apiClient.interceptors.response.use(
       if (status === 401) {
         console.error("Token refresh failed");
         localStorage.removeItem("access_token");
-        localStorage.removeItem("kakao_access_token")
-        window.location.href = "/login"; // 로그인 페이지로 이동
+        localStorage.removeItem("kakao_access_token");
+        window.location.href = "/signin"; // 로그인 페이지로 이동
       }
     }
 

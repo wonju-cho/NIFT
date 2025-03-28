@@ -36,7 +36,7 @@ async function main() {
   console.log("✅ 민팅 완료");
 
   console.log("🔍 시리얼 넘버 추출 중...");
-  const topicMinted = ethers.id("Minted(address,uint256,uint256)");
+  const topicMinted = ethers.id("Minted(address,uint256,uint256,uint256)");
   const logs = receipt.logs.filter((log) => log.topics[0] === topicMinted);
 
   const serials = logs.map((log) => {
