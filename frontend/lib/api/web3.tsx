@@ -148,7 +148,7 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
 
         return {
           ...metadata,
-          id: tokenId,
+          tokenId: tokenId,
           serialNum: serial,
           price: Number(price),
           seller: seller,
@@ -399,11 +399,13 @@ export async function isSellingNFT(serialNumber: number): Promise<boolean> {
 }
 
 // 시리얼 넘버로 tokenID 가져오기
-export async function getTokenIdBySerial(serialNumber: number): Promise<number> {
-  const provider = new ethers.BrowserProvider(window.ethereum)
-  const signer = await provider.getSigner()
-  const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer)
+export async function getTokenIdBySerial(
+  serialNumber: number
+): Promise<number> {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
 
-  const tokenId = await contract.getTokenIdBySerial(serialNumber)
-  return Number(tokenId)
+  const tokenId = await contract.getTokenIdBySerial(serialNumber);
+  return Number(tokenId);
 }
