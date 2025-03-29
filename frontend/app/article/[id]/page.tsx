@@ -29,6 +29,7 @@ type ArticleDetail = {
   userId: number;
   expirationDate: string;
   imageUrl: string;
+  gifticonId: number;
   countLikes: number;
   currentPrice: number;
   createAt: string;
@@ -211,7 +212,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                         size="lg"
                         onClick={() => setShowPurchaseDialog(true)}
                       >
-                        <ShoppingCart className="mr-1 h-4 w-4" />
+                        F <ShoppingCart className="mr-1 h-4 w-4" />
                         구매하기
                       </Button>
                     )}
