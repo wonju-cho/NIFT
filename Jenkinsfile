@@ -106,28 +106,30 @@ pipeline {
 		            ]) 
 
 					def detailLines = []
-					int total = 0
+					int totalIssues = 0
 
 					results.each { result ->
-						def id = result.id ? : "Unknown"
-						def count = result.totalSize
-						total += count
-						detailLines << "- ${id}: ${count}개"
+					    def toolName = result.name ?: result.id ?: "Unknown"
+					    def count = result.totalSize
+					    totalIssues += count
+					    detailLines << "* ${toolName}: ${count}개"
 					}
 
-		            def emoji = (total > 0) ? ":warning:" : ":white_check_mark:"
-		            def statusMsg = (total > 0) ? "경고 ${total}개 발생" : "경고 없음"
+		            def issueEmoji = (totalIssues > 0) ? ":warning:" : ":white_check_mark:"
+		            def issueStatusMsg = (totalIssues > 0) ? "총 ${totalIssues}개 경고 발생" : "경고 없음"
 		            def analysisUrl = "${env.BUILD_URL}warnings-ng/"
 					def branchLabel = (env.BRANCH_NAME == 'master') ? "🚀 *[MASTER 배포 전 최종 점검]*" : "🧪 *[DEVELOP QA 분석 결과]*"
 
 		            def message = """
-		            ${emoji} *Static Analysis Report*
-		            ${branchLabel}
-		            - Job: ${env.JOB_NAME}
-		            - Build: #${env.BUILD_NUMBER}
-		            - Result: ${statusMsg}
-		            - [경고 리포트 보기](${analysisUrl})
-		            """
+					${issueEmoji} *Static Analysis Report*
+					${branchLabel}
+					- Job: ${env.JOB_NAME}
+					- Build: #${env.BUILD_NUMBER}
+					- Result: ${issueStatusMsg}
+					- 툴별 결과:
+					${detailLines.join('\n')}
+					- [경고 리포트 보기](${analysisUrl})
+					"""
 
 		            sh """
 		            curl -X POST -H 'Content-Type: application/json' \\
