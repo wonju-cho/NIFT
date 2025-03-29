@@ -98,25 +98,31 @@ pipeline {
 	        script {
 
 	        	try {
-					def issues = recordIssues(tools: [
+					def results = recordIssues(tools: [
 		            java(),
 		            esLint(pattern: 'reports/eslint-report.json'),
 		            spotBugs(pattern: '**/spotbugsXml.xml'),
 	  				checkStyle(pattern: '**/checkstyle-result.xml')
 		            ]) 
 
-		            def count = issues.totalSize
-		            def analysisUrl = "${env.BUILD_URL}warnings-ng/"
+					def detailLines = []
+					int total = 0
 
-		            def emoji = (count > 0) ? ":warning:" : ":white_check_mark:"
-		            def statusMsg = (count > 0) ? "경고 ${count}개 발생" : "경고 없음"
-		            
-		            def branchName = env.BRANCH_NAME
-					def branchLabel = (branchName == 'master') ? "🚀 *[MASTER 배포 전 최종 점검]*" : "🧪 *[DEVELOP QA 분석 결과]*"
+					results.each { result ->
+						def id = result.id ? : "Unknown"
+						def count = result.totalSize
+						total += count
+						detailLines << "- ${id}: ${count}개"
+					}
+
+		            def emoji = (total > 0) ? ":warning:" : ":white_check_mark:"
+		            def statusMsg = (total > 0) ? "경고 ${total}개 발생" : "경고 없음"
+		            def analysisUrl = "${env.BUILD_URL}warnings-ng/"
+					def branchLabel = (env.BRANCH_NAME == 'master') ? "🚀 *[MASTER 배포 전 최종 점검]*" : "🧪 *[DEVELOP QA 분석 결과]*"
 
 		            def message = """
-		            ${emoji} *JAVA & React + TypeScript Static Analysis Report*
-		            ${emoji} ${branchLabel}
+		            ${emoji} *Static Analysis Report*
+		            ${branchLabel}
 		            - Job: ${env.JOB_NAME}
 		            - Build: #${env.BUILD_NUMBER}
 		            - Result: ${statusMsg}
