@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface ArticleHistoryRepository extends JpaRepository<ArticleHistory, Long> {
     Page<ArticleHistory> findByUserIdAndHistoryType(Long userId, short historyType, Pageable pageable);
     Optional<ArticleHistory> findByArticleId(Long articleId);
+    Optional<ArticleHistory> findByTxHash(String txHash);
 }

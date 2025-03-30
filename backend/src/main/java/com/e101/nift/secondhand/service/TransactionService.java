@@ -4,6 +4,7 @@ import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,4 +13,6 @@ public interface TransactionService {
     String getTxStatus(String txHash);
     List<Log> getTransactionLogs(String txHash);
     List<GifticonNFT.NFTPurchasedEventResponse> getPurchaseEventsByTxHash(String txHash);
+    List<BigInteger> getLast50BlockNumbers();
+    List<GifticonNFT.NFTPurchasedEventResponse> getPurchaseEventsByBlockNumber(BigInteger blockNumber);
 }

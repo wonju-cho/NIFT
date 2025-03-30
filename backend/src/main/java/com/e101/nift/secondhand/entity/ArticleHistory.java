@@ -25,6 +25,8 @@ public class ArticleHistory {
     private Long userId;
     private Long articleId;
     private short historyType;
+    private String txHash;
+
     @PrePersist
     protected void onCreate() {
         if (this.createdAt == null) {

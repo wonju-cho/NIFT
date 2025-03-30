@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -16,6 +18,8 @@ import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.DefaultGasProvider;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,4 +101,52 @@ public class TransactionServiceImpl implements TransactionService {
 
         return events;
     }
+
+    @Override
+    public List<BigInteger> getLast50BlockNumbers() {
+        try {
+            BigInteger latestBlockNumber = web3j.ethBlockNumber().send().getBlockNumber();
+            List<BigInteger> blockNumbers = new ArrayList<>();
+
+            for (int i = 0; i < 50; i++) {
+                blockNumbers.add(latestBlockNumber.subtract(BigInteger.valueOf(i)));
+            }
+
+            log.debug("[TransactionService] getLast50BlockNumbers: {}", blockNumbers);
+            return blockNumbers;
+        } catch (IOException e) {
+            log.error("Failed to fetch latest block number", e);
+            throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
+        }
+    }
+
+    @Override
+    public List<GifticonNFT.NFTPurchasedEventResponse> getPurchaseEventsByBlockNumber(BigInteger blockNumber) {
+        try {
+            EthFilter filter = new EthFilter(
+                    DefaultBlockParameter.valueOf(blockNumber),
+                    DefaultBlockParameter.valueOf(blockNumber),
+                    this.contractAddress
+            );
+
+            List<org.web3j.protocol.core.methods.response.Log> logs = web3j.ethGetLogs(filter).send().getLogs()
+                    .stream()
+                    .map(logResult -> (org.web3j.protocol.core.methods.response.Log) logResult.get())
+                    .toList();
+
+            List<GifticonNFT.NFTPurchasedEventResponse> events = new ArrayList<>();
+
+            for (org.web3j.protocol.core.methods.response.Log log : logs) {
+                GifticonNFT.NFTPurchasedEventResponse event = GifticonNFT.getNFTPurchasedEventFromLog(log);
+                events.add(event);
+            }
+
+            return events;
+        } catch (Exception e) {
+            log.error("Failed to fetch purchase events for block: {}", blockNumber, e);
+            throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
+        }
+    }
 }
+
+

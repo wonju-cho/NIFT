@@ -26,12 +26,11 @@ public class ContractServiceImpl implements ContractService {
     public void addArticleHistory(Long articleId, String txHash, Long loginUser) {
         articleRepository.findById(articleId).orElseThrow(() -> new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND));
 
-
         GifticonNFT.NFTPurchasedEventResponse purchasedEventResponse = transactionService.getPurchaseEventsByTxHash(txHash).getFirst();
 
-        log.info("[ContractService] 트랜잭션 로그 확인: {}",purchasedEventResponse);
-        log.info("[ContractService] 트랜잭션 발생 시간: {}", TimeUtil.convertTimestampToLocalTime(purchasedEventResponse.transactionTime));
-        log.info("[ContractService] 트랜잭션 유저 지갑 주소: {}", purchasedEventResponse.buyer);
+        log.debug("[ContractService] 트랜잭션 발생 시간: {}", TimeUtil.convertTimestampToLocalTime(purchasedEventResponse.transactionTime));
+        log.debug("[ContractService] 트랜잭션 유저 지갑 주소: {}", purchasedEventResponse.buyer);
+
         Long userId = userService.findUserIdByAddress(purchasedEventResponse.buyer)
                 .orElseThrow(() -> new ArticleException(ArticleErrorCode.CANNOT_FIND_BY_ADDRESS));
 
@@ -46,6 +45,7 @@ public class ContractServiceImpl implements ContractService {
                         .createdAt(TimeUtil.convertTimestampToLocalTime(purchasedEventResponse.transactionTime))
                         .historyType(ContractType.PURCHASE.getType())
                         .userId(userId)
+                        .txHash(txHash)
                         .build()
         );
     }
