@@ -128,7 +128,7 @@ pipeline {
 	    always {
 	        script {
 	            try {
-	                if (env.IMAGE_BUILD_SUCCESS) {
+	                if (env.IMAGE_BUILD_SUCCESS == "true") {
 	                    def results = recordIssues(tools: [
 	                        java(),
 	                        esLint(pattern: 'reports/eslint-report.json'),
