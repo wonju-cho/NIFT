@@ -7,6 +7,7 @@ import com.e101.nift.secondhand.exception.ArticleException;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.state.ContractType;
 import com.e101.nift.secondhand.repository.ArticleHistoryRepository;
+import com.e101.nift.secondhand.repository.ArticleRepository;
 import com.e101.nift.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import java.util.List;
 public class BatchServiceImpl implements BatchService {
     private final TransactionService transactionService;
     private final ArticleHistoryRepository articleHistoryRepository;
+    private final ArticleRepository articleRepository;
     private final UserService userService;
 
     // TODO: 블록 마지막 sync가 겹칠 수 있으니, sync 테이블 추가 필요
@@ -42,7 +44,7 @@ public class BatchServiceImpl implements BatchService {
                         log.debug("[BatchService] DB에 저장되지 않은 Hash 값: {}", response.log.getTransactionHash());
                         articleHistoryRepository.save(
                                 ArticleHistory.builder()
-                                        .articleId((long) 1) // TODO: smart contract 에서 tokenId값 이벤트 로그에 추가 필요, 현재 하드코딩 된 값 추후 변경 예정
+                                        .articleId(getArticleId(response))
                                         .createdAt(TimeUtil.convertTimestampToLocalTime(response.transactionTime))
                                         .historyType(ContractType.PURCHASE.getType())
                                         .userId(getUserId(response))
@@ -60,5 +62,13 @@ public class BatchServiceImpl implements BatchService {
     private Long getUserId(GifticonNFT.NFTPurchasedEventResponse purchasedEventResponse) {
         return userService.findUserIdByAddress(purchasedEventResponse.buyer)
                 .orElseThrow(() -> new ArticleException(ArticleErrorCode.CANNOT_FIND_BY_ADDRESS));
+    }
+
+    private Long getArticleId(GifticonNFT.NFTPurchasedEventResponse purchasedEventResponse) {
+        return articleRepository.findArticleBySerialNum(
+                purchasedEventResponse.serialNumber
+                        .longValue())
+                .orElseThrow(() -> new ArticleException(ArticleErrorCode.UNPROCESSABLE_TRANSACTION))
+                .getArticleId();
     }
 }
