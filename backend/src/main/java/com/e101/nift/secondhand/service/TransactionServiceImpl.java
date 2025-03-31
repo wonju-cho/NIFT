@@ -83,6 +83,16 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    public BigInteger getLatestBlockNumber() {
+        try {
+            return web3j.ethBlockNumber().send().getBlockNumber();
+        } catch (IOException e) {
+            log.error("[TransactionService] 마지막 블록 가져오기 실패: {}", e.getMessage());
+            throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
+        }
+    }
+
+    @Override
     public List<GifticonNFT.NFTPurchasedEventResponse> getPurchaseEventsByTxHash(String txHash) {
         Optional<TransactionReceipt> receiptOpt = getTransactionReceipt(txHash);
         TransactionReceipt receipt = receiptOpt
@@ -113,7 +123,7 @@ public class TransactionServiceImpl implements TransactionService {
                 });
 
         List<GifticonNFT.ListedForSaleEventResponse> events = GifticonNFT.getListedForSaleEvents(receipt);
-
+        log.info("[TransactionService] getListedForSaleEvents : {}", events);
         if (events.isEmpty()) {
             log.error("[TransactionService] No purchase events found for transaction: {}", txHash);
             throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
@@ -123,19 +133,18 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public List<BigInteger> getLast50BlockNumbers() {
+    public List<BigInteger> getBlockNumbersFrom(BigInteger startBlock) {
         try {
-            BigInteger latestBlockNumber = web3j.ethBlockNumber().send().getBlockNumber();
             List<BigInteger> blockNumbers = new ArrayList<>();
 
             for (int i = 0; i < 10; i++) {
-                blockNumbers.add(latestBlockNumber.subtract(BigInteger.valueOf(i)));
+                blockNumbers.add(startBlock.add(BigInteger.valueOf(i)));
             }
 
-            log.debug("[TransactionService] getLast50BlockNumbers: {}", blockNumbers);
+            log.debug("[TransactionService] getBlockNumbersFrom: {}", blockNumbers);
             return blockNumbers;
-        } catch (IOException e) {
-            log.error("[TransactionService] Failed to fetch latest block number", e);
+        } catch (Exception e) {
+            log.error("[TransactionService] Failed to fetch block numbers from {}", startBlock, e);
             throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
         }
     }
@@ -189,7 +198,7 @@ public class TransactionServiceImpl implements TransactionService {
             List<GifticonNFT.ListedForSaleEventResponse> events = new ArrayList<>();
 
             for (org.web3j.protocol.core.methods.response.Log logg : logs) {
-                log.info("log 확인중: {}", logg);
+                log.info("로그 내용: address={}, topics={}, data={}", logg.getAddress(), logg.getTopics(), logg.getData());
                 GifticonNFT.ListedForSaleEventResponse event = GifticonNFT.getListedForSaleEventFromLog(logg);
                 if (event != null) {
                     events.add(event);

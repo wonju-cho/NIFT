@@ -12,9 +12,10 @@ public interface TransactionService {
     Optional<TransactionReceipt> getTransactionReceipt(String txHash);
     String getTxStatus(String txHash);
     List<Log> getTransactionLogs(String txHash);
+    BigInteger getLatestBlockNumber();
     List<GifticonNFT.NFTPurchasedEventResponse> getPurchaseEventsByTxHash(String txHash);
     List<GifticonNFT.ListedForSaleEventResponse> getListedForSaleEventByTxHash(String txHash);
-    List<BigInteger> getLast50BlockNumbers();
+    List<BigInteger> getBlockNumbersFrom(BigInteger startBlock);
     List<GifticonNFT.NFTPurchasedEventResponse> getPurchaseEventsByBlockNumber(BigInteger blockNumber);
     List<GifticonNFT.ListedForSaleEventResponse> getListedForSaleEventsByBlockNumber(BigInteger blockNumber);
 }

@@ -2,11 +2,11 @@ const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0xb5f071070fdaDD8078775DE0B1D58b14177533bE";
+  const contractAddress = "0xfe04Ae996ffF7c2bB348fC9FeC172dBe710AB9b9";
   const sellerAddress = "0xe911090F1ca13EE23f3C1eE964c5d4e323987e9f";
 
   const tokenId = 1;
-  const mintAmount = 4;
+  const mintAmount = 10;
 
   const ssfDecimals = 0;
   const price = ethers.parseUnits("10", ssfDecimals);
