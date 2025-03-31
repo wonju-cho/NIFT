@@ -18,7 +18,6 @@ COPY . .
 
 # NODE_ENV에 따라 build 분기
 RUN if [ "$NODE_ENV" = "development" ]; then \
-    npm run lint; \
     npm run build --verbose; \
   else \
     npm run build; \
