@@ -1,32 +1,39 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { CreditCard, Wallet } from "lucide-react"
+import { postCardDesign, sendGiftHistory } from "@/lib/api/CreateGiftHistory";
 import GiftPaymentButton from "./GiftPaymentButton"
+import { useEffect } from "react";
+
+interface Friend {
+  uuid: string
+  kakaoId: number
+  profile_nickname: string
+  profile_thumbnail_image: string
+}
 
 interface GiftPaymentSummaryProps {
   article: any
-  paymentMethod: string
-  setPaymentMethod: (val: string) => void
   agreedTerms: boolean
   setAgreedTerms: (val: boolean) => void
   onSubmit: () => void
   isLoading: boolean
   cardId: string
+  selectedFriend: Friend | null;
+  type: string;
 }
 
 export function GiftPaymentSummary({
   article,
-  paymentMethod,
-  setPaymentMethod,
   agreedTerms,
   setAgreedTerms,
   onSubmit,
   isLoading,
-  cardId
+  cardId,
+  selectedFriend,
+  type
 }: GiftPaymentSummaryProps) {
+
   return (
     <Card className="sticky top-24">
       <CardContent className="p-6">
@@ -65,12 +72,48 @@ export function GiftPaymentSummary({
           </div>
 
           <GiftPaymentButton
-            cardData={JSON.parse(localStorage.getItem(`card-data-${cardId}`)!)} // or props로 전달받은 값
             article={article}
             isLoading={isLoading}
-            onComplete={(mongoId) => {
-              // mongoId 받은 후 gift_histories 저장 또는 결제 flow 이어서 실행
-              // console.log("✅ 카드 저장 완료! mongoId:", mongoId)
+            disabled={!agreedTerms}
+            onClick={async () => {
+              if (!agreedTerms) {
+                alert("주문 내용 확인 및 결제 진행에 동의해주세요.");
+                return;
+              }
+
+              try {
+                const accessToken = localStorage.getItem("access_token");
+                const rawCardData = localStorage.getItem(`card-data-${cardId}`);
+                if (!rawCardData) throw new Error("카드 데이터 없음");
+
+                const cardData = JSON.parse(rawCardData);
+                const mongoId = await postCardDesign(cardData, accessToken!);
+                const idToSend = type === "article" ? Number(cardId) : article.gifticonId;
+
+                localStorage.setItem(`article-data-${cardId}`, JSON.stringify({
+                  ...article,
+                  profile_nickname: selectedFriend?.profile_nickname || "수령인"
+                }))
+
+
+                // 선물 보내기 API 호출
+                await sendGiftHistory(accessToken!, {
+                  toUserKakaoId: Number(selectedFriend?.kakaoId),
+                  gifticonId: idToSend,
+                  mongoId,
+                  type,
+                });
+
+                // 카드 데이터 localStorage에서 삭제
+                setTimeout(() => {
+                  localStorage.removeItem(`card-data-${cardId}`)
+                }, 60 * 1000); // 1분 뒤 삭제
+
+                await onSubmit(); // 이후 gift_histories 저장 등 진행
+              } catch (err) {
+                alert("카드 저장 또는 결제 처리 중 오류가 발생했습니다.");
+                console.error(err);
+              }
             }}
           />
         </div>

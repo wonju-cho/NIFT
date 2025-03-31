@@ -17,6 +17,7 @@ export default function GiftCompletePage({ params }: { params: { id: string } })
   const [article, setArticle] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [remainingTime, setRemainingTime] = useState(60);
 
   // 임의의 주문번호 생성
   const orderNumber = `NIFT-${Date.now().toString().slice(-8)}`
@@ -25,28 +26,37 @@ export default function GiftCompletePage({ params }: { params: { id: string } })
   useEffect(() => {
     try {
       // 임시 데이터 - 실제로는 API에서 가져옵니다
-      const mockArticle = {
-        id: params.id,
-        title: "스타벅스 아메리카노 Tall",
-        price: 4000,
-        originalPrice: 4500,
-        category: "커피/음료",
-        description: "스타벅스 아메리카노 Tall 사이즈 기프티콘입니다. 유효기간은 구매일로부터 30일입니다.",
-        image: "/placeholder.svg?height=400&width=400",
-        expiryDate: "2023-12-31",
+      const saved = localStorage.getItem(`article-data-${params.id}`);
+      if (saved) setArticle(JSON.parse(saved));
+
+      const card = localStorage.getItem(`card-data-${params.id}`);
+      if (card) setCardData(JSON.parse(card));
+
+      // 카운트다운
+      const interval = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      // 1분 뒤 삭제 + 메인 이동
+      const timeout = setTimeout(() => {
+        localStorage.removeItem(`article-data-${params.id}`);
+        localStorage.removeItem(`card-data-${params.id}`);
+        router.push("/");
+      }, 60 * 1000);
+
+      return () => {
+        clearInterval(interval)
+        clearTimeout(timeout)
       }
-
-      setArticle(mockArticle)
-
-      // 로컬 스토리지에서 카드 데이터 가져오기
-      const savedCardData = localStorage.getItem(`card-data-${params.id}`)
-      if (savedCardData) {
-        setCardData(JSON.parse(savedCardData))
-      }
-
-      setIsLoading(false)
     } catch (error) {
       console.error("상품 정보 또는 카드 데이터를 가져오는 데 실패했습니다:", error)
+    } finally {
       setIsLoading(false)
     }
   }, [params.id])
@@ -58,6 +68,8 @@ export default function GiftCompletePage({ params }: { params: { id: string } })
       setTimeout(() => setCopied(false), 2000)
     })
   }
+
+  const progressPercent = (1 - remainingTime / 60) * 100
 
   if (isLoading) {
     return (
@@ -77,7 +89,7 @@ export default function GiftCompletePage({ params }: { params: { id: string } })
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 bg-gray-50 py-12">
+      <main className="flex-1 bg-white py-12">
         <div className="container max-w-4xl">
           <div className="mb-10 text-center">
             <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-4">
@@ -111,21 +123,10 @@ export default function GiftCompletePage({ params }: { params: { id: string } })
                       className="object-cover"
                     />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium">{article.title}</h3>
-                    <div className="mt-1 flex items-baseline gap-2">
-                      <span className="text-lg font-bold">{article.price.toLocaleString()}원</span>
-                      {article.originalPrice > article.price && (
-                        <span className="text-sm text-gray-500 line-through">
-                          {article.originalPrice.toLocaleString()}원
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-2 text-sm text-gray-500">{article.description}</p>
-
-                    <div className="mt-3 text-sm">
-                      <span className="font-medium">유효기간:</span> {article.expiryDate}
-                    </div>
+                  <div className="flex-1 space-y-1.5">
+                    <h3 className="font-medium">{article.brandName}</h3>
+                    <p className="text-lg font-bold leading-tight">{article.title}</p>
+                    <p className="mt-2 text-sm text-gray-500 leading-relaxed">{article.description}</p>
                   </div>
                 </div>
 
@@ -133,7 +134,7 @@ export default function GiftCompletePage({ params }: { params: { id: string } })
                   <h4 className="font-medium mb-2">받는 분 정보</h4>
                   <div className="space-y-1 text-sm">
                     <p>
-                      <span className="font-medium">받는 분:</span> {cardData?.recipientName || "수령인"}
+                      <span className="font-medium">받는 분:</span> {article.profile_nickname || "수령인"}
                     </p>
                     <p>
                       <span className="font-medium">전송 완료:</span> 수신자의 휴대폰으로 선물이 전송되었습니다.
@@ -143,6 +144,19 @@ export default function GiftCompletePage({ params }: { params: { id: string } })
               </div>
             </CardContent>
           </Card>
+
+          {/* ⏳ 자동 이동 타이머 표시 */}
+          <div className="mb-6">
+            <div className="text-center text-sm text-gray-600 mb-2">
+              ⏳ {remainingTime}초 후 메인 페이지로 이동합니다.
+            </div>
+            <div className="w-full bg-gray-200 h-2 rounded overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-1000"
+                style={{ width: `${progressPercent}%` }}
+              ></div>
+            </div>
+          </div>          
 
           {/* 카드 미리보기 */}
           <Card className="mb-6">

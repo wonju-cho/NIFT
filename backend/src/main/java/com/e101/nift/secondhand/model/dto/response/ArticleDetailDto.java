@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ArticleDetailDto {
     private Long articleId;
+    private Long gifticonId;
     private Long serialNum;
     private String title;
     private String description;

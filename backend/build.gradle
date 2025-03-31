@@ -3,17 +3,11 @@ plugins {
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.asciidoctor.jvm.convert' version '3.3.2'
-	id 'checkstyle' // 정적 분석 파일 생성을 위해 추가
 	id 'com.github.spotbugs' version '5.1.0' // 정적 분석 파일 생성을 위해 추가
 }
 
 group = 'com.e101'
 version = '0.0.1-SNAPSHOT'
-
-checkstyle {
-	toolVersion = '10.12.1'
-	configFile = file("/app/config/checkstyle/checkstyle.xml") //dockerfile을 통해 복사된 경로
-}
 
 spotbugs {
 	toolVersion = '4.7.3'
