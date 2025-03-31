@@ -24,7 +24,6 @@ public class GifticonController {
     }
 
     @Operation(summary = "기프티콘 정보 추가", description = "기프티콘(NFT)에 대한 정보를 DB에 입력")
-    @PreAuthorize("hasRole('ADMIN')") // 관리자 전용!
     @PostMapping
     public ResponseEntity<CreateGifticonDto> createGifticon(@RequestBody CreateGifticonDto gifticonDto){
 
