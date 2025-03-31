@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,14 +40,15 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
             Gifticon gifticon = gifticonRepository.findByGifticonId(history.getGifticon().getGifticonId())
                     .orElseThrow(() -> new RuntimeException("기프티콘 정보를 찾을 수 없습니다."));
 
-            User recipient = userRepository.findByUserId(history.getToUserId().getUserId())
-                    .orElseThrow(() -> new RuntimeException("받는 사람 정보를 찾을 수 없습니다."));
+            String toNickName = userRepository.findByUserId(history.getToUserId())
+                    .map(User::getNickName)
+                    .orElse("아직 가입하지 않은 회원입니다");
 
             return new SendGiftHistoryDto(
                     history.getGiftHistoryId(),
                     gifticon.getGifticonTitle(),
                     gifticon.getImageUrl(),
-                    recipient.getNickName(),
+                    toNickName,
                     history.getCreatedAt()
             );
         }).toList();
@@ -55,6 +57,7 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
     }
 
     @Override
+    @Transactional
     public void sendGiftHistory(User user, SendGiftDto request) {
         Gifticon gifticon;
 
@@ -75,14 +78,23 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
             ArticleHistory articleHistory = ArticleHistory.builder()
                     .articleId(article.getArticleId())
                     .userId(user.getUserId())
-                    .historyType((short) 1) // 구매 = 1
+                    .historyType((short) 3) // 구매 = 3
                     .createdAt(LocalDateTime.now())
                     .build();
+//            System.out.println("✅ 거래 이력 저장 시작");
             articleHistoryRepository.save(articleHistory);
+//            System.out.println("✅ 거래 이력 저장 완료");
 
-            // article.is_sold = true로 변환 / 판매 처리
+//            System.out.println("✅ sold 상태 변경 전: " + article.isSold());
             article.setSold(true);
+//            System.out.println("✅ sold 상태 변경 후: " + article.isSold());
+
             articleRepository.save(article);
+//            System.out.println("✅ 판매 상태 저장 완료");
+
+            // article.sold = true로 변환 / 판매 처리
+//            article.setSold(true);
+//            articleRepository.save(article);
         } else {
             throw new IllegalArgumentException("지원하지 않는 선물 타입입니다: "+request.getType());
         }
@@ -97,5 +109,6 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
                 .createdAt(LocalDateTime.now())
                 .build();
         giftHistoryRepository.save(giftHistory);
+        System.out.println("✅ 선물 기록 저장 완료");
     }
 }
