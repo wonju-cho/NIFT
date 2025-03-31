@@ -1,40 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ethers } from "ethers";
-import Image from "next/image";
-import { getSSFBalance, getUserNFTsAsJson } from "@/lib/api/web3";
-import { useLoading } from "@/components/LoadingContext";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  ArticleCard,
-  ArticleCardProps,
-} from "@/components/article/article-card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  AlertCircle,
-  Copy,
-  CreditCard,
-  Heart,
-  LogOut,
-  Package,
-  Settings,
-  ShoppingBag,
-  User,
-  Gift,
-  Clock,
-} from "lucide-react";
+import { useEffect, useState } from "react"
+import { ethers } from "ethers"
+import Image from "next/image"
+import { getSSFBalance, getUserNFTsAsJson } from "@/lib/api/web3"
+import { useLoading } from "@/components/LoadingContext"
+import { Header } from "@/components/layout/header"
+import { Footer } from "@/components/layout/footer"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type { ArticleCardProps } from "@/components/article/article-card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { AlertCircle, Copy, CreditCard, Heart, LogOut, Package, Settings, Gift, Clock } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -43,28 +22,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  deleteUser,
-  updateUserNickname,
-  updateWallet,
-  fetchLikedArticles,
-} from "@/lib/api/mypage";
-import { useRouter } from "next/navigation";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { GiftCard } from "@/components/gift/gift-card";
-import { PurchaseHistory } from "@/components/mypage/purchase-history";
-import { SaleHistory } from "@/components/mypage/sale-history";
-import { SendGiftHistory } from "@/components/mypage/sendgift-history";
-import { WishList } from "@/components/mypage/wish-list";
+} from "@/components/ui/dialog"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { updateUserNickname, updateWallet, fetchLikedArticles } from "@/lib/api/mypage"
+import { useRouter } from "next/navigation"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { GiftCard } from "@/components/gift/gift-card"
+import { PurchaseHistory } from "@/components/mypage/purchase-history"
+import { SaleHistory } from "@/components/mypage/sale-history"
+import { SendGiftHistory } from "@/components/mypage/sendgift-history"
+import { WishList } from "@/components/mypage/wish-list"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL
 const getAccessToken = () => {
   if (typeof window !== "undefined") {
     console.log("토큰!!! : ", localStorage.getItem("access_token"));
@@ -157,9 +126,7 @@ function ProductCard({
           <div className="text-xs text-gray-500">{title.split(" ")[0]}</div>
           <h3 className="line-clamp-2 text-sm font-medium">{title}</h3>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-base font-bold">
-              {currentPrice.toLocaleString()}원
-            </span>
+            <span className="text-base font-bold">{currentPrice.toLocaleString()}원</span>
             {!!discountRate && discountRate > 0 && (
               <span className="text-xs text-primary">{discountRate}% 할인</span>
             )}{" "}
@@ -199,11 +166,15 @@ export default function MyPage() {
   const [currentPage, setCurrentPage] = useState(0);
 
   // 임시 작성 코드
-  const [giftCardTab, setGiftCardTab] = useState("available");
+  const [giftCardTab, setGiftCardTab] = useState("available")
 
   // 페이지네이션 관련 변수 추가
-  const [availableCurrentPage, setAvailableCurrentPage] = useState(0);
-  const [usedCurrentPage, setUsedCurrentPage] = useState(0);
+  const [availableCurrentPage, setAvailableCurrentPage] = useState(0)
+  const [usedCurrentPage, setUsedCurrentPage] = useState(0)
+  const [usedTotalPage, setUsedTotalPage] = useState(1)
+
+  // 한 페이지에 표시할 아이템 수
+  const ITEMS_PER_PAGE = 6
 
   const PAGE_GROUP_SIZE = 5; // 한 번에 표시할 페이지 수
   // 지금 페이지 그룹 계산
@@ -393,44 +364,44 @@ export default function MyPage() {
   // 보유 NIFT 목록 불러오기
   useEffect(() => {
     const loadGifticons = async () => {
-      if (!user.walletAddress) return;
+      if (!user.walletAddress) return
 
       try {
-        const nfts = await getUserNFTsAsJson(user.walletAddress);
-        const now = new Date();
+        const nfts = await getUserNFTsAsJson(user.walletAddress)
+        const now = new Date()
 
-        const available: any[] = [];
-        const used: any[] = [];
+        const available: any[] = []
+        const used: any[] = []
 
         for (const nft of nfts) {
-          const { expiryDate, usedDate } = nft;
-          const expiry = new Date(expiryDate);
+          const { expiryDate, usedDate } = nft
+          const expiry = new Date(expiryDate)
 
           if (usedDate) {
-            used.push(nft);
+            used.push(nft)
           } else if (expiry.getTime() > now.getTime()) {
-            available.push(nft);
+            available.push(nft)
           } else {
-            used.push(nft);
+            used.push(nft)
           }
         }
 
-        setAvailableGiftCards(available);
-        setUsedGiftCards(used);
+        setAvailableGiftCards(available)
+        setUsedGiftCards(used)
       } catch (error) {
-        console.error("NIFT 불러오기 실패:", error);
+        console.error("NIFT 불러오기 실패:", error)
       }
-    };
+    }
 
-    loadGifticons();
-  }, [user.walletAddress]);
+    loadGifticons()
+  }, [user.walletAddress])
 
   // 유효기간 D-Day 계산 함수
   function calculateDday(expiry: string): number {
-    const today = new Date();
-    const date = new Date(expiry);
-    const diff = date.getTime() - today.getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    const today = new Date()
+    const date = new Date(expiry)
+    const diff = date.getTime() - today.getTime()
+    return Math.ceil(diff / (1000 * 60 * 60 * 24))
   }
 
   // 찜한 상품 목록 불러오기
@@ -462,12 +433,123 @@ export default function MyPage() {
     loadLikeArticles();
   }, [currentPage]);
 
-  const [availableGiftCards, setAvailableGiftCards] = useState<any[]>([]);
-  const [usedGiftCards, setUsedGiftCards] = useState<any[]>([]);
+  const [availableGiftCards, setAvailableGiftCards] = useState<any[]>([])
+  const [usedGiftCards, setUsedGiftCards] = useState<any[]>([])
 
   // 페이지네이션 관련 변수 계산
-  const availableTotalPage = Math.ceil(availableGiftCards.length / 6) || 1; // 6 cards per page
-  const usedTotalPage = Math.ceil(usedGiftCards.length / 6) || 1; // 6 cards per page
+  const availableTotalPage = Math.ceil(availableGiftCards.length / ITEMS_PER_PAGE) || 1
+  // 사용 완료된 기프티콘의 총 페이지 수를 동적으로 계산
+  const calculatedUsedTotalPage = Math.ceil(usedGiftCards.length / ITEMS_PER_PAGE) || 1
+
+  // 사용 완료된 기프티콘 불러오기
+  const fetchUsedGifticons = async () => {
+    try {
+      const token = getAccessToken()
+      if (!token) return
+
+      const firstPageResponse = await fetch(`${BASE_URL}/users/gifticons/used?page=0&size=1`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const firstPageData = await firstPageResponse.json()
+      const totalElements = firstPageData.totalElements
+      const totalPages = firstPageData.totalPages
+
+      if (totalElements === 0) {
+        setUsedGiftCards([])
+        setUsedTotalPage(1)
+        return
+      }
+
+      const response = await fetch(`${BASE_URL}/users/gifticons/used?page=0&size=${totalElements}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const data = await response.json()
+      console.log("📦 사용 완료된 기프티콘 응답", data)
+
+      const transformed = data.content.map((item: any) => ({
+        title: item.title,
+        brand: item.brandName,
+        imageUrl: item.imageUrl,
+        usedDate: item.usedAt.split("T")[0],
+        serialNum: `${item.title}-${item.usedAt}`,
+      }))
+
+      setUsedGiftCards(transformed)
+      setUsedTotalPage(Math.ceil(transformed.length / ITEMS_PER_PAGE))
+    } catch (err) {
+      console.error("❌ 사용 완료 기프티콘 불러오기 실패", err)
+    }
+  }
+
+  useEffect(() => {
+    if (!user.walletAddress || user.walletAddress.length < 10) return
+
+    const loadGifticons = async () => {
+      try {
+        const nfts = await getUserNFTsAsJson(user.walletAddress)
+        const now = new Date()
+
+        const available: any[] = []
+
+        for (const nft of nfts) {
+          const { expiryDate, usedDate } = nft
+          const expiry = new Date(expiryDate)
+
+          if (!usedDate && expiry.getTime() > now.getTime()) {
+            available.push(nft)
+          }
+        }
+
+        setAvailableGiftCards(available)
+      } catch (error) {
+        console.error("NIFT 불러오기 실패:", error)
+      }
+    }
+
+    const loadAll = async () => {
+      await loadGifticons()
+      await fetchUsedGifticons()
+    }
+
+    loadAll()
+  }, [user.walletAddress])
+
+  useEffect(() => {
+    const loadGifticons = async () => {
+      if (!user.walletAddress) return
+
+      try {
+        const nfts = await getUserNFTsAsJson(user.walletAddress)
+        const now = new Date()
+
+        const available: any[] = []
+
+        for (const nft of nfts) {
+          const { expiryDate, usedDate } = nft
+          const expiry = new Date(expiryDate)
+
+          if (!usedDate && expiry.getTime() > now.getTime()) {
+            available.push(nft)
+          }
+        }
+
+        setAvailableGiftCards(available)
+      } catch (error) {
+        console.error("NIFT 불러오기 실패:", error)
+      }
+    }
+
+    loadGifticons()
+    fetchUsedGifticons()
+  }, [user.walletAddress])
 
   const likedProduct = [
     {
@@ -691,10 +773,7 @@ export default function MyPage() {
                         </TabsList>
 
                         {/* 선물함 탭 */}
-                        <TabsContent
-                          value="gifticons"
-                          className="mt-6 space-y-6"
-                        >
+                        <TabsContent value="gifticons" className="mt-6 space-y-6">
                           <div>
                             <h2 className="mb-4 text-xl font-semibold">
                               보유 NIFT
@@ -706,10 +785,7 @@ export default function MyPage() {
                             </p>
                           </div>
 
-                          <Tabs
-                            defaultValue="available"
-                            onValueChange={setGiftCardTab}
-                          >
+                          <Tabs defaultValue="available" onValueChange={setGiftCardTab}>
                             <TabsList className="w-full">
                               <TabsTrigger value="available" className="flex-1">
                                 사용 가능 {availableGiftCards.length}
@@ -723,8 +799,8 @@ export default function MyPage() {
                               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {availableGiftCards
                                   .slice(
-                                    availableCurrentPage * 6,
-                                    (availableCurrentPage + 1) * 6
+                                    availableCurrentPage * ITEMS_PER_PAGE,
+                                    (availableCurrentPage + 1) * ITEMS_PER_PAGE,
                                   )
                                   .map((card) => (
                                     <GiftCard
@@ -761,16 +837,11 @@ export default function MyPage() {
                                   </Button>
 
                                   {(() => {
-                                    const maxButtons = 5;
-                                    const total = availableTotalPage;
-                                    const current = availableCurrentPage;
-                                    const start =
-                                      Math.floor(current / maxButtons) *
-                                      maxButtons;
-                                    const end = Math.min(
-                                      start + maxButtons,
-                                      total
-                                    );
+                                    const maxButtons = 5
+                                    const total = availableTotalPage
+                                    const current = availableCurrentPage
+                                    const start = Math.floor(current / maxButtons) * maxButtons
+                                    const end = Math.min(start + maxButtons, total)
 
                                     return Array.from(
                                       { length: end - start },
@@ -790,7 +861,7 @@ export default function MyPage() {
                                       >
                                         {pageNum + 1}
                                       </Button>
-                                    ));
+                                    ))
                                   })()}
 
                                   <Button
@@ -818,20 +889,15 @@ export default function MyPage() {
                             <TabsContent value="used" className="mt-6">
                               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {usedGiftCards
-                                  .slice(
-                                    usedCurrentPage * 6,
-                                    (usedCurrentPage + 1) * 6
-                                  )
+                                  .slice(usedCurrentPage * ITEMS_PER_PAGE, (usedCurrentPage + 1) * ITEMS_PER_PAGE)
                                   .map((card) => (
                                     <GiftCard
                                       key={card.serialNum}
                                       serialNum={card.serialNum}
                                       title={card.title}
                                       brand={card.brand}
-                                      imageUrl={card.image}
-                                      usedDate={
-                                        card.usedDate || "사용일 미지정"
-                                      }
+                                      imageUrl={card.imageUrl}
+                                      usedDate={card.usedDate || "사용일 미지정"}
                                     />
                                   ))}
                               </div>
@@ -857,16 +923,11 @@ export default function MyPage() {
                                   </Button>
 
                                   {(() => {
-                                    const maxButtons = 5;
-                                    const total = usedTotalPage;
-                                    const current = usedCurrentPage;
-                                    const start =
-                                      Math.floor(current / maxButtons) *
-                                      maxButtons;
-                                    const end = Math.min(
-                                      start + maxButtons,
-                                      total
-                                    );
+                                    const maxButtons = 5
+                                    const total = calculatedUsedTotalPage
+                                    const current = usedCurrentPage
+                                    const start = Math.floor(current / maxButtons) * maxButtons
+                                    const end = Math.min(start + maxButtons, total)
 
                                     return Array.from(
                                       { length: end - start },
@@ -886,19 +947,15 @@ export default function MyPage() {
                                       >
                                         {pageNum + 1}
                                       </Button>
-                                    ));
+                                    ))
                                   })()}
 
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    disabled={
-                                      usedCurrentPage === usedTotalPage - 1
-                                    }
+                                    disabled={usedCurrentPage === calculatedUsedTotalPage - 1}
                                     onClick={() =>
-                                      setUsedCurrentPage((prev) =>
-                                        Math.min(prev + 1, usedTotalPage - 1)
-                                      )
+                                      setUsedCurrentPage((prev) => Math.min(prev + 1, calculatedUsedTotalPage - 1))
                                     }
                                   >
                                     다음 ›
@@ -921,27 +978,21 @@ export default function MyPage() {
                           </div>
                           <Accordion type="multiple" className="w-full">
                             <AccordionItem value="purchases">
-                              <AccordionTrigger className="text-lg font-medium">
-                                구매내역
-                              </AccordionTrigger>
+                              <AccordionTrigger className="text-lg font-medium">구매내역</AccordionTrigger>
                               <AccordionContent>
                                 <PurchaseHistory />
                               </AccordionContent>
                             </AccordionItem>
 
                             <AccordionItem value="sales">
-                              <AccordionTrigger className="text-lg font-medium">
-                                판매내역
-                              </AccordionTrigger>
+                              <AccordionTrigger className="text-lg font-medium">판매내역</AccordionTrigger>
                               <AccordionContent>
                                 <SaleHistory />
                               </AccordionContent>
                             </AccordionItem>
 
                             <AccordionItem value="gifts">
-                              <AccordionTrigger className="text-lg font-medium">
-                                보낸 선물
-                              </AccordionTrigger>
+                              <AccordionTrigger className="text-lg font-medium">보낸 선물</AccordionTrigger>
                               <AccordionContent>
                                 <SendGiftHistory />
                               </AccordionContent>
@@ -959,9 +1010,7 @@ export default function MyPage() {
                               소중한 사람들과 주고받은 NIFT 카드를 확인해보세요.
                             </p>
                           </div>
-                          <div className="text-center py-12 text-gray-500">
-                            아직 선물 추억이 없습니다.
-                          </div>
+                          <div className="text-center py-12 text-gray-500">아직 선물 추억이 없습니다.</div>
                           {/* <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                           {myArticles.slice(1, 4).map((article) => (
                             <ArticleCard key={article.id} {...article} />
@@ -991,25 +1040,14 @@ export default function MyPage() {
                             <Card>
                               <CardHeader>
                                 <CardTitle>계정 정보</CardTitle>
-                                <CardDescription>
-                                  개인 정보를 확인하고 수정할 수 있습니다.
-                                </CardDescription>
+                                <CardDescription>개인 정보를 확인하고 수정할 수 있습니다.</CardDescription>
                               </CardHeader>
                               <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                   <Label htmlFor="name">닉네임</Label>
                                   <div className="flex gap-2">
-                                    <Input
-                                      id="name"
-                                      value={nickname}
-                                      onChange={(e) =>
-                                        setNickname(e.target.value)
-                                      }
-                                    />
-                                    <Button
-                                      className="whitespace-nowrap"
-                                      onClick={updateNickname}
-                                    >
+                                    <Input id="name" value={nickname} onChange={(e) => setNickname(e.target.value)} />
+                                    <Button className="whitespace-nowrap" onClick={updateNickname}>
                                       수정
                                     </Button>
                                   </div>
@@ -1020,19 +1058,18 @@ export default function MyPage() {
                                   <div className="flex gap-2">
                                     <Input
                                       id="wallet"
-                                      value={
-                                        walletAddress
-                                          ? walletAddress
-                                          : "연결되지 않음"
-                                      }
+                                      value={walletAddress ? walletAddress : "연결되지 않음"}
                                       readOnly
                                       className="bg-muted"
                                     />
                                     <Button
                                       variant="outline"
-                                      size="icon"
-                                      onClick={copyToClipboard}
+                                      className="whitespace-nowrap"
+                                      onClick={connectOrUpdateWallet}
                                     >
+                                      {walletAddress ? "변경하기" : "연결하기"}
+                                    </Button>
+                                    <Button variant="outline" size="icon" onClick={copyToClipboard}>
                                       <Copy className="h-4 w-4" />
                                     </Button>
                                     <Button
