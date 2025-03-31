@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRouter } from "next/navigation"; // ✅ 추가
 
 import { useLoading } from "@/components/LoadingContext";
 import { buyNFT, fetchTokenInfoBySerial } from "@/lib/api/web3";
@@ -56,6 +57,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [countLikes, setLikeCount] = useState<number>(0);
   const { isLoading, setIsLoading } = useLoading();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -107,6 +109,72 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       console.warn("좋아요 토글 실패");
       setIsLiked((prev) => !prev);
       setLikeCount((prev) => (isLiked ? prev + 1 : prev - 1));
+    }
+  };
+
+  const handleClickBuy = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      alert("로그인이 필요합니다!");
+      router.push("/signin");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const userData = await res.json();
+
+      if (!userData.walletAddress) {
+        const confirm = window.confirm(
+          "지갑이 연결되어 있지 않습니다. 연결 페이지로 이동할까요?"
+        );
+        if (confirm) {
+          router.push("/mypage");
+        }
+        return;
+      }
+
+      setShowPurchaseDialog(true); // ✅ 조건 만족 시 다이얼로그 열기
+    } catch (err) {
+      console.error("유저 정보 확인 실패", err);
+      alert("사용자 정보를 불러오지 못했습니다.");
+    }
+  };
+
+  const handleClickGift = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      alert("로그인이 필요합니다!");
+      router.push("/signin");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const userData = await res.json();
+
+      if (!userData.walletAddress) {
+        const confirm = window.confirm(
+          "지갑이 연결되어 있지 않습니다. 연결 페이지로 이동할까요?"
+        );
+        if (confirm) {
+          router.push("/mypage");
+        }
+        return;
+      }
+
+      router.push(`/gift/${params.id}/customize?type=article`);
+    } catch (err) {
+      console.error("유저 정보 확인 실패", err);
+      alert("사용자 정보를 불러오지 못했습니다.");
     }
   };
 
@@ -210,28 +278,24 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                       <Button
                         className="h-12 w-full px-[16px]"
                         size="lg"
-                        onClick={() => setShowPurchaseDialog(true)}
+                        onClick={handleClickBuy} // ✅ 이렇게만!
                       >
-                        F <ShoppingCart className="mr-1 h-4 w-4" />
+                        <ShoppingCart className="mr-1 h-4 w-4" />
                         구매하기
                       </Button>
                     )}
                   </div>
 
                   <div className="col-span-5">
-                    <Link
-                      href={`/gift/${params.id}/customize?type=article`}
-                      className="block"
+                    <Button
+                      variant="outline"
+                      className="h-12 w-full px-[16px]"
+                      size="lg"
+                      onClick={handleClickGift} // ✅ 이제 조건 검사 잘됨!
                     >
-                      <Button
-                        variant="outline"
-                        className="h-12 w-full px-[16px]"
-                        size="lg"
-                      >
-                        <Gift className="mr-1 h-4 w-4" />
-                        선물하기
-                      </Button>
-                    </Link>
+                      <Gift className="mr-1 h-4 w-4" />
+                      선물하기
+                    </Button>
                   </div>
 
                   <ArticleLikeAndShare
