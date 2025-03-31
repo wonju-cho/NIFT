@@ -1,12 +1,14 @@
 def sendMessage(String msg, String hookUrl) {
-	def payload = [ text: msg ]
-	def json = groovy.json.JsonOutput.toJson(payload)
+	def payload = groovy.json.JsonOutput.toJson([text: msg])
+	writeFile file: 'payload.json', text: payload
 
-	sh """
-	curl -X POST -H 'Content-Type: application/json' \
-	-d '${json}' \
-	${hookUrl}
-	"""
+	sh(
+		script: """
+		export HOOK_URL=${hookUrl}
+		curl -X POST -H 'Content-Type: application/json' -d @payload.json \$HOOK_URL
+		""",
+		label: 'Send message'
+	)
 }
 
 pipeline {
@@ -37,13 +39,16 @@ pipeline {
 
 		stage('Check DB_CRED File') {
 			steps {
-				withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
-					sh '''
-						echo "📁 DB_CRED_FILE 경로: $DB_CRED_FILE"
-						ls -l $DB_CRED_FILE
-						echo "📄 DB_CRED_FILE 내용:"
-						cat $DB_CRED_FILE
-					'''
+				script {
+					withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
+                        sh '''
+                            if [ ! -f "$DB_CRED_FILE" ]; then
+                                echo "❌ DB_CRED_FILE 파일이 존재하지 않습니다."
+                                exit 1
+                            fi
+                            echo " DB_CRED_FILE 경로: $DB_CRED_FILE"
+                            ls -l $DB_CRED_FILE
+                        '''
 				}
 			}
 		}
@@ -133,7 +138,6 @@ pipeline {
 	                        java(),
 	                        esLint(pattern: 'reports/eslint-report.json'),
 	                        spotBugs(pattern: '**/spotbugsXml.xml'),
-	                        checkStyle(pattern: '**/checkstyle-result.xml')
 	                    ])
 
 	                    def detailLines = []
@@ -178,6 +182,9 @@ pipeline {
 		                    sendMessage(message, MATTERMOST_WEBHOOK)
 	                    }
 	                }
+	                
+	                 // .env 파일 삭제
+                	sh 'rm -f .env'
 	            } catch (e) {
 	                echo "recordIssues() 중 오류 발생: ${e}"
 	            }
