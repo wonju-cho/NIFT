@@ -13,6 +13,8 @@ public interface TransactionService {
     String getTxStatus(String txHash);
     List<Log> getTransactionLogs(String txHash);
     List<GifticonNFT.NFTPurchasedEventResponse> getPurchaseEventsByTxHash(String txHash);
+    List<GifticonNFT.ListedForSaleEventResponse> getListedForSaleEventByTxHash(String txHash);
     List<BigInteger> getLast50BlockNumbers();
     List<GifticonNFT.NFTPurchasedEventResponse> getPurchaseEventsByBlockNumber(BigInteger blockNumber);
+    List<GifticonNFT.ListedForSaleEventResponse> getListedForSaleEventsByBlockNumber(BigInteger blockNumber);
 }

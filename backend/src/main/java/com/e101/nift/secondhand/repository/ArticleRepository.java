@@ -52,4 +52,6 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     Page<Article> findByUserId(Long userId, Pageable pageable);
 
     Optional<Article> findArticleBySerialNum(Long serialNum);
+
+    Optional<Article> findArticleByTxHash(String txHash);
 }

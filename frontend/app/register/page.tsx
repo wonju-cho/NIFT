@@ -11,6 +11,7 @@ import { listGifticonForSale } from "@/lib/api/web3";
 import { useLoading } from "@/components/LoadingContext";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { apiClient } from "@/lib/api/CustomAxios";
 
 // 지갑 주소 가져오기
 async function getWalletAddress() {
@@ -104,17 +105,6 @@ export default function RegisterPage() {
       return;
     }
 
-    const payload = {
-      title: data.title,
-      description: data.description,
-      currentPrice: data.price,
-      serialNum: Number(selectedGifticonData.serialNum),
-      expirationDate: `${selectedGifticonData.expiryDate}T23:59:59`,
-      gifticonId: Number(selectedGifticonData.id),
-      imageUrl: selectedGifticonData.image,
-    };
-
-    console.log("🟢 등록 요청 데이터:", payload);
     setIsLoading(true);
 
     try {
@@ -124,18 +114,19 @@ export default function RegisterPage() {
         return;
       }
 
-      await listGifticonForSale(payload.serialNum, payload.currentPrice);
-
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const tx = await listGifticonForSale(
+        Number(selectedGifticonData.serialNum),
+        data.price
       );
+
+      const payload = {
+        title: data.title,
+        description: data.description,
+        txHash: tx!.hash,
+      };
+
+      console.log("🟢 등록 요청 데이터:", payload);
+      const response = await apiClient.post("/secondhand-articles", payload);
 
       alert("게시글이 성공적으로 등록되었습니다!");
       router.push("/articles");
