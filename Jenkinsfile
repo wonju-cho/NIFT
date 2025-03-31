@@ -11,17 +11,6 @@ def sendMessage(String msg, String hookUrl) {
 	)
 }
 
-def checkCredential(String filePath, String fileName) {
-	sh '''
-	    if [ ! -f "$filePath" ]; then
-	        echo "❌ $fileName 파일이 존재하지 않습니다."
-	        exit 1
-	    fi
-	    echo " $fileName 경로: $filePath"
-	    ls -l $filePath
-	'''
-}
-
 pipeline {
 	agent any
 
@@ -51,9 +40,19 @@ pipeline {
 		stage('Check ENV Credential Files') {
 			steps {
 				script {
-					withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')],
+
+					def checkCredential = { filePath, name ->
+		                if (!fileExists(filePath)) {
+		                    error "❌ Credential ${name} (${filePath}) is missing."
+		                } else {
+		                    echo "✅ Credential ${name} found at ${filePath}"
+		                }
+	            	}
+
+					withCredentials([
+						file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE'),
 						file(credentialsId: 'SONAR_CRED', variable: 'SONAR_FILE')
-						) {
+						]) {
                         checkCredential(DB_CRED_FILE, "DB_CRED")
                         checkCredential(SONAR_FILE, "SONAR_CRED")
 					}
@@ -147,13 +146,9 @@ pipeline {
 
 						def message = """
 						${issueEmoji} *Static Analysis Report*
-						${branchLabel}
 						- Job: ${env.JOB_NAME}
 						- Build: #${env.BUILD_NUMBER}
-						- Result: ${issueStatusMsg}
 						- 툴별 결과:
-						${detailLines.collect { "  ${it}" }.join('\n')}
-						- [경고 리포트 보기](${analysisUrl})
 						""".stripIndent()
 
 	                    withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
