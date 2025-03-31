@@ -12,7 +12,7 @@ version = '0.0.1-SNAPSHOT'
 
 checkstyle {
 	toolVersion = '10.12.1'
-	configFile = file("${rootDir}/config/checkstyle/checkstyle.xml") // 커스텀 설정 (optional)
+	configFile = file("/app/config/checkstyle/checkstyle.xml") //dockerfile을 통해 복사된 경로
 }
 
 spotbugs {
