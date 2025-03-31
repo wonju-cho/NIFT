@@ -598,18 +598,27 @@ export default function MyPage() {
                       <CardTitle className="text-center text-white">
                         {user.nickname}
                       </CardTitle>
-                      <div className="flex items-center justify-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs backdrop-blur-sm">
-                        <span className="truncate">
-                          {shortenAddress(walletAddress)}
-                        </span>
+                      {walletAddress ? (
+                        <div className="flex items-center justify-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs backdrop-blur-sm mt-1">
+                          <span className="truncate">
+                            {shortenAddress(walletAddress)}
+                          </span>
+                          <button
+                            onClick={copyToClipboard}
+                            className="ml-1 rounded-full p-1 hover:bg-white/20"
+                          >
+                            <Copy className="h-3 w-3" />
+                            <span className="sr-only">복사</span>
+                          </button>
+                        </div>
+                      ) : (
                         <button
-                          onClick={copyToClipboard}
-                          className="ml-1 rounded-full p-1 hover:bg-white/20"
+                          onClick={connectOrUpdateWallet}
+                          className="w-full rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm mt-2"
                         >
-                          <Copy className="h-3 w-3" />
-                          <span className="sr-only">복사</span>
+                          지갑 연결하기
                         </button>
-                      </div>
+                      )}
                       {copied && (
                         <div className="absolute right-4 top-4 rounded-md bg-white px-2 py-1 text-xs text-primary-700 shadow-md">
                           복사됨!
