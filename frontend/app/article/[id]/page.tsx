@@ -112,69 +112,101 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleClickBuy = async () => {
+  //  유저 지갑 주소 확인 함수
+  async function checkWalletValidation(): Promise<
+    "ok" | "login" | "no-wallet" | "mismatch"
+  > {
     const token = localStorage.getItem("access_token");
-    if (!token) {
-      alert("로그인이 필요합니다!");
-      router.push("/signin");
-      return;
-    }
+    if (!token) return "login";
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const userData = await res.json();
 
-      if (!userData.walletAddress) {
-        const confirm = window.confirm(
-          "지갑이 연결되어 있지 않습니다. 연결 페이지로 이동할까요?"
-        );
-        if (confirm) {
+      if (!userData.walletAddress) return "no-wallet";
+
+      let accounts;
+      try {
+        accounts = await window.ethereum?.request({
+          method: "eth_requestAccounts",
+        });
+      } catch (err) {
+        console.error("MetaMask 요청 실패:", err);
+        return "login";
+      }
+      const metamaskAddress = accounts?.[0]?.toLowerCase();
+      const dbAddress = userData.walletAddress.toLowerCase();
+
+      if (metamaskAddress !== dbAddress) return "mismatch";
+
+      return "ok";
+    } catch (err) {
+      console.error("지갑 주소 확인 실패:", err);
+      return "login"; // fallback 처리
+    }
+  }
+
+  const handleClickBuy = async () => {
+    const result = await checkWalletValidation();
+
+    switch (result) {
+      case "login":
+        alert("로그인이 필요합니다.");
+        router.push("/signin");
+        return;
+      case "no-wallet":
+        if (
+          window.confirm(
+            "지갑이 연결되어 있지 않습니다. 연결 페이지로 이동할까요?"
+          )
+        ) {
           router.push("/mypage");
         }
         return;
-      }
-
-      setShowPurchaseDialog(true); // ✅ 조건 만족 시 다이얼로그 열기
-    } catch (err) {
-      console.error("유저 정보 확인 실패", err);
-      alert("사용자 정보를 불러오지 못했습니다.");
+      case "mismatch":
+        alert(
+          "지갑 주소가 일치하지 않습니다. 마이페이지에서 다시 연결해주세요."
+        );
+        {
+          router.push("/mypage");
+        }
+        return;
+      case "ok":
+        setShowPurchaseDialog(true);
+        return;
     }
   };
 
   const handleClickGift = async () => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      alert("로그인이 필요합니다!");
-      router.push("/signin");
-      return;
-    }
+    const result = await checkWalletValidation();
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const userData = await res.json();
-
-      if (!userData.walletAddress) {
-        const confirm = window.confirm(
-          "지갑이 연결되어 있지 않습니다. 연결 페이지로 이동할까요?"
-        );
-        if (confirm) {
+    switch (result) {
+      case "login":
+        alert("로그인이 필요합니다.");
+        router.push("/signin");
+        return;
+      case "no-wallet":
+        if (
+          window.confirm(
+            "지갑이 연결되어 있지 않습니다. 연결 페이지로 이동할까요?"
+          )
+        ) {
           router.push("/mypage");
         }
         return;
-      }
-
-      router.push(`/gift/${params.id}/customize?type=article`);
-    } catch (err) {
-      console.error("유저 정보 확인 실패", err);
-      alert("사용자 정보를 불러오지 못했습니다.");
+      case "mismatch":
+        alert(
+          "지갑 주소가 일치하지 않습니다. 마이페이지에서 다시 연결해주세요."
+        );
+        {
+          router.push("/mypage");
+        }
+        return;
+      case "ok":
+        router.push(`/gift/${params.id}/customize?type=article`);
+        return;
     }
   };
 
@@ -278,7 +310,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                       <Button
                         className="h-12 w-full px-[16px]"
                         size="lg"
-                        onClick={handleClickBuy} // ✅ 이렇게만!
+                        onClick={handleClickBuy} // 이렇게만!
                       >
                         <ShoppingCart className="mr-1 h-4 w-4" />
                         구매하기
@@ -291,7 +323,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                       variant="outline"
                       className="h-12 w-full px-[16px]"
                       size="lg"
-                      onClick={handleClickGift} // ✅ 이제 조건 검사 잘됨!
+                      onClick={handleClickGift} // 이제 조건 검사 잘됨!
                     >
                       <Gift className="mr-1 h-4 w-4" />
                       선물하기
@@ -305,7 +337,6 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                   />
                 </div>
 
-                {/* ✅ 삭제 버튼은 여기! */}
                 <div className="mt-3">
                   <DeleteArticleButton
                     articleId={article.articleId}
