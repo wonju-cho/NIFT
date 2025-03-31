@@ -26,6 +26,8 @@ const NFT_ABI = [
   "function getTokenIdBySerial(uint256 serialNumber) view returns (uint256)",
   "function getTokenInfo(uint256 tokenId) view returns (string name, string description, uint256 totalSupply, string metadataURI)",
   "function isApprovedForAll(address account, address operator) view returns (bool)",
+  "function giftToFriend(uint256 serialNumber, address recipient)",
+  "function giftToFriendByAlias(uint256 serialNumber, string calldata aliasName)",
 
   "function listForSale(uint256 serialNumber, uint256 price)",
   "function getSerialsByOwner(address owner) view returns (uint256[])",
@@ -208,6 +210,131 @@ export async function isSellerApprovedForSerial(
   } catch (error) {
     console.error("❌ approval 상태 확인 실패:", error);
     return false;
+  }
+}
+
+export type GiftNFTResponse = {
+  success: boolean;
+  txHash?: string;
+};
+
+export async function giftToFriend(
+  serialNumber: number,
+  price: number,
+  friendId: string
+) {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+
+  const fail: BuyNFTResponse = { success: false };
+  if (!provider) return fail;
+  try {
+    const signer = await provider.getSigner();
+
+    if (!NFT_CONTRACT_ADDRESS || !SSF_CONTRACT_ADDRESS) {
+      console.error("❌ 컨트랙트 주소가 설정되지 않았습니다.");
+      return fail;
+    }
+
+    const nftContract = new ethers.Contract(
+      NFT_CONTRACT_ADDRESS,
+      NFT_ABI,
+      signer
+    );
+    const ssfToken = new ethers.Contract(SSF_CONTRACT_ADDRESS, SSF_ABI, signer);
+
+    const [
+      price,
+      seller,
+      owner,
+      originalOwner,
+      expirationDate,
+      isRedeemed,
+      redeemedAt,
+      isPending,
+      pendingDate,
+      pendingRecipient,
+    ] = (await nftContract.getSerialInfo(serialNumber)) as [
+      bigint,
+      string,
+      string,
+      string,
+      bigint,
+      boolean,
+      bigint,
+      boolean,
+      bigint,
+      string
+    ];
+
+    // expirationDate와 redeemedAt을 Date 객체로 변환 (필요한 경우)
+    const expirationDateObj = new Date(Number(expirationDate) * 1000);
+    const redeemedAtObj =
+      Number(redeemedAt) === 0 ? null : new Date(Number(redeemedAt) * 1000);
+
+    console.log({
+      Price: String(price),
+      Seller: seller,
+      Owner: owner,
+      OriginalOwner: originalOwner,
+      ExpirationDate: String(expirationDateObj),
+      IsRedeemed: isRedeemed,
+      RedeemedAt: redeemedAtObj ? String(redeemedAtObj) : "Not redeemed",
+      IsPending: isPending,
+      PendingDate: String(pendingDate),
+      PendingRecipient: pendingRecipient,
+    });
+
+    const isApproved = await isSellerApprovedForSerial(serialNumber);
+    if (!isApproved) {
+      throw new Error("❌ 판매자가 NFT 전송 권한을 위임하지 않았습니다.");
+    }
+
+    if (seller === ethers.ZeroAddress) {
+      throw new Error("❌ 판매되지 않은 NFT입니다.");
+    }
+    if (isRedeemed) {
+      throw new Error("❌ 이미 사용된 NFT입니다. " + serialNumber);
+    }
+    if (price <= 0n) {
+      throw new Error("❌ 가격이 설정되지 않은 NFT입니다.");
+    }
+
+    const buyer = await signer.getAddress();
+    const ssfBalance: bigint = await ssfToken.balanceOf(buyer);
+    const allowance: bigint = await ssfToken.allowance(
+      buyer,
+      NFT_CONTRACT_ADDRESS
+    );
+
+    console.log("🔐 [구매자 정보]");
+    console.log("👤 구매자:", buyer);
+    console.log("💰 SSF 잔액:", ssfBalance.toString());
+    console.log("🧾 결제 금액:", price.toString());
+    console.log("🔓 승인 허용량:", allowance.toString());
+
+    if (ssfBalance < price) {
+      throw new Error("❌ SSF 잔액이 부족합니다.");
+    }
+
+    if (allowance < price) {
+      console.log("⚠️ 허용량 부족. approve 실행 중...");
+      const approveTx = await ssfToken.approve(NFT_CONTRACT_ADDRESS, price);
+      await approveTx.wait();
+      console.log("✅ 토큰 승인 완료");
+    } else {
+      console.log("✅ 승인량 충분. approve 생략");
+    }
+
+    console.log("🚀 NFT 선물 트랜잭션 실행 시작...");
+    const tx = await nftContract.giftToFriendByAlias(serialNumber, friendId);
+    console.log("⏳ 트랜잭션 전송됨. 대기 중...");
+    await tx.wait();
+    console.log("✅ SSF로 NFT 구매 완료");
+
+    return { success: true, txHash: tx.hash };
+  } catch (error) {
+    console.error("❌ NFT 구매 실패:", error);
+    return fail;
   }
 }
 

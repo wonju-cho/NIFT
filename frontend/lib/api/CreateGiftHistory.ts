@@ -1,23 +1,24 @@
-import axios from "axios"
+import axios from "axios";
+import { getTokenIdBySerial } from "./web3";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface CreateGiftHistoryParams {
-  fromUserId: number
-  toUserId: number | null
-  gifticonId: number
+  fromUserId: number;
+  toUserId: number | null;
+  gifticonId: number;
 }
 
 export async function sendGiftHistory(
   accessToken: string,
   dto: {
-    toUserKakaoId: number,
-    gifticonId: number,
-    mongoId: string,
-    type: string
+    toUserKakaoId: number;
+    gifticonId: number;
+    mongoId: string;
+    type: string;
   }
 ) {
-  const res = await fetch(`${BASE_URL}/gift-histories/send`,{
+  const res = await fetch(`${BASE_URL}/gift-histories/send`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -38,70 +39,98 @@ export async function createGiftHistory({
       fromUserId,
       toUserId,
       gifticonId,
-    })
+    });
 
     if (res.status === 200 || res.status === 201) {
-      console.log("🎁 gift_histories 등록 성공")
+      console.log("🎁 gift_histories 등록 성공");
     } else {
-      console.warn("gift_histories 등록 응답 상태:", res.status)
+      console.warn("gift_histories 등록 응답 상태:", res.status);
     }
   } catch (error: any) {
-    console.error("gift_histories 등록 실패:", error.response?.data || error.message)
-    throw error
+    console.error(
+      "gift_histories 등록 실패:",
+      error.response?.data || error.message
+    );
+    throw error;
   }
 }
 
-export async function postCardDesign(cardData: any, accessToken: string): Promise<string> {
+export async function postCardDesign(
+  cardData: any,
+  accessToken: string
+): Promise<string> {
   try {
-    const res = await axios.post(
-      `${BASE_URL}/gift-histories/cards`,
-      cardData,
-    {
+    const res = await axios.post(`${BASE_URL}/gift-histories/cards`, cardData, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-    }
-  );
+    });
 
     if (res.status === 200 || res.status === 201) {
-      console.log("🎉 카드 저장 성공! mongoId:", res.data)
-      return res.data // mongo_id 반환
+      console.log("🎉 카드 저장 성공! mongoId:", res.data);
+      return res.data; // mongo_id 반환
     } else {
-      throw new Error(`카드 저장 실패: 상태 코드 ${res.status}`)
+      throw new Error(`카드 저장 실패: 상태 코드 ${res.status}`);
     }
   } catch (error: any) {
-    console.error("카드 저장 실패:", error.response?.data || error.message)
-    throw error
+    console.error("카드 저장 실패:", error.response?.data || error.message);
+    throw error;
   }
 }
 
-export async function getCardDesignById(mongoId: string, accessToken: string): Promise<any> {
+export async function getCardDesignById(
+  mongoId: string,
+  accessToken: string
+): Promise<any> {
   try {
     const res = await axios.get(`${BASE_URL}/gift-histories/cards/${mongoId}`, {
       headers: {
-        Authorization: `Bearer ${accessToken}`
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
-    if (res.status === 200){
+    if (res.status === 200) {
       console.log("카드 디자인 조회 성공: ", res.data);
       return res.data;
     } else {
-      throw new Error(`카드 조회 실패: 상태 코드 ${res.status}`)
+      throw new Error(`카드 조회 실패: 상태 코드 ${res.status}`);
     }
   } catch (error: any) {
-    console.error("카드 조회 실패: ", error.response?.data || error.message)
+    console.error("카드 조회 실패: ", error.response?.data || error.message);
   }
 }
 
-export async function getGifticonById(id: string){
+export interface GetGifticonResponse {
+  gifticonId: number;
+  serialNum: number;
+  gifticonTitle: string;
+  description: string;
+  imageUrl: string;
+  price: number;
+  brandName: string;
+}
+
+// TODO: 스마트컨트랙트와 연결
+export async function getGifticonById(
+  serialNum: number
+): Promise<GetGifticonResponse> {
   try {
-    const res = await fetch(`${BASE_URL}/gifticons/${id}`)
+    const tokenId = getTokenIdBySerial(serialNum);
+    const response = await axios.get(`${BASE_URL}/gifticons/${tokenId}`);
 
-    if (!res.ok) throw new Error("gifticon 조회 실패");
+    if (response.status !== 200) throw new Error("gifticon 조회 실패");
 
-    const data = await res.json();
+    const data: GetGifticonResponse = {
+      gifticonId: response.data.gifticonId,
+      serialNum: response.data.serialNum,
+      gifticonTitle: response.data.gifticonTitle,
+      description: response.data.description,
+      imageUrl: response.data.imageUrl,
+      price: response.data.price,
+      brandName: response.data.brandName,
+    };
+
     return data;
   } catch (err) {
     console.error("gifticon 조회 실패: ", err);
