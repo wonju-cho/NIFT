@@ -10,6 +10,8 @@ import { GiftRecipientForm } from "./GiftRecipientForm"
 import { GiftPaymentSummary } from "./GiftPaymentSummary"
 import { v4 as uuidv4 } from "uuid"
 import { Button } from "@/components/ui/button"
+import { getGifticonById } from "@/lib/api/CreateGiftHistory"
+import { getArticleById } from "@/lib/api/ArticleService"
 
 export default function GiftPaymentPageContent({ 
   params,
@@ -29,74 +31,42 @@ export default function GiftPaymentPageContent({
   const [agreedTerms, setAgreedTerms] = useState(false)
 
   useEffect(() => {
-    const fetchArticleData = async () => {
+    const fetchData = async () => {
       try {
-        const mockArticle = {
-          id: params.id,
-          title: "스타벅스 아메리카노 Tall",
-          price: 4000,
-          originalPrice: 4500,
-          category: "커피/음료",
-          description: "스타벅스 아메리카노 Tall 사이즈 기프티콘입니다. 유효기간은 구매일로부터 30일입니다.",
-          image: "/placeholder.svg?height=400&width=400",
-          expiryDate: "2023-12-31",
+        let data;
+        if (type === "article") {
+          const article = await getArticleById(params.id);
+          setArticle({
+            image: article.imageUrl,
+            title: article.title,
+            description: article.description,
+            price: article.currentPrice,
+            originalPrice: article.originalPrice,
+            brandName: article.brandName,
+          });
+        } else if (type === "gifticon") {
+          const gifticon = await getGifticonById(params.id);
+          setArticle({
+            image: gifticon.imageUrl,
+            title: gifticon.gifticonTitle,
+            description: gifticon.description,
+            price: 0,
+            originalPrice: 0,
+            brandName: gifticon.brandName,
+          })
         }
-        setArticle(mockArticle)
 
         const savedCardData = localStorage.getItem(`card-data-${params.id}`)
-        if (savedCardData) {
-          try {
-            const parsedData = JSON.parse(savedCardData)
+        if (savedCardData) setCardData(JSON.parse(savedCardData));
 
-            if (
-              (!parsedData.frontElements || parsedData.frontElements.length === 0) &&
-              parsedData.frontTemplate?.background?.startsWith("data:image/")
-            ) {
-              parsedData.frontElements = [
-                {
-                  id: uuidv4(),
-                  type: "image",
-                  src: parsedData.frontTemplate.background,
-                  x: 0,
-                  y: 0,
-                  width: 400,
-                  height: 300,
-                  rotation: 0,
-                  zIndex: 1,
-                },
-              ]
-              parsedData.frontTemplate.background = "white"
-            }
-
-            parsedData.frontElements = parsedData.frontElements?.map((el: any) => {
-              if (el.type === "image" && el.src && !el.src.startsWith("data:image/")) {
-                el.src = "/placeholder.svg?height=200&width=200&text=이미지+로드+실패"
-              }
-              return el
-            })
-
-            parsedData.backElements = parsedData.backElements?.map((el: any) => {
-              if (el.type === "image" && el.src && !el.src.startsWith("data:image/")) {
-                el.src = "/placeholder.svg?height=200&width=200&text=이미지+로드+실패"
-              }
-              return el
-            })
-
-            setCardData(parsedData)
-          } catch (error) {
-            console.error("카드 데이터 파싱 오류:", error)
-          }
-        }
-
-        setIsLoading(false)
-      } catch (error) {
-        console.error("상품 정보 또는 카드 데이터를 가져오는 데 실패했습니다:", error)
-        setIsLoading(false)
+        setIsLoading(false);
+      } catch (err) {
+        console.error("선물 상품 데이터 불러오기 실패: ", err);
+        setIsLoading(true);
       }
     }
-
-    fetchArticleData()
-  }, [params.id])
+    fetchData();
+  }, [params.id, type]);
 
   const handlePayment = async () => {
     if (!agreedTerms) {
@@ -179,6 +149,7 @@ export default function GiftPaymentPageContent({
                 setAgreedTerms={setAgreedTerms}
                 onSubmit={handlePayment}
                 isLoading={isLoading}
+                cardId={params.id}
               />
             </div>
           </div>
