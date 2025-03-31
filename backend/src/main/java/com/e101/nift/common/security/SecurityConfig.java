@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/secondhand-articles/**")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/gifticons/**")
+                        .permitAll()
                         .requestMatchers("/api/secondhand-articles/**")
                         .authenticated()
                         .requestMatchers("/", "/error", "/favicon.ico", "/*.png", "/*.gif", "/*.svg", "/*.jpg", "/*.html", "/*.css", "/*.js")
