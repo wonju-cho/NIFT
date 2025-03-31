@@ -49,6 +49,7 @@ pipeline {
                             echo " DB_CRED_FILE 경로: $DB_CRED_FILE"
                             ls -l $DB_CRED_FILE
                         '''
+					}
 				}
 			}
 		}
