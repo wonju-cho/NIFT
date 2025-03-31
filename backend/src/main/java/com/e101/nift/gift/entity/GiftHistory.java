@@ -26,9 +26,8 @@ public class GiftHistory {
     @JoinColumn(name = "from_user_id", nullable = false)
     private User fromUserId;
 
-    @ManyToOne
-    @JoinColumn(name = "to_user_id", nullable = true)
-    private User toUserId;
+    @Column(name = "to_user_id", nullable = true)
+    private Long toUserId;
 
     @Column(name = "to_user_kakao_id", nullable = false)
     private Long toUserKakaoId;

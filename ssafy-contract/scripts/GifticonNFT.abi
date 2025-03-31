@@ -206,7 +206,7 @@
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "uint256",
         "name": "serialNumber",
         "type": "uint256"

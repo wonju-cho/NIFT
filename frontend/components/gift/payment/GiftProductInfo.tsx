@@ -19,17 +19,10 @@ export function GiftProductInfo({ article }: GiftProductInfoProps) {
               className="object-cover"
             />
           </div>
-          <div className="flex-1">
-            <h3 className="font-medium">{article.title}</h3>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-lg font-bold">{article.price.toLocaleString()}원</span>
-              {article.originalPrice > article.price && (
-                <span className="text-sm text-gray-500 line-through">
-                  {article.originalPrice.toLocaleString()}원
-                </span>
-              )}
-            </div>
-            <p className="mt-2 text-sm text-gray-500">{article.description}</p>
+          <div className="flex-1 space-y-1.5">
+            <h3 className="font-medium">{article.brandName}</h3>
+            <p className="text-lg font-bold leading-tight">{article.title}</p>
+            <p className="mt-2 text-sm text-gray-500 leading-relaxed">{article.description}</p>
           </div>
         </div>
       </CardContent>

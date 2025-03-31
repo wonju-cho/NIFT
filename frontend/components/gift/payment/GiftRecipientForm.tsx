@@ -21,6 +21,8 @@ interface GiftRecipientFormProps {
   setPhone: (val: string) => void
   setMessage: (val: string) => void
   setAnonymous: (val: boolean) => void
+  selectedFriend: Friend | null
+  setSelectedFriend: (val: Friend) => void
 }
 
 export function GiftRecipientForm({
@@ -30,9 +32,10 @@ export function GiftRecipientForm({
   setPhone,
   setMessage,
   setAnonymous,
+  selectedFriend,
+  setSelectedFriend
 }: GiftRecipientFormProps) {
   const [friends, setFriends] = useState<Friend[]>([])
-  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
@@ -78,16 +81,6 @@ export function GiftRecipientForm({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="anonymous"
-              className="rounded border-gray-300"
-              checked={isAnonymous}
-              onChange={(e) => setAnonymous(e.target.checked)}
-            />
-            <Label htmlFor="anonymous">익명으로 보내기</Label>
           </div>
         </div>
 

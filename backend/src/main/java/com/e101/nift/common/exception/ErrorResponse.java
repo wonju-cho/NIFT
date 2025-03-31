@@ -16,5 +16,6 @@ public abstract class ErrorResponse {
         this.status = errorCode.getStatus().value();
         this.error = errorCode.getStatus().getReasonPhrase();
         this.message = errorCode.getMessage();
+
     }
 }

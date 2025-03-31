@@ -122,3 +122,17 @@ export const ArticleService = {
     }
   },
 };
+
+export async function getArticleById(id: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/secondhand-articles/${id}`);
+
+    if (!res.ok) throw new Error("second-articles 조회 실패");
+
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error("중고거래 상품 조회 실패: ", err)
+    throw err;
+  }
+}

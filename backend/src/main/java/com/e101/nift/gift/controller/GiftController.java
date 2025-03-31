@@ -32,6 +32,7 @@ public class GiftController {
         // 선물 보내는 사람
         User sender = jwtTokenProvider.getUserFromRequest(http);
         giftHistoryService.sendGiftHistory(sender, request);
+//        System.out.println("✅ 선물 보내기 완료!");
 
         return ResponseEntity.ok().build();
     }

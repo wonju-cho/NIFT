@@ -13,7 +13,6 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/api/CustomAxios";
 
-// 지갑 주소 가져오기
 async function getWalletAddress() {
   if (typeof window.ethereum !== "undefined") {
     const accounts = await window.ethereum.request({
@@ -24,7 +23,6 @@ async function getWalletAddress() {
   return null;
 }
 
-// IPFS 주소 변환
 const convertIpfsUrl = (url: string) => {
   if (!url) return "/placeholder.svg";
   return url.startsWith("ipfs://")
@@ -41,6 +39,8 @@ export default function RegisterPage() {
   const [accessToken, setAccessToken] = useState<null | string | "loading">(
     "loading"
   );
+  const [dbWalletAddress, setDbWalletAddress] = useState<string | null>(null);
+  const [metamaskAddress, setMetamaskAddress] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -48,13 +48,37 @@ export default function RegisterPage() {
   }, []);
 
   useEffect(() => {
+    const fetchWallets = async () => {
+      if (!accessToken) return;
+
+      // DB 지갑 주소 불러오기
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const data = await res.json();
+        setDbWalletAddress(data.walletAddress || null);
+      } catch (e) {
+        console.error("❌ DB 지갑주소 불러오기 실패:", e);
+      }
+
+      // 메타마스크 주소 불러오기
+      try {
+        const address = await getWalletAddress();
+        setMetamaskAddress(address);
+      } catch (e) {
+        console.error("❌ 메타마스크 주소 가져오기 실패:", e);
+      }
+    };
+
+    fetchWallets();
+  }, [accessToken]);
+
+  useEffect(() => {
     const fetchNFTs = async () => {
       try {
         const address = await getWalletAddress();
-        if (!address) {
-          console.error("❌ 지갑 주소 없음");
-          return;
-        }
+        if (!address) return;
 
         const nfts = await getUserNFTsAsJson(address);
         const formatted = nfts
@@ -65,11 +89,7 @@ export default function RegisterPage() {
               Number(nft.price) > 0 &&
               nft.seller !== "0x0000000000000000000000000000000000000000",
           }))
-          .sort((a, b) => {
-            if (a.isSelling && !b.isSelling) return 1;
-            if (!a.isSelling && b.isSelling) return -1;
-            return 0;
-          });
+          .sort((a, b) => (a.isSelling ? 1 : -1));
 
         setOwnedGifticons(formatted);
       } catch (error) {
@@ -106,7 +126,6 @@ export default function RegisterPage() {
     }
 
     setIsLoading(true);
-
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -130,7 +149,6 @@ export default function RegisterPage() {
 
       alert("게시글이 성공적으로 등록되었습니다!");
       router.push("/articles");
-      console.log("📌 응답:", response.data);
     } catch (error) {
       console.error("❌ 게시글 등록 실패:", error);
       alert("게시글 등록에 실패했습니다.");
@@ -150,6 +168,30 @@ export default function RegisterPage() {
               <p className="mt-4 text-lg font-semibold">로그인이 필요합니다!</p>
               <Button className="mt-4" onClick={() => router.push("/signin")}>
                 로그인 하러 가기
+              </Button>
+            </div>
+          ) : dbWalletAddress === null ? (
+            <div className="flex flex-col items-center justify-center h-[70vh] text-center">
+              <Image src="/1.svg" alt="지갑 없음" width={120} height={120} />
+              <p className="mt-4 text-lg font-semibold">
+                지갑이 등록되어 있지 않습니다.
+              </p>
+              <Button className="mt-4" onClick={() => router.push("/mypage")}>
+                지갑 등록하러 가기
+              </Button>
+            </div>
+          ) : metamaskAddress?.toLowerCase() !==
+            dbWalletAddress.toLowerCase() ? (
+            <div className="flex flex-col items-center justify-center h-[70vh] text-center">
+              <Image src="/1.svg" alt="주소 불일치" width={120} height={120} />
+              <p className="mt-4 text-lg font-semibold text-red-600">
+                현재 연결된 지갑이 등록된 지갑과 다릅니다.
+              </p>
+              <p className="text-sm mt-2 text-muted-foreground">
+                등록된 지갑으로 다시 연결해주세요.
+              </p>
+              <Button className="mt-4" onClick={() => router.push("/mypage")}>
+                지갑 다시 연결하기
               </Button>
             </div>
           ) : (
