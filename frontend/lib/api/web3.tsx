@@ -93,7 +93,8 @@ export const convertIpfsUrl = (url: string): string => {
 // ✅ 메타데이터 가져오기
 export const fetchMetadata = async (
   metadataUrl: string,
-  serialNumber: number
+  serialNumber: number,
+  tokenId: number // 🔥 tokenId 파라미터 추가!
 ) => {
   try {
     const response = await fetch(convertIpfsUrl(metadataUrl));
@@ -109,7 +110,7 @@ export const fetchMetadata = async (
     );
 
     return {
-      id: metadata.id || `Unknown`,
+      id: tokenId || `Unknown`,
       serialNum: serialNumber,
       title: metadata.name || `NFT 기프티콘`,
       brand: brandAttr ? brandAttr.value : "알 수 없음",
@@ -143,11 +144,13 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
         const [price, seller] = await contract.getSerialInfo(serial);
         const [, , , metadataURI] = await contract.getTokenInfo(tokenId);
 
-        const metadata = await fetchMetadata(metadataURI, serial);
-        console.log(`🪙 토큰 정보: tokenId: ${ tokenId}`, metadata);
+        const metadata = await fetchMetadata(metadataURI, serial, tokenId);
+        console.log(`🪙 토큰 정보: tokenId: ${tokenId}`, metadata);
 
         return {
           ...metadata,
+          tokenId: Number(tokenId),
+          id: Number(tokenId),
           serialNum: serial,
           price: Number(price),
           seller: seller,
@@ -398,11 +401,13 @@ export async function isSellingNFT(serialNumber: number): Promise<boolean> {
 }
 
 // 시리얼 넘버로 tokenID 가져오기
-export async function getTokenIdBySerial(serialNumber: number): Promise<number> {
-  const provider = new ethers.BrowserProvider(window.ethereum)
-  const signer = await provider.getSigner()
-  const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer)
+export async function getTokenIdBySerial(
+  serialNumber: number
+): Promise<number> {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
 
-  const tokenId = await contract.getTokenIdBySerial(serialNumber)
-  return Number(tokenId)
+  const tokenId = await contract.getTokenIdBySerial(serialNumber);
+  return Number(tokenId);
 }

@@ -86,6 +86,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+
     public Optional<Long> findUserIdByAddress(String address) {
         return userRepository.findByWalletAddress(address)
                 .flatMap(user -> Optional.ofNullable(user.getUserId()));
