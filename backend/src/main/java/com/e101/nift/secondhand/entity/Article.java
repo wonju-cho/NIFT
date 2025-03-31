@@ -26,7 +26,7 @@ public class Article {
     private Long userId;
     private LocalDateTime expirationDate;
     private String imageUrl;
-    private Long SerialNum;
+    private Long serialNum;
 
     private Integer countLikes = 0;
     private Float currentPrice;
