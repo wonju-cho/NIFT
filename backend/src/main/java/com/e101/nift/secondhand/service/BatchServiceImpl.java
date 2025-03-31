@@ -36,31 +36,32 @@ public class BatchServiceImpl implements BatchService {
         log.debug("[BatchService] 마지막 블록 번호: {}", last50Blocks.getLast());
 
         for(BigInteger block : last50Blocks) {
-            List<GifticonNFT.NFTPurchasedEventResponse> purchasedEventResponseList = transactionService.getPurchaseEventsByBlockNumber(block);
-
-            purchasedEventResponseList.parallelStream().forEach(response -> {
-                try {
-                    handlePurchaseEvent(response);
-                } catch (Exception e) {
-                    log.error("Failed to process txHash: {}", response.log.getTransactionHash(), e);
-                }
-            });
+            handlePurchaseEvent(block);
         }
     }
 
-    private void handlePurchaseEvent(GifticonNFT.NFTPurchasedEventResponse purchasedEventResponse) {
-        if(articleHistoryRepository.findByTxHash(purchasedEventResponse.log.getTransactionHash()).isEmpty()) {
-            log.debug("[BatchService] DB에 저장되지 않은 Hash 값: {}", purchasedEventResponse.log.getTransactionHash());
-            articleHistoryRepository.save(
-                    ArticleHistory.builder()
-                            .articleId(getArticleId(purchasedEventResponse))
-                            .createdAt(TimeUtil.convertTimestampToLocalTime(purchasedEventResponse.transactionTime))
-                            .historyType(ContractType.PURCHASE.getType())
-                            .userId(getUserId(purchasedEventResponse))
-                            .txHash(purchasedEventResponse.log.getTransactionHash())
-                            .build()
-            );
-        }
+    private void handlePurchaseEvent(BigInteger block) {
+        List<GifticonNFT.NFTPurchasedEventResponse> purchasedEventResponseList = transactionService.getPurchaseEventsByBlockNumber(block);
+
+        purchasedEventResponseList.parallelStream().forEach(response -> {
+            try {
+                if(articleHistoryRepository.findByTxHash(response.log.getTransactionHash()).isEmpty()) {
+                    log.debug("[BatchService] DB에 저장되지 않은 Hash 값: {}", response.log.getTransactionHash());
+                    articleHistoryRepository.save(
+                            ArticleHistory.builder()
+                                    .articleId(getArticleId(response))
+                                    .createdAt(TimeUtil.convertTimestampToLocalTime(response.transactionTime))
+                                    .historyType(ContractType.PURCHASE.getType())
+                                    .userId(getUserId(response))
+                                    .txHash(response.log.getTransactionHash())
+                                    .build()
+                    );
+                }
+            } catch (Exception e) {
+                log.error("Failed to process txHash: {}", response.log.getTransactionHash(), e);
+            }
+        });
+
     }
 
     private Long getUserId(GifticonNFT.NFTPurchasedEventResponse purchasedEventResponse) {
