@@ -5,6 +5,7 @@ import com.e101.nift.secondhand.entity.ArticleHistory;
 import com.e101.nift.secondhand.model.dto.response.PurchaseHistoryDto;
 import com.e101.nift.secondhand.model.dto.response.SaleHistoryDto;
 import com.e101.nift.secondhand.model.dto.response.ScrollDto;
+import com.e101.nift.secondhand.model.state.ContractType;
 import com.e101.nift.secondhand.repository.ArticleHistoryRepository;
 import com.e101.nift.secondhand.repository.ArticleRepository;
 import com.e101.nift.user.entity.User;
@@ -28,13 +29,11 @@ public class ArticleHistoryServiceImpl implements ArticleHistoryService {
     private final ArticleRepository articleRepository;
     private final UserRepository userRepository;
 
-    private static final short PURCHASE_TYPE = 1; // 구매 내역을 의미하는 타입
-
 
     @Override
     public ScrollDto<PurchaseHistoryDto> getPurchaseHistories(Long userId, Pageable pageable) {
         Page<ArticleHistory> page = articleHistoryRepository
-                .findByUserIdAndHistoryType(userId, PURCHASE_TYPE, pageable);
+                .findByUserIdAndHistoryType(userId, ContractType.PURCHASE.getType(), pageable);
 
         List<PurchaseHistoryDto> responses = page.getContent().stream().map(history -> {
             Article article = articleRepository.findById(history.getArticleId())
