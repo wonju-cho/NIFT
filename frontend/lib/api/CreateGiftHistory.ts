@@ -8,6 +8,26 @@ interface CreateGiftHistoryParams {
   gifticonId: number
 }
 
+export async function sendGiftHistory(
+  accessToken: string,
+  dto: {
+    toUserKakaoId: number,
+    gifticonId: number,
+    mongoId: string,
+    type: string
+  }
+) {
+  const res = await fetch(`${BASE_URL}/gift-histories/send`,{
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(dto),
+  });
+  if (!res.ok) throw new Error("선물 보내기 실패");
+}
+
 export async function createGiftHistory({
   fromUserId,
   toUserId,

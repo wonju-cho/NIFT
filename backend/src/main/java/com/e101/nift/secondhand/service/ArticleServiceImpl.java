@@ -121,6 +121,7 @@ public class ArticleServiceImpl implements ArticleService {
 
         return new ArticleDetailDto(
                 article.getArticleId(),
+                article.getGifticon().getGifticonId(),
                 article.getSerialNum(),
                 article.getTitle(),
                 article.getDescription(),
