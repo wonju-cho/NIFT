@@ -208,16 +208,28 @@ export async function isSellerApprovedForSerial(
   }
 }
 
-export async function buyNFT(serialNumber: number): Promise<boolean> {
+export type BuyNFTResponse = {
+  success: boolean;
+  txHash?: string;
+};
+
+export async function buyNFT(serialNumber: number): Promise<BuyNFTResponse> {
+  console.log(
+    "✅ 프론트에서 사용하는 컨트랙트 주소:",
+    process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS
+  );
+
   const provider = new ethers.BrowserProvider(window.ethereum);
-  if (!provider) return false;
+
+  const fail: BuyNFTResponse = { success: false };
+  if (!provider) return fail;
 
   try {
     const signer = await provider.getSigner();
 
     if (!NFT_CONTRACT_ADDRESS || !SSF_CONTRACT_ADDRESS) {
       console.error("❌ 컨트랙트 주소가 설정되지 않았습니다.");
-      return false;
+      return fail;
     }
 
     const nftContract = new ethers.Contract(
@@ -227,30 +239,47 @@ export async function buyNFT(serialNumber: number): Promise<boolean> {
     );
     const ssfToken = new ethers.Contract(SSF_CONTRACT_ADDRESS, SSF_ABI, signer);
 
-    const [price, seller, owner, expirationDate, isRedeemed, redeemedAt] =
-      (await nftContract.getSerialInfo(serialNumber)) as [
-        bigint,
-        string,
-        string,
-        bigint,
-        boolean,
-        bigint
-      ];
+    const [
+      price,
+      seller,
+      owner,
+      originalOwner,
+      expirationDate,
+      isRedeemed,
+      redeemedAt,
+      isPending,
+      pendingDate,
+      pendingRecipient,
+    ] = (await nftContract.getSerialInfo(serialNumber)) as [
+      bigint,
+      string,
+      string,
+      string,
+      bigint,
+      boolean,
+      bigint,
+      boolean,
+      bigint,
+      string
+    ];
 
-    console.log("🔍 [getSerialInfo 결과]");
-    console.log("▶ serialNumber:", serialNumber);
-    console.log("▶ price:", price.toString());
-    console.log("▶ seller:", seller);
-    console.log("▶ owner:", owner);
-    console.log(
-      "▶ expirationDate:",
-      new Date(Number(expirationDate) * 1000).toLocaleString()
-    );
-    console.log("▶ isRedeemed:", isRedeemed);
-    console.log("▶ redeemedAt:", redeemedAt.toString());
-    const tokenId = await nftContract.getTokenIdBySerial(serialNumber);
-    const sellerBalance = await nftContract.balanceOf(seller, tokenId);
-    console.log(`🎯 판매자 보유 수량:`, sellerBalance.toString());
+    // expirationDate와 redeemedAt을 Date 객체로 변환 (필요한 경우)
+    const expirationDateObj = new Date(Number(expirationDate) * 1000);
+    const redeemedAtObj =
+      Number(redeemedAt) === 0 ? null : new Date(Number(redeemedAt) * 1000);
+
+    console.log({
+      Price: String(price),
+      Seller: seller,
+      Owner: owner,
+      OriginalOwner: originalOwner,
+      ExpirationDate: String(expirationDateObj),
+      IsRedeemed: isRedeemed,
+      RedeemedAt: redeemedAtObj ? String(redeemedAtObj) : "Not redeemed",
+      IsPending: isPending,
+      PendingDate: String(pendingDate),
+      PendingRecipient: pendingRecipient,
+    });
 
     const isApproved = await isSellerApprovedForSerial(serialNumber);
     if (!isApproved) {
@@ -261,7 +290,7 @@ export async function buyNFT(serialNumber: number): Promise<boolean> {
       throw new Error("❌ 판매되지 않은 NFT입니다.");
     }
     if (isRedeemed) {
-      throw new Error("❌ 이미 사용된 NFT입니다.");
+      throw new Error("❌ 이미 사용된 NFT입니다. " + serialNumber);
     }
     if (price <= 0n) {
       throw new Error("❌ 가격이 설정되지 않은 NFT입니다.");
@@ -299,18 +328,10 @@ export async function buyNFT(serialNumber: number): Promise<boolean> {
     await tx.wait();
     console.log("✅ SSF로 NFT 구매 완료");
 
-    return true;
+    return { success: true, txHash: tx.hash };
   } catch (error) {
     console.error("❌ NFT 구매 실패:", error);
-
-    // 📌 추가 디버그
-    // if (error.code === "CALL_EXCEPTION" || error.code === -32603) {
-    //   console.warn(
-    //     "⚠️ 스마트 컨트랙트에서 revert 발생 → require() 조건 확인 필요"
-    //   );
-    // }
-
-    return false;
+    return fail;
   }
 }
 

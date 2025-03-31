@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0x6940cA1302256204E62D158AF5C835AE3e491d18";
+  const contractAddress = "0x1b63523981bd620566486eF6294A2dCCed25F16d";
   const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
 
   const tokenId = 1;
@@ -36,7 +36,7 @@ async function main() {
   console.log("✅ 민팅 완료");
 
   console.log("🔍 시리얼 넘버 추출 중...");
-  const topicMinted = ethers.id("Minted(address,uint256,uint256)");
+  const topicMinted = ethers.id("Minted(address,uint256,uint256,uint256)");
   const logs = receipt.logs.filter((log) => log.topics[0] === topicMinted);
 
   const serials = logs.map((log) => {

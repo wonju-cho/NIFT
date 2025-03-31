@@ -17,6 +17,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 
 
 @Slf4j
@@ -82,6 +83,12 @@ public class UserServiceImpl implements UserService{
                 .walletAddress(user.getWalletAddress())
                 .message("본인 정보를 조회했습니다.")
                 .build();
+    }
+
+    @Override
+    public Optional<Long> findUserIdByAddress(String address) {
+        return userRepository.findByWalletAddress(address)
+                .flatMap(user -> Optional.ofNullable(user.getUserId()));
     }
 
 

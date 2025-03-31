@@ -49,14 +49,14 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     IERC20 public ssfToken; // 결제에 사용될 ERC20 토큰
 
     // 📢 이벤트 선언
-    event Minted(address indexed owner, uint256 indexed tokenId, uint256 serialNumber);
-    event ListedForSale(uint256 indexed serialNumber, uint256 price, address indexed seller);
-    event NFTPurchased(address indexed buyer, uint256 indexed serialNumber, uint256 price);
-    event Redeemed(address indexed owner, uint256 indexed serialNumber);
-    event CancelledSale(uint256 indexed serialNumber);
-    event Gifted(address indexed sender, address indexed recipient, uint256 indexed serialNumber);
-    event SerialOwnershipTransferred(uint256 indexed serialNumber, address indexed from, address indexed to);
-    event GiftPending(address indexed sender, uint256 indexed serialNumber, address indexed recipient);
+    event Minted(address indexed owner, uint256 indexed tokenId, uint256 serialNumber, uint256 transactionTime);
+    event ListedForSale(uint256 indexed serialNumber, uint256 price, address indexed seller, uint256 transactionTime);
+    event NFTPurchased(address indexed buyer, uint256 indexed serialNumber, uint256 price, uint256 transactionTime);
+    event Redeemed(address indexed owner, uint256 indexed serialNumber, uint256 transactionTime);
+    event CancelledSale(uint256 indexed serialNumber, uint256 transactionTime);
+    event Gifted(address indexed sender, address indexed recipient, uint256 indexed serialNumber, uint256 transactionTime);
+    event SerialOwnershipTransferred(uint256 indexed serialNumber, address indexed from, address indexed to, uint256 transactionTime);
+    event GiftPending(address indexed sender, uint256 indexed serialNumber, address indexed recipient, uint256 transactionTime);
 
     // 🏗️ 생성자
     constructor(address _ssfToken) ERC1155("ipfs://bafkreidpioogd7mj4t5sovbw2nkn3tavw3zrq4qmqwvkxptm52scasxfl4") Ownable() {
@@ -131,7 +131,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
             _addSerialToOwner(to, serial);
 
-            emit Minted(to, tokenId, serial);
+            emit Minted(to, tokenId, serial, block.timestamp);
         }
     }
 
@@ -151,7 +151,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.price = price;
         info.seller = msg.sender;
         
-        emit ListedForSale(serialNumber, price, msg.sender);
+        emit ListedForSale(serialNumber, price, msg.sender, block.timestamp);
     }
 
     // 시리얼 넘버 기반으로 NFT 구매
@@ -184,8 +184,8 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         _removeSerialFromOwner(seller, serialNumber);
         _addSerialToOwner(msg.sender, serialNumber);
 
-        emit NFTPurchased(msg.sender, serialNumber, purchasePrice);
-        emit SerialOwnershipTransferred(serialNumber, seller, msg.sender);
+        emit NFTPurchased(msg.sender, serialNumber, purchasePrice, block.timestamp);
+        emit SerialOwnershipTransferred(serialNumber, seller, msg.sender, block.timestamp);
     }
 
     // 기프티콘 사용 처리
@@ -201,7 +201,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.redeemed = true;
         info.redeemedAt = block.timestamp;
 
-        emit Redeemed(msg.sender, serialNumber);
+        emit Redeemed(msg.sender, serialNumber, block.timestamp);
     }
 
     // 판매 취소 처리
@@ -224,7 +224,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     info.seller = address(0);
     info.price = 0;
 
-    emit CancelledSale(serialNumber);
+    emit CancelledSale(serialNumber, block.timestamp);
 }
 
     // 소유주가 받는이에게 선물을 보내 기프티콘 상태를 pending으로 변경
@@ -240,7 +240,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.isPending = true;
         info.pendingRecipient = recipient;
 
-        emit GiftPending(msg.sender, serialNumber, recipient);
+        emit GiftPending(msg.sender, serialNumber, recipient, block.timestamp);
     }
 
 
@@ -263,7 +263,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.isPending = false;
         info.pendingDate = 0;
 
-        emit Gifted(from, msg.sender, serialNumber);
+        emit Gifted(from, msg.sender, serialNumber, block.timestamp);
     }
 
 
@@ -289,7 +289,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         _removeSerialFromOwner(currentOwner, serialNumber);
         _addSerialToOwner(originalOwner, serialNumber);
 
-        emit SerialOwnershipTransferred(serialNumber, currentOwner, originalOwner);
+        emit SerialOwnershipTransferred(serialNumber, currentOwner, originalOwner, block.timestamp);
     }
 
     // 🔍 조회 함수들
@@ -390,7 +390,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         _removeSerialFromOwner(from, serialNumber);
         _addSerialToOwner(to, serialNumber);
 
-        emit SerialOwnershipTransferred(serialNumber, from, to);
+        emit SerialOwnershipTransferred(serialNumber, from, to, block.timestamp);
     }
 
     // 전송/민팅/소각 전 호출되는 훅 함수
