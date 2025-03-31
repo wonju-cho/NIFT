@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRouter } from "next/navigation"; // ✅ 추가
 
 import { useLoading } from "@/components/LoadingContext";
 import { buyNFT, fetchTokenInfoBySerial } from "@/lib/api/web3";
@@ -56,6 +57,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [countLikes, setLikeCount] = useState<number>(0);
   const { isLoading, setIsLoading } = useLoading();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -108,6 +110,97 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       setIsLiked((prev) => !prev);
       setLikeCount((prev) => (isLiked ? prev + 1 : prev - 1));
     }
+  };
+
+  //  유저 지갑 주소 확인 함수
+  async function checkWalletValidation(): Promise<
+    | "ok"
+    | "login"
+    | "no-wallet"
+    | "no-metamask"
+    | "no-account"
+    | "mismatch"
+    | "error"
+  > {
+    const token = localStorage.getItem("access_token");
+    if (!token) return "login";
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userData = await res.json();
+
+      if (!userData.walletAddress) return "no-wallet";
+
+      if (!window.ethereum) return "no-metamask";
+
+      const accounts = await window.ethereum.request({
+        method: "eth_accounts", // 연결 요청 없이 현재 연결 상태만 확인
+      });
+
+      if (!accounts || accounts.length === 0) return "no-account";
+
+      const metamaskAddress = accounts[0].toLowerCase();
+      const dbAddress = userData.walletAddress.toLowerCase();
+
+      if (metamaskAddress !== dbAddress) return "mismatch";
+
+      return "ok";
+    } catch (err) {
+      console.error("지갑 검증 중 에러 발생:", err);
+      return "error";
+    }
+  }
+
+  const validateWallet = async (onSuccess: () => void) => {
+    const result = await checkWalletValidation();
+
+    switch (result) {
+      case "login":
+        alert("로그인이 필요합니다.");
+        router.push("/signin");
+        break;
+      case "no-wallet":
+        if (
+          window.confirm(
+            "지갑이 연결되어 있지 않습니다. 연결 페이지로 이동할까요?"
+          )
+        ) {
+          router.push("/mypage");
+        }
+        break;
+      case "no-metamask":
+        alert(
+          "메타마스크가 설치되어 있지 않습니다. 설치 후 다시 시도해주세요."
+        );
+        break;
+      case "no-account":
+        alert("메타마스크 계정이 연결되어 있지 않습니다.");
+        break;
+      case "mismatch":
+        alert(
+          "지갑 주소가 일치하지 않습니다. 마이페이지에서 다시 연결해주세요."
+        );
+        router.push("/mypage");
+        break;
+      case "error":
+        alert("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        break;
+      case "ok":
+        onSuccess();
+        break;
+    }
+  };
+
+  const handleClickBuy = () => {
+    validateWallet(() => setShowPurchaseDialog(true));
+  };
+
+  const handleClickGift = () => {
+    validateWallet(() =>
+      router.push(`/gift/${params.id}/customize?type=article`)
+    );
   };
 
   const handleBuyNFT = async (serialNumber: number) => {
@@ -210,28 +303,24 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                       <Button
                         className="h-12 w-full px-[16px]"
                         size="lg"
-                        onClick={() => setShowPurchaseDialog(true)}
+                        onClick={handleClickBuy} // 이렇게만!
                       >
-                        F <ShoppingCart className="mr-1 h-4 w-4" />
+                        <ShoppingCart className="mr-1 h-4 w-4" />
                         구매하기
                       </Button>
                     )}
                   </div>
 
                   <div className="col-span-5">
-                    <Link
-                      href={`/gift/${params.id}/customize?type=article`}
-                      className="block"
+                    <Button
+                      variant="outline"
+                      className="h-12 w-full px-[16px]"
+                      size="lg"
+                      onClick={handleClickGift} // 이제 조건 검사 잘됨!
                     >
-                      <Button
-                        variant="outline"
-                        className="h-12 w-full px-[16px]"
-                        size="lg"
-                      >
-                        <Gift className="mr-1 h-4 w-4" />
-                        선물하기
-                      </Button>
-                    </Link>
+                      <Gift className="mr-1 h-4 w-4" />
+                      선물하기
+                    </Button>
                   </div>
 
                   <ArticleLikeAndShare
@@ -241,7 +330,6 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                   />
                 </div>
 
-                {/* ✅ 삭제 버튼은 여기! */}
                 <div className="mt-3">
                   <DeleteArticleButton
                     articleId={article.articleId}
