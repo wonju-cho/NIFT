@@ -1,4 +1,4 @@
-package com.e101.nift.secondhand.entity;
+package com.e101.nift.brand.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

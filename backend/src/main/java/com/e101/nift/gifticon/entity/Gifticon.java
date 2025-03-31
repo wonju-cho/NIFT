@@ -1,8 +1,8 @@
 package com.e101.nift.gifticon.entity;
 
+import com.e101.nift.brand.entity.Brand;
+import com.e101.nift.category.entity.Category;
 import com.e101.nift.secondhand.entity.Article;
-import com.e101.nift.secondhand.entity.Brand;
-import com.e101.nift.secondhand.entity.Category;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Gifticon {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long gifticonId;
     
     private String gifticonTitle;
