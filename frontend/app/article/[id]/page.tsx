@@ -114,7 +114,13 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
 
   //  유저 지갑 주소 확인 함수
   async function checkWalletValidation(): Promise<
-    "ok" | "login" | "no-wallet" | "mismatch"
+    | "ok"
+    | "login"
+    | "no-wallet"
+    | "no-metamask"
+    | "no-account"
+    | "mismatch"
+    | "error"
   > {
     const token = localStorage.getItem("access_token");
     if (!token) return "login";
@@ -127,35 +133,34 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
 
       if (!userData.walletAddress) return "no-wallet";
 
-      let accounts;
-      try {
-        accounts = await window.ethereum?.request({
-          method: "eth_requestAccounts",
-        });
-      } catch (err) {
-        console.error("MetaMask 요청 실패:", err);
-        return "login";
-      }
-      const metamaskAddress = accounts?.[0]?.toLowerCase();
+      if (!window.ethereum) return "no-metamask";
+
+      const accounts = await window.ethereum.request({
+        method: "eth_accounts", // 연결 요청 없이 현재 연결 상태만 확인
+      });
+
+      if (!accounts || accounts.length === 0) return "no-account";
+
+      const metamaskAddress = accounts[0].toLowerCase();
       const dbAddress = userData.walletAddress.toLowerCase();
 
       if (metamaskAddress !== dbAddress) return "mismatch";
 
       return "ok";
     } catch (err) {
-      console.error("지갑 주소 확인 실패:", err);
-      return "login"; // fallback 처리
+      console.error("지갑 검증 중 에러 발생:", err);
+      return "error";
     }
   }
 
-  const handleClickBuy = async () => {
+  const validateWallet = async (onSuccess: () => void) => {
     const result = await checkWalletValidation();
 
     switch (result) {
       case "login":
         alert("로그인이 필요합니다.");
         router.push("/signin");
-        return;
+        break;
       case "no-wallet":
         if (
           window.confirm(
@@ -164,50 +169,38 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         ) {
           router.push("/mypage");
         }
-        return;
+        break;
+      case "no-metamask":
+        alert(
+          "메타마스크가 설치되어 있지 않습니다. 설치 후 다시 시도해주세요."
+        );
+        break;
+      case "no-account":
+        alert("메타마스크 계정이 연결되어 있지 않습니다.");
+        break;
       case "mismatch":
         alert(
           "지갑 주소가 일치하지 않습니다. 마이페이지에서 다시 연결해주세요."
         );
-        {
-          router.push("/mypage");
-        }
-        return;
+        router.push("/mypage");
+        break;
+      case "error":
+        alert("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        break;
       case "ok":
-        setShowPurchaseDialog(true);
-        return;
+        onSuccess();
+        break;
     }
   };
 
-  const handleClickGift = async () => {
-    const result = await checkWalletValidation();
+  const handleClickBuy = () => {
+    validateWallet(() => setShowPurchaseDialog(true));
+  };
 
-    switch (result) {
-      case "login":
-        alert("로그인이 필요합니다.");
-        router.push("/signin");
-        return;
-      case "no-wallet":
-        if (
-          window.confirm(
-            "지갑이 연결되어 있지 않습니다. 연결 페이지로 이동할까요?"
-          )
-        ) {
-          router.push("/mypage");
-        }
-        return;
-      case "mismatch":
-        alert(
-          "지갑 주소가 일치하지 않습니다. 마이페이지에서 다시 연결해주세요."
-        );
-        {
-          router.push("/mypage");
-        }
-        return;
-      case "ok":
-        router.push(`/gift/${params.id}/customize?type=article`);
-        return;
-    }
+  const handleClickGift = () => {
+    validateWallet(() =>
+      router.push(`/gift/${params.id}/customize?type=article`)
+    );
   };
 
   const handleBuyNFT = async (serialNumber: number) => {
