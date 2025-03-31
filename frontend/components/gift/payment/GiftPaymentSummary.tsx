@@ -1,24 +1,24 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { postCardDesign, sendGiftHistory } from "@/lib/api/CreateGiftHistory";
-import GiftPaymentButton from "./GiftPaymentButton"
-import { useEffect } from "react";
+import GiftPaymentButton from "./GiftPaymentButton";
+import { giftToFriend } from "@/lib/api/web3";
 
 interface Friend {
-  uuid: string
-  kakaoId: number
-  profile_nickname: string
-  profile_thumbnail_image: string
+  uuid: string;
+  kakaoId: number;
+  profile_nickname: string;
+  profile_thumbnail_image: string;
 }
 
 interface GiftPaymentSummaryProps {
-  article: any
-  agreedTerms: boolean
-  setAgreedTerms: (val: boolean) => void
-  onSubmit: () => void
-  isLoading: boolean
-  cardId: string
+  article: any;
+  agreedTerms: boolean;
+  setAgreedTerms: (val: boolean) => void;
+  onSubmit: () => void;
+  isLoading: boolean;
+  cardId: string;
   selectedFriend: Friend | null;
   type: string;
 }
@@ -31,9 +31,8 @@ export function GiftPaymentSummary({
   isLoading,
   cardId,
   selectedFriend,
-  type
+  type,
 }: GiftPaymentSummaryProps) {
-
   return (
     <Card className="sticky top-24">
       <CardContent className="p-6">
@@ -41,12 +40,16 @@ export function GiftPaymentSummary({
         <div className="space-y-4">
           <div className="flex justify-between py-2">
             <span className="text-gray-600">상품 금액</span>
-            <span className="font-medium">{article.price.toLocaleString()}원</span>
+            <span className="font-medium">
+              {article.price.toLocaleString()}원
+            </span>
           </div>
           {article.originalPrice > article.price && (
             <div className="flex justify-between py-2 text-primary">
               <span>할인 금액</span>
-              <span>-{(article.originalPrice - article.price).toLocaleString()}원</span>
+              <span>
+                -{(article.originalPrice - article.price).toLocaleString()}원
+              </span>
             </div>
           )}
           <div className="flex justify-between py-2">
@@ -56,7 +59,9 @@ export function GiftPaymentSummary({
           <Separator />
           <div className="flex justify-between py-2">
             <span className="font-medium">최종 결제 금액</span>
-            <span className="text-lg font-bold text-primary">{article.price.toLocaleString()}원</span>
+            <span className="text-lg font-bold text-primary">
+              {article.price.toLocaleString()}원
+            </span>
           </div>
 
           <div className="flex items-center gap-2 mt-6">
@@ -68,7 +73,9 @@ export function GiftPaymentSummary({
               onChange={(e) => setAgreedTerms(e.target.checked)}
               required
             />
-            <Label htmlFor="terms-agree">주문 내용 확인 및 결제 진행에 동의합니다</Label>
+            <Label htmlFor="terms-agree">
+              주문 내용 확인 및 결제 진행에 동의합니다
+            </Label>
           </div>
 
           <GiftPaymentButton
@@ -88,13 +95,23 @@ export function GiftPaymentSummary({
 
                 const cardData = JSON.parse(rawCardData);
                 const mongoId = await postCardDesign(cardData, accessToken!);
-                const idToSend = type === "article" ? Number(cardId) : article.gifticonId;
+                const idToSend =
+                  type === "article" ? Number(cardId) : article.gifticonId;
 
-                localStorage.setItem(`article-data-${cardId}`, JSON.stringify({
-                  ...article,
-                  profile_nickname: selectedFriend?.profile_nickname || "수령인"
-                }))
+                localStorage.setItem(
+                  `article-data-${cardId}`,
+                  JSON.stringify({
+                    ...article,
+                    profile_nickname:
+                      selectedFriend?.profile_nickname || "수령인",
+                  })
+                );
 
+                giftToFriend(
+                  article.serialNum,
+                  article.price,
+                  String(selectedFriend?.kakaoId)
+                );
 
                 // 선물 보내기 API 호출
                 await sendGiftHistory(accessToken!, {
@@ -106,7 +123,7 @@ export function GiftPaymentSummary({
 
                 // 카드 데이터 localStorage에서 삭제
                 setTimeout(() => {
-                  localStorage.removeItem(`card-data-${cardId}`)
+                  localStorage.removeItem(`card-data-${cardId}`);
                 }, 60 * 1000); // 1분 뒤 삭제
 
                 await onSubmit(); // 이후 gift_histories 저장 등 진행
@@ -119,5 +136,5 @@ export function GiftPaymentSummary({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
