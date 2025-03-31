@@ -4,7 +4,6 @@ import com.e101.nift.secondhand.exception.ArticleErrorCode;
 import com.e101.nift.secondhand.exception.ArticleException;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.state.ContractStatus;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -127,6 +126,26 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("[TransactionService] getListedForSaleEvents : {}", events);
         if (events.isEmpty()) {
             log.error("[TransactionService] No purchase events found for transaction: {}", txHash);
+            throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
+        }
+
+        return events;
+    }
+
+    @Override
+    public List<GifticonNFT.GiftPendingEventResponse> getGiftPendingEventByTxHash(String txHash) {
+        Optional<TransactionReceipt> receiptOpt = getTransactionReceipt(txHash);
+        TransactionReceipt receipt = receiptOpt
+                .filter(TransactionReceipt::isStatusOK)
+                .orElseThrow(() -> {
+                    log.error("[TransactionService] Transaction failed or not processed: {}", txHash);
+                    return new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
+                });
+
+        List<GifticonNFT.GiftPendingEventResponse> events = GifticonNFT.getGiftPendingEvents(receipt);
+        log.info("[TransactionService] getGiftedEvents : {}", events);
+        if (events.isEmpty()) {
+            log.error("[TransactionService] No gift events found for transaction: {}", txHash);
             throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
         }
 

@@ -1,6 +1,7 @@
 package com.e101.nift.secondhand.service;
 
 import com.e101.nift.common.util.ConvertUtil;
+import com.e101.nift.secondhand.entity.Article;
 import com.e101.nift.secondhand.entity.ArticleHistory;
 import com.e101.nift.secondhand.exception.ArticleErrorCode;
 import com.e101.nift.secondhand.exception.ArticleException;
@@ -24,7 +25,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public void addArticleHistory(Long articleId, String txHash, Long loginUser) {
-        articleRepository.findById(articleId).orElseThrow(() -> new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND));
+        Article article = articleRepository.findById(articleId).orElseThrow(() -> new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND));
 
         GifticonNFT.NFTPurchasedEventResponse purchasedEventResponse = transactionService.getPurchaseEventsByTxHash(txHash).getFirst();
 
@@ -48,5 +49,7 @@ public class ContractServiceImpl implements ContractService {
                         .txHash(txHash)
                         .build()
         );
+        article.setSold(true);
+        articleRepository.save(article);
     }
 }
