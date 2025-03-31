@@ -84,6 +84,8 @@ services:
       - backend
     ports:
       - "3000:3000"
+    volumes:
+      - .reports/eslint-report.json:/app/reports/eslint-report.json
     networks:
       - frontend-tier
       - backend-tier

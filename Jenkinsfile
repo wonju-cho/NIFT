@@ -1,3 +1,14 @@
+def sendMessage(String msg, String hookUrl) {
+	def payload = [ text: msg ]
+	def json = groovy.json.JsonOutput.toJson(payload)
+
+	sh """
+	curl -X POST -H 'Content-Type: application/json' \
+	-d '${json}' \
+	${hookUrl}
+	"""
+}
+
 pipeline {
 	agent any
 
@@ -73,8 +84,17 @@ pipeline {
 		stage('Run Docker Compose') {
 			steps {
 				script {
-					def composeFile = (params.ENV == 'production') ? 'docker-compose-production.yml' : 'docker-compose-dev.yml'
-					sh "docker-compose -f ${composeFile} --env-file .env up -d --build"
+					try {
+						def composeFile = (params.ENV == 'production') ? 'docker-compose-production.yml' : 'docker-compose-dev.yml'
+						sh "docker-compose -f ${composeFile} --env-file .env up -d --build"	
+						env.IMAGE_BUILD_SUCCESS = "true"
+					}
+					catch(Exception e) {
+						env.IMAGE_BUILD_SUCCESS = "false"
+						currentBuild.result = 'FAILURE'
+						echo"❌ Docker 이미지 생성 실패"
+					}
+					
 				}
 			}
 		}
@@ -82,21 +102,88 @@ pipeline {
 		stage('Insert Dummy Data') {
 			steps {
 				script {
-					def user = env.MYSQL_USER
-					def password = env.MYSQL_PASSWORD
-					def database = env.MYSQL_DATABASE
 
-					def command = "mysql -u${user} -p${password} ${database} < /docker-entrypoint-initdb./init.sql"
-					sh "docker exec mysql bash -c '${command}'"
+					if(env.IMAGE_BUILD_SUCCESS == "true")
+					{
+						try {
+							def user = env.MYSQL_USER
+							def password = env.MYSQL_PASSWORD
+							def database = env.MYSQL_DATABASE
+
+							def command = "mysql -u${user} -p${password} ${database} < /docker-entrypoint-initdb./init.sql"
+							sh "docker exec mysql bash -c '${command}'"
+						} catch (Exception e) {
+							error("❌ 더미 데이터 삽입 실패: ${e.message}")
+						}
+					}
+					else {
+						echo "이미지 빌드 실패로 Dummay Data 스킵"
+					}
 				}
 			}
 		}
 	}
 
 	post {
-		always {
-			sh 'rm -f .env'
-		}
+	    always {
+	        script {
+	            try {
+	                if (env.IMAGE_BUILD_SUCCESS == "true") {
+	                    def results = recordIssues(tools: [
+	                        java(),
+	                        esLint(pattern: 'reports/eslint-report.json'),
+	                        spotBugs(pattern: '**/spotbugsXml.xml'),
+	                        checkStyle(pattern: '**/checkstyle-result.xml')
+	                    ])
+
+	                    def detailLines = []
+	                    int totalIssues = 0
+
+	                    results.each { result ->
+	                        def toolName = result.name ?: result.id ?: "Unknown"
+	                        def count = result.totalSize
+	                        totalIssues += count
+	                        detailLines << "- ${toolName}: ${count}개"
+	                    }
+
+	                    def issueEmoji = (totalIssues > 0) ? ":warning:" : ":white_check_mark:"
+	                    def issueStatusMsg = (totalIssues > 0) ? "총 ${totalIssues}개 경고 발생" : "경고 없음"
+	                    def analysisUrl = "${env.BUILD_URL}warnings-ng/"
+	                    def branchLabel = (env.BRANCH_NAME == 'master') ? "🚀 *[MASTER 분석 결과]*" : "🧪 *[DEVELOP QA 분석 결과]*"
+
+						def message = """
+						${issueEmoji} *Static Analysis Report*
+						${branchLabel}
+						- Job: ${env.JOB_NAME}
+						- Build: #${env.BUILD_NUMBER}
+						- Result: ${issueStatusMsg}
+						- 툴별 결과:
+						${detailLines.collect { "  ${it}" }.join('\n')}
+						- [경고 리포트 보기](${analysisUrl})
+						""".stripIndent()
+
+	                    withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
+		                    sendMessage(message, MATTERMOST_WEBHOOK)
+	                    }
+	                    
+	                } else {
+	                    def message = """
+	                    ❌ *Docker 이미지 생성 실패*
+	                    - Job: ${env.JOB_NAME}
+	                    - Build: #${env.BUILD_NUMBER}
+	                    - [Jenkins 로그 보기](${env.BUILD_URL})
+	                    """.stripIndent()
+	                    
+	                    withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
+		                    sendMessage(message, MATTERMOST_WEBHOOK)
+	                    }
+	                }
+	            } catch (e) {
+	                echo "recordIssues() 중 오류 발생: ${e}"
+	            }
+	        }
+	    }
+
 
 		success {
 			script {

@@ -1,3 +1,17 @@
 {
-  "extends": "next/core-web-vitals"
+  "root": true,
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:node/recommended"
+  ],
+  "plugins": ["node"],
+  "rules": {
+    // 여기에 원하는 커스텀 규칙 작성 가능
+    // "no-console": "warn"
+  }
 }
