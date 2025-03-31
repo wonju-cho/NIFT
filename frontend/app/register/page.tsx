@@ -110,7 +110,7 @@ export default function RegisterPage() {
       currentPrice: data.price,
       serialNum: Number(selectedGifticonData.serialNum),
       expirationDate: `${selectedGifticonData.expiryDate}T23:59:59`,
-      id: Number(selectedGifticonData.id),
+      gifticonId: Number(selectedGifticonData.id),
       imageUrl: selectedGifticonData.image,
     };
 
