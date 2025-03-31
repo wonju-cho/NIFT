@@ -3,25 +3,10 @@ plugins {
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.asciidoctor.jvm.convert' version '3.3.2'
-	id 'com.github.spotbugs' version '5.1.0' // 정적 분석 파일 생성을 위해 추가
 }
 
 group = 'com.e101'
 version = '0.0.1-SNAPSHOT'
-
-spotbugs {
-	toolVersion = '4.7.3'
-	effort = 'max'
-	reportLevel = 'low'
-	reportsDir = file("$buildDir/reports/spotbugs")
-}
-
-tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
-	reports {
-		xml.required = true  // ✅ Jenkins에 이 리포트로 연동
-		html.required = false
-	}
-}
 
 java {
 	toolchain {
@@ -47,7 +32,7 @@ dependencies {
 	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.
 
 	// swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
