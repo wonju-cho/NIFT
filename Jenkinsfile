@@ -37,44 +37,52 @@ pipeline {
 			}
 		}
 
-		stage('Check DB_CRED File') {
+		stage('Check ENV Credential Files') {
 			steps {
 				script {
-					withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
-                        sh '''
-                            if [ ! -f "$DB_CRED_FILE" ]; then
-                                echo "❌ DB_CRED_FILE 파일이 존재하지 않습니다."
-                                exit 1
-                            fi
-                            echo " DB_CRED_FILE 경로: $DB_CRED_FILE"
-                            ls -l $DB_CRED_FILE
-                        '''
+
+					def checkCredential = { filePath, name ->
+		                if (!fileExists(filePath)) {
+		                    error "❌ Credential ${name} (${filePath}) is missing."
+		                } else {
+		                    echo "✅ Credential ${name} found at ${filePath}"
+		                }
+	            	}
+
+					withCredentials([
+						file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE'),
+						file(credentialsId: 'SONAR_CRED', variable: 'SONAR_FILE')
+						]) {
+                        checkCredential(DB_CRED_FILE, "DB_CRED")
+                        checkCredential(SONAR_FILE, "SONAR_CRED")
 					}
 				}
 			}
 		}
 
-		stage('Parse and Write .env') {
-			steps {
-				withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
-					script {
-						echo "🔍 Reading DB_CRED_FILE"
+		stage('Generate .env files') {
+		    steps {
+		        withCredentials([
+		            file(credentialsId: 'DB_CRED', variable: 'DB_FILE')
+		        ]) {
+		            script {
+		                def db = readJSON file: DB_FILE
+		                def dbContent = db.collect { k, v -> "${k}=${v}" }.join('\n')
+		                writeFile file: '.env', text: dbContent
+		            }
+		        }
 
-						def json = readJSON file: "${DB_CRED_FILE}"
-
-						// .env 파일 작성
-						def envContent = json.collect { key, value -> "${key}=${value}" }.join('\n')
-						writeFile file: '.env', text: envContent
-
-						// 사용할 변수 저장
-						env.MYSQL_USER = json["MYSQL_USER"]
-						env.MYSQL_PASSWORD = json["MYSQL_PASSWORD"]
-						env.MYSQL_DATABASE = json["MYSQL_DATABASE"]
-					}
-				}
-			}
+		        withCredentials([
+		            file(credentialsId: 'SONAR_CRED', variable: 'SONAR_FILE')
+		        ]) {
+		            script {
+		                def sonar = readJSON file: SONAR_FILE
+		                def sonarContent = sonar.collect { k, v -> "${k}=${v}" }.join('\n')
+		                writeFile file: '.env.sonar', text: sonarContent
+		            }
+		        }
+		    }
 		}
-
 
 
 		stage('Reset containers') {
@@ -108,26 +116,56 @@ pipeline {
 		stage('Insert Dummy Data') {
 			steps {
 				script {
-
-					if(env.IMAGE_BUILD_SUCCESS == "true")
-					{
+					if (env.IMAGE_BUILD_SUCCESS?.toBoolean()) {
 						try {
-							def user = env.MYSQL_USER
-							def password = env.MYSQL_PASSWORD
-							def database = env.MYSQL_DATABASE
+							def props = readProperties file: '.env'
 
-							def command = "mysql -u${user} -p${password} ${database} < /docker-entrypoint-initdb./init.sql"
-							sh "docker exec mysql bash -c '${command}'"
+							withEnv([
+								"MYSQL_USER=${props.MYSQL_USER}",
+								"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
+								"MYSQL_DATABASE=${props.MYSQL_DATABASE}"
+							]) {
+								sh '''
+								# ✅ MySQL 대기 (timeout 포함)
+								i=0
+								until docker exec mysql mysqladmin ping -h127.0.0.1 --silent || [ $i -eq 30 ]; do
+								  echo "⏳ Waiting for MySQL... ($i)"
+								  sleep 2
+								  i=$((i+1))
+								done
+								if [ $i -eq 30 ]; then
+								  echo "❌ MySQL startup timed out"
+								  exit 1
+								fi
+
+								# ✅ Backend Health Check 대기 (timeout 포함)
+								i=0
+								until docker exec backend curl -sf http://localhost:8081/actuator/health | grep '"status":"UP"' || [ $i -eq 60 ]; do
+								  echo "⏳ Waiting for backend health... ($i)"
+								  sleep 2
+								  i=$((i+1))
+								done
+								if [ $i -eq 60 ]; then
+								  echo "❌ Backend health check timed out"
+								  exit 1
+								fi
+
+								# ✅ 더미 데이터 삽입
+								echo "✅ All systems go. Inserting dummy data..."
+								docker exec -i mysql mysql -h127.0.0.1 -u\$MYSQL_USER -p\$MYSQL_PASSWORD \$MYSQL_DATABASE < ./backend/src/main/resources/dev_init.sql
+								'''
+							}
 						} catch (Exception e) {
+							env.IMAGE_BUILD_SUCCESS = "false"
 							error("❌ 더미 데이터 삽입 실패: ${e.message}")
 						}
-					}
-					else {
-						echo "이미지 빌드 실패로 Dummay Data 스킵"
+					} else {
+						echo "이미지 빌드 실패로 Dummy Data 스킵"
 					}
 				}
 			}
 		}
+
 	}
 
 	post {
@@ -135,36 +173,12 @@ pipeline {
 	        script {
 	            try {
 	                if (env.IMAGE_BUILD_SUCCESS == "true") {
-	                    def results = recordIssues(tools: [
-	                        java(),
-	                        esLint(pattern: 'reports/eslint-report.json'),
-	                        spotBugs(pattern: '**/spotbugsXml.xml'),
-	                    ])
-
-	                    def detailLines = []
-	                    int totalIssues = 0
-
-	                    results.each { result ->
-	                        def toolName = result.name ?: result.id ?: "Unknown"
-	                        def count = result.totalSize
-	                        totalIssues += count
-	                        detailLines << "- ${toolName}: ${count}개"
-	                    }
-
-	                    def issueEmoji = (totalIssues > 0) ? ":warning:" : ":white_check_mark:"
-	                    def issueStatusMsg = (totalIssues > 0) ? "총 ${totalIssues}개 경고 발생" : "경고 없음"
-	                    def analysisUrl = "${env.BUILD_URL}warnings-ng/"
-	                    def branchLabel = (env.BRANCH_NAME == 'master') ? "🚀 *[MASTER 분석 결과]*" : "🧪 *[DEVELOP QA 분석 결과]*"
 
 						def message = """
-						${issueEmoji} *Static Analysis Report*
-						${branchLabel}
+						*Static Analysis Report*
 						- Job: ${env.JOB_NAME}
 						- Build: #${env.BUILD_NUMBER}
-						- Result: ${issueStatusMsg}
 						- 툴별 결과:
-						${detailLines.collect { "  ${it}" }.join('\n')}
-						- [경고 리포트 보기](${analysisUrl})
 						""".stripIndent()
 
 	                    withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
@@ -185,7 +199,7 @@ pipeline {
 	                }
 	                
 	                 // .env 파일 삭제
-                	sh 'rm -f .env'
+                	sh 'rm -f .env.*'
 	            } catch (e) {
 	                echo "recordIssues() 중 오류 발생: ${e}"
 	            }
