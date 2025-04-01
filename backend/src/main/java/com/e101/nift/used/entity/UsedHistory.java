@@ -23,6 +23,8 @@ public class UsedHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long usedHistoryId;
+    private String txHash;
+    private Long serialNum;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
