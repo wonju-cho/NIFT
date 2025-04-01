@@ -69,7 +69,7 @@ services:
     restart: always
     container_name: frontend
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
     depends_on: 
       - backend
     ports:
