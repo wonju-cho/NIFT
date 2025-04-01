@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0xfe04Ae996ffF7c2bB348fC9FeC172dBe710AB9b9";
+  const contractAddress = "0x59A3B361E7872333219e6538b208E70A07b083b7";
   const sellerAddress = "0xe911090F1ca13EE23f3C1eE964c5d4e323987e9f";
 
   const tokenId = 1;
@@ -67,23 +67,23 @@ async function main() {
   }
 
   // ✅ 자동 판매 등록
-  // console.log("🎉 전송 완료! 이제 전부 자동 판매 등록 시작");
+  console.log("🎉 전송 완료! 이제 전부 자동 판매 등록 시작");
 
-  // const sellPrice = ethers.parseUnits("1", ssfDecimals);
+  const sellPrice = ethers.parseUnits("1", ssfDecimals);
 
-  // for (const serial of serials) {
-  //   console.log(`🚀 listForSale.js 실행 중 (Serial: ${serial})`);
-  //   try {
-  //     execSync(
-  //       `node scripts/listForSale.js ${serial} ${sellPrice.toString()}`,
-  //       {
-  //         stdio: "inherit",
-  //       }
-  //     );
-  //   } catch (error) {
-  //     console.error(`❌ listForSale.js 실행 중 오류 발생:`, error.message);
-  //   }
-  // }
+  for (const serial of serials) {
+    console.log(`🚀 listForSale.js 실행 중 (Serial: ${serial})`);
+    try {
+      execSync(
+        `node scripts/listForSale.js ${serial} ${sellPrice.toString()}`,
+        {
+          stdio: "inherit",
+        }
+      );
+    } catch (error) {
+      console.error(`❌ listForSale.js 실행 중 오류 발생:`, error.message);
+    }
+  }
 }
 
 main().catch((err) => {
