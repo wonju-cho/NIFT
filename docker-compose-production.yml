@@ -14,11 +14,6 @@ services:
     container_name: mysql
     env_file:
       - .env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - ./backend/src/main/resources/prod_init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
@@ -32,10 +27,6 @@ services:
     container_name: mongo
     env_file:
       - .env
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     networks:
       - backend-tier
 
@@ -63,10 +54,7 @@ services:
       - mysql
       - mongo
     environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_DATA_MONGODB_URI: ${SPRING_DATA_MONGODB_URI}
+      - SPRING_PROFILES_ACTIVE: server
     ports:
         - "8081:8081"
     networks:

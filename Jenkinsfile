@@ -1,12 +1,14 @@
 def sendMessage(String msg, String hookUrl) {
-	def payload = [ text: msg ]
-	def json = groovy.json.JsonOutput.toJson(payload)
+	def payload = groovy.json.JsonOutput.toJson([text: msg])
+	writeFile file: 'payload.json', text: payload
 
-	sh """
-	curl -X POST -H 'Content-Type: application/json' \
-	-d '${json}' \
-	${hookUrl}
-	"""
+	sh(
+		script: """
+		export HOOK_URL=${hookUrl}
+		curl -X POST -H 'Content-Type: application/json' -d @payload.json \$HOOK_URL
+		""",
+		label: 'Send message'
+	)
 }
 
 pipeline {
@@ -35,40 +37,52 @@ pipeline {
 			}
 		}
 
-		stage('Check DB_CRED File') {
+		stage('Check ENV Credential Files') {
 			steps {
-				withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
-					sh '''
-						echo "📁 DB_CRED_FILE 경로: $DB_CRED_FILE"
-						ls -l $DB_CRED_FILE
-						echo "📄 DB_CRED_FILE 내용:"
-						cat $DB_CRED_FILE
-					'''
-				}
-			}
-		}
+				script {
 
-		stage('Parse and Write .env') {
-			steps {
-				withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
-					script {
-						echo "🔍 Reading DB_CRED_FILE"
+					def checkCredential = { filePath, name ->
+		                if (!fileExists(filePath)) {
+		                    error "❌ Credential ${name} (${filePath}) is missing."
+		                } else {
+		                    echo "✅ Credential ${name} found at ${filePath}"
+		                }
+	            	}
 
-						def json = readJSON file: "${DB_CRED_FILE}"
-
-						// .env 파일 작성
-						def envContent = json.collect { key, value -> "${key}=${value}" }.join('\n')
-						writeFile file: '.env', text: envContent
-
-						// 사용할 변수 저장
-						env.MYSQL_USER = json["MYSQL_USER"]
-						env.MYSQL_PASSWORD = json["MYSQL_PASSWORD"]
-						env.MYSQL_DATABASE = json["MYSQL_DATABASE"]
+					withCredentials([
+						file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE'),
+						file(credentialsId: 'SONAR_CRED', variable: 'SONAR_FILE')
+						]) {
+                        checkCredential(DB_CRED_FILE, "DB_CRED")
+                        checkCredential(SONAR_FILE, "SONAR_CRED")
 					}
 				}
 			}
 		}
 
+		stage('Generate .env files') {
+		    steps {
+		        withCredentials([
+		            file(credentialsId: 'DB_CRED', variable: 'DB_FILE')
+		        ]) {
+		            script {
+		                def db = readJSON file: DB_FILE
+		                def dbContent = db.collect { k, v -> "${k}=${v}" }.join('\n')
+		                writeFile file: '.env', text: dbContent
+		            }
+		        }
+
+		        withCredentials([
+		            file(credentialsId: 'SONAR_CRED', variable: 'SONAR_FILE')
+		        ]) {
+		            script {
+		                def sonar = readJSON file: SONAR_FILE
+		                def sonarContent = sonar.collect { k, v -> "${k}=${v}" }.join('\n')
+		                writeFile file: '.env.sonar', text: sonarContent
+		            }
+		        }
+		    }
+		}
 
 
 		stage('Reset containers') {
@@ -129,37 +143,12 @@ pipeline {
 	        script {
 	            try {
 	                if (env.IMAGE_BUILD_SUCCESS == "true") {
-	                    def results = recordIssues(tools: [
-	                        java(),
-	                        esLint(pattern: 'reports/eslint-report.json'),
-	                        spotBugs(pattern: '**/spotbugsXml.xml'),
-	                        checkStyle(pattern: '**/checkstyle-result.xml')
-	                    ])
-
-	                    def detailLines = []
-	                    int totalIssues = 0
-
-	                    results.each { result ->
-	                        def toolName = result.name ?: result.id ?: "Unknown"
-	                        def count = result.totalSize
-	                        totalIssues += count
-	                        detailLines << "- ${toolName}: ${count}개"
-	                    }
-
-	                    def issueEmoji = (totalIssues > 0) ? ":warning:" : ":white_check_mark:"
-	                    def issueStatusMsg = (totalIssues > 0) ? "총 ${totalIssues}개 경고 발생" : "경고 없음"
-	                    def analysisUrl = "${env.BUILD_URL}warnings-ng/"
-	                    def branchLabel = (env.BRANCH_NAME == 'master') ? "🚀 *[MASTER 분석 결과]*" : "🧪 *[DEVELOP QA 분석 결과]*"
 
 						def message = """
 						${issueEmoji} *Static Analysis Report*
-						${branchLabel}
 						- Job: ${env.JOB_NAME}
 						- Build: #${env.BUILD_NUMBER}
-						- Result: ${issueStatusMsg}
 						- 툴별 결과:
-						${detailLines.collect { "  ${it}" }.join('\n')}
-						- [경고 리포트 보기](${analysisUrl})
 						""".stripIndent()
 
 	                    withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
@@ -178,6 +167,9 @@ pipeline {
 		                    sendMessage(message, MATTERMOST_WEBHOOK)
 	                    }
 	                }
+	                
+	                 // .env 파일 삭제
+                	sh 'rm -f .env.*'
 	            } catch (e) {
 	                echo "recordIssues() 중 오류 발생: ${e}"
 	            }

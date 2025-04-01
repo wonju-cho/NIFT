@@ -1,5 +1,3 @@
-// components/article/DeleteArticleButton.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
