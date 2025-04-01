@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import KakaoRedirectPage from "../api/KakaoRedirectPage";
+import KakaoRedirectPage from "./KakaoRedirectPage";
 
 export default function Page() {
   return (
