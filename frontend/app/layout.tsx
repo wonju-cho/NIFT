@@ -1,8 +1,7 @@
 import type React from "react"
 import "./globals.css"
 import type { Metadata } from "next"
-import { Noto_Sans} from "next/font/google";
-import { LoadingProvider } from "@/components/LoadingContext"
+import { Noto_Sans} from "next/font/google"
 
 
 const notoSans = Noto_Sans({
@@ -28,9 +27,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className={notoSans.variable}>
       <body className={notoSans.className}>
-        <LoadingProvider>
-          {children}
-        </LoadingProvider>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   )
@@ -39,3 +36,5 @@ export default function RootLayout({
 
 
 import './globals.css'
+import ClientLayout from "../components/ClientLayout";
+

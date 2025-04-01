@@ -1,4 +1,4 @@
-// components/article/ArticlePurchaseDialog.tsx
+"use client"; 
 
 import {
   Dialog,
