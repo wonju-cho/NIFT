@@ -36,6 +36,7 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionServiceImpl(@Value("${web3j.rpc.url}") String rpcUrl,
                                   @Value("${web3j.contract.address}") String contractAddress,
                                   @Value("${web3j.private.key}") String privateKey) {
+
         this.contractAddress = contractAddress;
         this.privateKey = privateKey;
 
