@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Entity
@@ -27,6 +28,7 @@ public class Gifticon {
     private Float price;
     private String imageUrl;
     private String metadataUrl;
+    private Timestamp createdAt;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)

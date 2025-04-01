@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/gifticons")
 @RequiredArgsConstructor
@@ -21,6 +23,12 @@ public class GifticonController {
     public ResponseEntity<GifticonDetailDto> getGifticonById(@PathVariable Long id){
         GifticonDetailDto dto = gifticonService.getGifticonDetail(id);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<GifticonDetailDto>> getAllGifticons() {
+        List<GifticonDetailDto> gifticonDetailDtoList = gifticonService.getAllGifticons();
+        return ResponseEntity.ok(gifticonDetailDtoList);
     }
 
     @Operation(summary = "기프티콘 정보 추가", description = "기프티콘(NFT)에 대한 정보를 DB에 입력")

@@ -1,5 +1,5 @@
 import PageHeader from "@/components/page-header";
-import ProductForm from "@/components/product-register-form/ProductForm";
+import ProductForm from "@/app/products/register/components/product-register-form/ProductForm";
 
 export default function RegisterPage() {
   return (

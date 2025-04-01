@@ -10,6 +10,9 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class GifticonServiceImpl implements GifticonService {
@@ -29,8 +32,10 @@ public class GifticonServiceImpl implements GifticonService {
                 gifticon.getDescription(),
                 gifticon.getImageUrl(),
                 gifticon.getPrice(),
-                gifticon.getBrand().getBrandName()
-        );
+                gifticon.getBrand().getBrandName(),
+                gifticon.getCategory().getCategoryName(),
+                gifticon.getCreatedAt()
+                );
     }
 
     @Override
@@ -49,5 +54,14 @@ public class GifticonServiceImpl implements GifticonService {
         gifticon.setCategory(categoryRepository.findCategoryByCategoryId(gifticonDto.getBrandId()));
 
         gifticonRepository.save(gifticon);
+    }
+
+    @Override
+    public List<GifticonDetailDto> getAllGifticons() {
+        List<Gifticon> gifticons = gifticonRepository.findAll();
+
+        return gifticons.stream()
+                .map(GifticonDetailDto::new) // 생성자에서 엔티티 -> DTO 변환
+                .collect(Collectors.toList());
     }
 }
