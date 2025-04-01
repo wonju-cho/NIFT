@@ -1,5 +1,6 @@
 package com.e101.nift.common.config;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
