@@ -18,11 +18,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryController {
 
-    private final GifticonService gifticonService;
     private final CategoryRepository categoryRepository;
 
     @Operation(summary = "카테고리 목록 가져오기", description = "카테고리 목록 가져오기")
-    @GetMapping("/categories")
+    @GetMapping
     public ResponseEntity<List<CategoryDto>> getAllCategories() {
         List<Category> categories = categoryRepository.findAll();
 

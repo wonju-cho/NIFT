@@ -26,6 +26,7 @@ public class Gifticon {
     private String description;
     private Float price;
     private String imageUrl;
+    private String metadataUrl;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)

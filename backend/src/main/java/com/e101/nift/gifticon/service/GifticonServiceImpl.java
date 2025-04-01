@@ -42,6 +42,7 @@ public class GifticonServiceImpl implements GifticonService {
         gifticon.setGifticonTitle(gifticonDto.getGifticonTitle());
         gifticon.setDescription(gifticonDto.getDescription());
         gifticon.setImageUrl(gifticonDto.getImageUrl());
+        gifticon.setMetadataUrl(gifticonDto.getMetadataUrl());
         gifticon.setPrice(gifticonDto.getPrice());
         gifticon.setGifticonTitle(gifticonDto.getGifticonTitle());
         gifticon.setBrand(brandRepository.findBrandByBrandId(gifticonDto.getBrandId()));

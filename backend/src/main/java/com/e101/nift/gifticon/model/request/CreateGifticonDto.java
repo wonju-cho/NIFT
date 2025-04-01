@@ -20,6 +20,7 @@ public class CreateGifticonDto {
     private String description;
     private Float price;
     private String imageUrl;
+    private String metadataUrl;
     private Long categoryId;
     private Long brandId;
 }

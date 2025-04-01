@@ -25,7 +25,7 @@ public class BrandController {
     private final BrandRepository brandRepository;
 
     @Operation(summary = "브랜드 목록 가져오기", description = "브랜드 목록 가져오기")
-    @GetMapping("/brands")
+    @GetMapping
     public ResponseEntity<List<BrandDto>> getAllCategories() {
         List<Brand> brands = brandRepository.findAll();
 

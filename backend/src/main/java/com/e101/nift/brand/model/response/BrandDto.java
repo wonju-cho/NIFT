@@ -10,6 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BrandDto {
-    private Long barndId;
+    private Long brandId;
     private String brandName;
 }
