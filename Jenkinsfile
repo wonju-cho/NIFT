@@ -116,26 +116,56 @@ pipeline {
 		stage('Insert Dummy Data') {
 			steps {
 				script {
-
-					if(env.IMAGE_BUILD_SUCCESS == "true")
-					{
+					if (env.IMAGE_BUILD_SUCCESS?.toBoolean()) {
 						try {
-							def user = env.MYSQL_USER
-							def password = env.MYSQL_PASSWORD
-							def database = env.MYSQL_DATABASE
+							def props = readProperties file: '.env'
 
-							def command = "mysql -u${user} -p${password} ${database} < /docker-entrypoint-initdb./init.sql"
-							sh "docker exec mysql bash -c '${command}'"
+							withEnv([
+								"MYSQL_USER=${props.MYSQL_USER}",
+								"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
+								"MYSQL_DATABASE=${props.MYSQL_DATABASE}"
+							]) {
+								sh '''
+								# ✅ MySQL 대기 (timeout 포함)
+								i=0
+								until docker exec mysql mysqladmin ping -h127.0.0.1 --silent || [ $i -eq 30 ]; do
+								  echo "⏳ Waiting for MySQL... ($i)"
+								  sleep 2
+								  i=$((i+1))
+								done
+								if [ $i -eq 30 ]; then
+								  echo "❌ MySQL startup timed out"
+								  exit 1
+								fi
+
+								# ✅ Backend Health Check 대기 (timeout 포함)
+								i=0
+								until docker exec backend curl -sf http://localhost:8081/actuator/health | grep '"status":"UP"' || [ $i -eq 60 ]; do
+								  echo "⏳ Waiting for backend health... ($i)"
+								  sleep 2
+								  i=$((i+1))
+								done
+								if [ $i -eq 60 ]; then
+								  echo "❌ Backend health check timed out"
+								  exit 1
+								fi
+
+								# ✅ 더미 데이터 삽입
+								echo "✅ All systems go. Inserting dummy data..."
+								docker exec -i mysql mysql -h127.0.0.1 -u\$MYSQL_USER -p\$MYSQL_PASSWORD \$MYSQL_DATABASE < ./backend/src/main/resources/dev_init.sql
+								'''
+							}
 						} catch (Exception e) {
+							env.IMAGE_BUILD_SUCCESS = "false"
 							error("❌ 더미 데이터 삽입 실패: ${e.message}")
 						}
-					}
-					else {
-						echo "이미지 빌드 실패로 Dummay Data 스킵"
+					} else {
+						echo "이미지 빌드 실패로 Dummy Data 스킵"
 					}
 				}
 			}
 		}
+
 	}
 
 	post {
@@ -145,7 +175,7 @@ pipeline {
 	                if (env.IMAGE_BUILD_SUCCESS == "true") {
 
 						def message = """
-						${issueEmoji} *Static Analysis Report*
+						*Static Analysis Report*
 						- Job: ${env.JOB_NAME}
 						- Build: #${env.BUILD_NUMBER}
 						- 툴별 결과:

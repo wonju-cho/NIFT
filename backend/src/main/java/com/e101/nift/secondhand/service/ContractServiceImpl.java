@@ -1,6 +1,7 @@
 package com.e101.nift.secondhand.service;
 
-import com.e101.nift.common.util.TimeUtil;
+import com.e101.nift.common.util.ConvertUtil;
+import com.e101.nift.secondhand.entity.Article;
 import com.e101.nift.secondhand.entity.ArticleHistory;
 import com.e101.nift.secondhand.exception.ArticleErrorCode;
 import com.e101.nift.secondhand.exception.ArticleException;
@@ -24,11 +25,11 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public void addArticleHistory(Long articleId, String txHash, Long loginUser) {
-        articleRepository.findById(articleId).orElseThrow(() -> new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND));
+        Article article = articleRepository.findById(articleId).orElseThrow(() -> new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND));
 
         GifticonNFT.NFTPurchasedEventResponse purchasedEventResponse = transactionService.getPurchaseEventsByTxHash(txHash).getFirst();
 
-        log.debug("[ContractService] 트랜잭션 발생 시간: {}", TimeUtil.convertTimestampToLocalTime(purchasedEventResponse.transactionTime));
+        log.debug("[ContractService] 트랜잭션 발생 시간: {}", ConvertUtil.convertTimestampToLocalTime(purchasedEventResponse.transactionTime));
         log.debug("[ContractService] 트랜잭션 유저 지갑 주소: {}", purchasedEventResponse.buyer);
 
         Long userId = userService.findUserIdByAddress(purchasedEventResponse.buyer)
@@ -42,11 +43,13 @@ public class ContractServiceImpl implements ContractService {
         articleHistoryRepository.save(
                 ArticleHistory.builder()
                         .articleId(articleId)
-                        .createdAt(TimeUtil.convertTimestampToLocalTime(purchasedEventResponse.transactionTime))
+                        .createdAt(ConvertUtil.convertTimestampToLocalTime(purchasedEventResponse.transactionTime))
                         .historyType(ContractType.PURCHASE.getType())
                         .userId(userId)
                         .txHash(txHash)
                         .build()
         );
+        article.setSold(true);
+        articleRepository.save(article);
     }
 }

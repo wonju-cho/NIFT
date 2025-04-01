@@ -71,15 +71,10 @@ public class ArticleController {
     @PostMapping
     @Operation(summary = "게시글 쓰기", description = "기프티콘 판매 게시글을 작성합니다.")
     public ResponseEntity<?> PostArticles(
-            HttpServletRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody PostArticleDto postArticleDto
     ) {
-        Long userId = jwtTokenProvider.getUserFromRequest(request).getUserId();
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
-        }
-
-        articleService.createArticle(postArticleDto, userId);
+        articleService.createArticle(postArticleDto, userDetails.getUserId());
         return ResponseEntity.status(201).build();
     }
 

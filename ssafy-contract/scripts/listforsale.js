@@ -2,7 +2,7 @@ require("dotenv").config();
 const { ethers } = require("hardhat");
 
 async function main() {
-  const nftContractAddress = "0x1b63523981bd620566486eF6294A2dCCed25F16d"; // GifticonNFT
+  const nftContractAddress = "0x4BBE553ce148eC354dfed66c60d8140b08E16077"; // GifticonNFT
   const targetAddress = "0xe911090F1ca13EE23f3C1eE964c5d4e323987e9f";
   const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
   const ssfDecimals = 0;
@@ -25,6 +25,9 @@ async function main() {
 
   const signer = new ethers.Wallet(privateKey, provider);
   if (signer.address.toLowerCase() !== sellerAddress.toLowerCase()) {
+    console.log("signer.address.toLowerCase()", signer.address.toLowerCase());
+    console.log("sellerAddress.toLowerCase()", sellerAddress.toLowerCase());
+
     throw new Error("❌ 서명자 주소가 판매자 주소와 일치하지 않습니다.");
   }
 

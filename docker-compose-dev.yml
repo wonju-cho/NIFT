@@ -65,11 +65,11 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NODE_ENV: development
+        BUILD_MODE: development
     restart: always
     container_name: frontend
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
     depends_on: 
       - backend
     ports:

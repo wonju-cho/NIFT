@@ -1,15 +1,14 @@
 package com.e101.nift.gift.controller;
 
 
+import com.e101.nift.common.security.CustomUserDetails;
 import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.gift.model.dto.request.SendGiftDto;
 import com.e101.nift.gift.service.GiftHistoryService;
-import com.e101.nift.user.entity.User;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,11 +25,11 @@ public class GiftController {
 
     @PostMapping("/send")
     public ResponseEntity<Void> sendGift(
-            HttpServletRequest http,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody SendGiftDto request
     ){
         // 선물 보내는 사람
-        User sender = jwtTokenProvider.getUserFromRequest(http);
+        Long sender = userDetails.getUserId();
         giftHistoryService.sendGiftHistory(sender, request);
 //        System.out.println("✅ 선물 보내기 완료!");
 

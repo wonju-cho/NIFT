@@ -45,18 +45,19 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     mapping(uint256 => TokenInfo) private _tokenInfos;      // tokenId → 메타 정보
     mapping(address => uint256[]) private _ownedSerials;    // 특정 사용자가 소유하는 시리얼 넘버들
     mapping(address => bool) private _authorizedTransfers; // 안전한 전송을 위한 허용된 전송자
+    mapping(bytes32 => uint256[]) private _pendingGiftsByAlias;
 
     IERC20 public ssfToken; // 결제에 사용될 ERC20 토큰
 
     // 📢 이벤트 선언
     event Minted(address indexed owner, uint256 indexed tokenId, uint256 serialNumber, uint256 transactionTime);
-    event ListedForSale(uint256 indexed serialNumber, uint256 price, address indexed seller, uint256 transactionTime);
+    event ListedForSale(uint256 indexed tokenId, uint256 indexed serialNumber, uint256 price, address indexed seller, uint256 expirationDate, string metadataURI, uint256 transactionTime);
     event NFTPurchased(address indexed buyer, uint256 indexed serialNumber, uint256 price, uint256 transactionTime);
     event Redeemed(address indexed owner, uint256 indexed serialNumber, uint256 transactionTime);
     event CancelledSale(uint256 indexed serialNumber, uint256 transactionTime);
     event Gifted(address indexed sender, address indexed recipient, uint256 indexed serialNumber, uint256 transactionTime);
     event SerialOwnershipTransferred(uint256 indexed serialNumber, address indexed from, address indexed to, uint256 transactionTime);
-    event GiftPending(address indexed sender, uint256 indexed serialNumber, address indexed recipient, uint256 transactionTime);
+    event GiftPending(address indexed sender, uint256 indexed serialNumber, uint256 tokenId, string aliasName, address indexed recipient, uint256 transactionTime);
 
     // 🏗️ 생성자
     constructor(address _ssfToken) ERC1155("ipfs://bafkreidpioogd7mj4t5sovbw2nkn3tavw3zrq4qmqwvkxptm52scasxfl4") Ownable() {
@@ -150,8 +151,9 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
         info.price = price;
         info.seller = msg.sender;
+        uint256 tokenId = _serialToTokenId[serialNumber];
         
-        emit ListedForSale(serialNumber, price, msg.sender, block.timestamp);
+        emit ListedForSale(tokenId, serialNumber, price, msg.sender, info.expirationDate, _tokenInfos[tokenId].metadataURI, block.timestamp);
     }
 
     // 시리얼 넘버 기반으로 NFT 구매
@@ -205,27 +207,27 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     }
 
     // 판매 취소 처리
- function cancelSale(uint256 serialNumber) public nonReentrant {
-    SerialInfo storage info = _serialInfos[serialNumber];
+    function cancelSale(uint256 serialNumber) public nonReentrant {
+        SerialInfo storage info = _serialInfos[serialNumber];
 
-    // 판매자 검증
-    require(info.seller == msg.sender, "Not the seller");
-    require(!info.redeemed, "Already redeemed");
+        // 판매자 검증
+        require(info.seller == msg.sender, "Not the seller");
+        require(!info.redeemed, "Already redeemed");
 
-    // 판매자가 NFT를 소유 중인지 확인
-    uint256 tokenId = _serialToTokenId[serialNumber];
-    require(
-        balanceOf(msg.sender, tokenId) >= 1,
-        "You must own the NFT to cancel sale"
-    );
+        // 판매자가 NFT를 소유 중인지 확인
+        uint256 tokenId = _serialToTokenId[serialNumber];
+        require(
+            balanceOf(msg.sender, tokenId) >= 1,
+            "You must own the NFT to cancel sale"
+        );
 
-    // 상태 초기화
-    info.owner = msg.sender;
-    info.seller = address(0);
-    info.price = 0;
+        // 상태 초기화
+        info.owner = msg.sender;
+        info.seller = address(0);
+        info.price = 0;
 
-    emit CancelledSale(serialNumber, block.timestamp);
-}
+        emit CancelledSale(serialNumber, block.timestamp);
+    }
 
     // 소유주가 받는이에게 선물을 보내 기프티콘 상태를 pending으로 변경
     function giftToFriend(uint256 serialNumber, address recipient) public nonReentrant {
@@ -240,7 +242,47 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.isPending = true;
         info.pendingRecipient = recipient;
 
-        emit GiftPending(msg.sender, serialNumber, recipient, block.timestamp);
+        emit GiftPending(msg.sender, serialNumber, _serialToTokenId[serialNumber], "", recipient, block.timestamp);
+    }
+    
+    // kakaoId로 선물하기
+    function giftToFriendByAlias(uint256 serialNumber, string calldata aliasName) public nonReentrant {
+        SerialInfo storage info = _serialInfos[serialNumber];
+        require(!info.isPending, "Already in gift state");
+        require(info.owner == msg.sender, "Not owner");
+        require(!info.redeemed, "Already redeemed");
+
+        bytes32 aliasHash = keccak256(abi.encodePacked(aliasName));
+
+        info.isPending = true;
+        info.pendingDate = block.timestamp + 5 days;
+        info.pendingRecipient = address(0); // 실제 주소는 비워둠
+
+        _pendingGiftsByAlias[aliasHash].push(serialNumber);
+
+        emit GiftPending(msg.sender, serialNumber, _serialToTokenId[serialNumber], aliasName, address(0), block.timestamp);
+    }
+
+    // 선물을 받은 사람이 지갑주소를 연결한 뒤, 받으려고 할때
+    function claimGiftByAlias(string calldata aliasName) public nonReentrant {
+        bytes32 aliasHash = keccak256(abi.encodePacked(aliasName));
+        uint256[] storage pendingSerials = _pendingGiftsByAlias[aliasHash];
+        require(pendingSerials.length > 0, "No pending gifts");
+
+        for (uint256 i = 0; i < pendingSerials.length; i++) {
+            uint256 serialNumber = pendingSerials[i];
+            SerialInfo storage info = _serialInfos[serialNumber];
+
+            require(info.isPending, "Not in gift state");
+            require(!info.redeemed, "Already redeemed");
+            require(block.timestamp < info.pendingDate, "Gift expired");
+
+            address originalOwner = info.owner;
+
+            _internalTransfer(originalOwner, msg.sender, serialNumber, TransferMode.Gift);
+        }
+
+        delete _pendingGiftsByAlias[aliasHash]; // 받은 선물 목록 제거
     }
 
 
