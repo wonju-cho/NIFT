@@ -125,16 +125,35 @@ pipeline {
 								"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
 								"MYSQL_DATABASE=${props.MYSQL_DATABASE}"
 							]) {
-								sh """
-								# MySQL이 완전히 기동될 때까지 대기
-								until docker exec mysql mysqladmin ping -h127.0.0.1 --silent; do
-									echo "⏳ Waiting for MySQL...";
-									sleep 2;
+								sh '''
+								# ✅ MySQL 대기 (timeout 포함)
+								i=0
+								until docker exec mysql mysqladmin ping -h127.0.0.1 --silent || [ $i -eq 30 ]; do
+								  echo "⏳ Waiting for MySQL... ($i)"
+								  sleep 2
+								  i=$((i+1))
 								done
+								if [ $i -eq 30 ]; then
+								  echo "❌ MySQL startup timed out"
+								  exit 1
+								fi
 
-								# 더미 데이터 삽입
+								# ✅ Backend Health Check 대기 (timeout 포함)
+								i=0
+								until docker exec backend curl -sf http://localhost:8081/actuator/health | grep '"status":"UP"' || [ $i -eq 60 ]; do
+								  echo "⏳ Waiting for backend health... ($i)"
+								  sleep 2
+								  i=$((i+1))
+								done
+								if [ $i -eq 60 ]; then
+								  echo "❌ Backend health check timed out"
+								  exit 1
+								fi
+
+								# ✅ 더미 데이터 삽입
+								echo "✅ All systems go. Inserting dummy data..."
 								docker exec -i mysql mysql -h127.0.0.1 -u\$MYSQL_USER -p\$MYSQL_PASSWORD \$MYSQL_DATABASE < ./backend/src/main/resources/dev_init.sql
-								"""
+								'''
 							}
 						} catch (Exception e) {
 							env.IMAGE_BUILD_SUCCESS = "false"
