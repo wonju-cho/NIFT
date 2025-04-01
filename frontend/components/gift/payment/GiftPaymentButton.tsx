@@ -1,9 +1,9 @@
 import { Gift } from "lucide-react";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 
 interface GiftPaymentButtonProps {
-  article: any // 가격 정보 등
-  isLoading: boolean
+  article: any; // 가격 정보 등
+  isLoading: boolean;
   onClick: () => void;
   disabled?: boolean;
 }
@@ -14,6 +14,8 @@ export default function GiftPaymentButton({
   onClick,
   disabled = false,
 }: GiftPaymentButtonProps) {
+  console.log("disabled 체크", disabled);
+
   return (
     <Button
       className="w-full mt-4"
@@ -33,5 +35,5 @@ export default function GiftPaymentButton({
         </span>
       )}
     </Button>
-  )
+  );
 }

@@ -1,10 +1,13 @@
 import { ethers } from "ethers";
+import { GetGifticonResponse } from "./CreateGiftHistory";
+import axios from "axios";
 
 // ✅ 환경 변수에서 컨트랙트 주소 가져오기
 export const SSF_CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_SSF_CONTRACT_ADDRESS || "";
 export const NFT_CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS || "";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // ✅ SSF 토큰 및 NFT 컨트랙트 ABI
 const SSF_ABI = [
@@ -146,7 +149,11 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
         const [price, seller] = await contract.getSerialInfo(serial);
         const [, , , metadataURI] = await contract.getTokenInfo(tokenId);
 
-        const metadata = await fetchMetadata(metadataURI, serial, tokenId);
+        const metadata = await fetchMetadata(
+          metadataURI,
+          serial,
+          Number(tokenId)
+        );
         console.log(`🪙 토큰 정보: tokenId: ${tokenId}`, metadata);
 
         return {
@@ -174,12 +181,22 @@ export async function listGifticonForSale(serialNumber: number, price: number) {
   if (!window.ethereum) throw new Error("Metamask not found");
 
   const provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []); // 연결 요청
   const signer = await provider.getSigner();
   const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
 
-  const tx = await contract.listForSale(serialNumber, price);
-  await tx.wait();
-  return tx;
+  try {
+    const tx = await contract.listForSale(serialNumber, price);
+    const receipt = await tx.wait();
+    console.log("✅ Success:", receipt);
+    return receipt;
+  } catch (error: any) {
+    console.error(
+      "❌ 트랜잭션 실패:",
+      error?.reason || error?.message || error
+    );
+    throw error;
+  }
 }
 
 export async function isSellerApprovedForSerial(
@@ -215,18 +232,20 @@ export async function isSellerApprovedForSerial(
 
 export type GiftNFTResponse = {
   success: boolean;
-  txHash?: string;
+  txHashPurchase?: string;
+  txHashGift?: string;
 };
 
 export async function giftToFriend(
   serialNumber: number,
-  price: number,
   friendId: string
-) {
-  const provider = new ethers.BrowserProvider(window.ethereum);
+): Promise<GiftNFTResponse> {
+  console.log("giftToFriend 호출됨");
 
-  const fail: BuyNFTResponse = { success: false };
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const fail: GiftNFTResponse = { success: false };
   if (!provider) return fail;
+
   try {
     const signer = await provider.getSigner();
 
@@ -242,6 +261,7 @@ export async function giftToFriend(
     );
     const ssfToken = new ethers.Contract(SSF_CONTRACT_ADDRESS, SSF_ABI, signer);
 
+    const serial = BigInt(serialNumber);
     const [
       price,
       seller,
@@ -253,7 +273,7 @@ export async function giftToFriend(
       isPending,
       pendingDate,
       pendingRecipient,
-    ] = (await nftContract.getSerialInfo(serialNumber)) as [
+    ] = (await nftContract.getSerialInfo(serial)) as [
       bigint,
       string,
       string,
@@ -266,37 +286,12 @@ export async function giftToFriend(
       string
     ];
 
-    // expirationDate와 redeemedAt을 Date 객체로 변환 (필요한 경우)
-    const expirationDateObj = new Date(Number(expirationDate) * 1000);
-    const redeemedAtObj =
-      Number(redeemedAt) === 0 ? null : new Date(Number(redeemedAt) * 1000);
-
-    console.log({
-      Price: String(price),
-      Seller: seller,
-      Owner: owner,
-      OriginalOwner: originalOwner,
-      ExpirationDate: String(expirationDateObj),
-      IsRedeemed: isRedeemed,
-      RedeemedAt: redeemedAtObj ? String(redeemedAtObj) : "Not redeemed",
-      IsPending: isPending,
-      PendingDate: String(pendingDate),
-      PendingRecipient: pendingRecipient,
-    });
-
-    const isApproved = await isSellerApprovedForSerial(serialNumber);
-    if (!isApproved) {
-      throw new Error("❌ 판매자가 NFT 전송 권한을 위임하지 않았습니다.");
-    }
-
-    if (seller === ethers.ZeroAddress) {
-      throw new Error("❌ 판매되지 않은 NFT입니다.");
-    }
     if (isRedeemed) {
-      throw new Error("❌ 이미 사용된 NFT입니다. " + serialNumber);
+      throw new Error(`❌ 이미 사용된 NFT입니다. ${serialNumber}`);
     }
-    if (price <= 0n) {
-      throw new Error("❌ 가격이 설정되지 않은 NFT입니다.");
+
+    if (isPending) {
+      throw new Error(`❌ 이미 선물 대기 중인 NFT입니다.`);
     }
 
     const buyer = await signer.getAddress();
@@ -305,16 +300,24 @@ export async function giftToFriend(
       buyer,
       NFT_CONTRACT_ADDRESS
     );
+    let txHashPurchase: string = "";
+    if (owner.toLowerCase() !== buyer.toLowerCase()) {
+      console.log("🔐 [구매자 정보]", {
+        구매자: buyer,
+        SSF_잔액: ssfBalance.toString(),
+        결제_금액: price.toString(),
+        승인_허용량: allowance.toString(),
+      });
 
-    console.log("🔐 [구매자 정보]");
-    console.log("👤 구매자:", buyer);
-    console.log("💰 SSF 잔액:", ssfBalance.toString());
-    console.log("🧾 결제 금액:", price.toString());
-    console.log("🔓 승인 허용량:", allowance.toString());
+      const response = await buyNFT(serialNumber);
 
-    if (ssfBalance < price) {
-      throw new Error("❌ SSF 잔액이 부족합니다.");
+      if (!response.success) {
+        throw Error("❌ 구매 실패");
+      }
+      txHashPurchase = String(response.txHash);
     }
+
+    if (ssfBalance < price) throw new Error("❌ SSF 잔액이 부족합니다.");
 
     if (allowance < price) {
       console.log("⚠️ 허용량 부족. approve 실행 중...");
@@ -326,14 +329,19 @@ export async function giftToFriend(
     }
 
     console.log("🚀 NFT 선물 트랜잭션 실행 시작...");
-    const tx = await nftContract.giftToFriendByAlias(serialNumber, friendId);
+    const tx = await nftContract.giftToFriendByAlias(serial, friendId);
     console.log("⏳ 트랜잭션 전송됨. 대기 중...");
-    await tx.wait();
-    console.log("✅ SSF로 NFT 구매 완료");
+    const receipt = await tx.wait();
+    console.log("✅ SSF로 NFT 선물 완료");
+    console.log("✅ Success:", receipt);
 
-    return { success: true, txHash: tx.hash };
+    return {
+      success: true,
+      txHashPurchase: txHashPurchase,
+      txHashGift: tx.hash,
+    };
   } catch (error) {
-    console.error("❌ NFT 구매 실패:", error);
+    console.error("❌ NFT 선물 실패:", error);
     return fail;
   }
 }
@@ -537,4 +545,51 @@ export async function getTokenIdBySerial(
 
   const tokenId = await contract.getTokenIdBySerial(serialNumber);
   return Number(tokenId);
+}
+
+export async function getSerialInfo(
+  serialNum: number
+): Promise<GetGifticonResponse> {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
+  const tokenInfo = await fetchTokenInfoBySerial(serialNum);
+
+  const tokenMetadate = await fetchMetadata(
+    tokenInfo?.metadataURI,
+    serialNum,
+    tokenInfo?.tokenId
+  );
+
+  const tokenMoreData = await axios.get(
+    `${BASE_URL}/gifticons/${tokenInfo?.tokenId}`
+  );
+
+  const [
+    price,
+    seller,
+    owner,
+    originalOwner,
+    expirationDate,
+    redeemed,
+    redeemedAt,
+    isPending,
+    pendingDate,
+    pendingRecipient,
+  ] = await contract.getSerialInfo(serialNum);
+
+  const response: GetGifticonResponse = {
+    gifticonId: tokenInfo?.tokenId,
+    serialNum: serialNum,
+    gifticonTitle: tokenInfo?.name,
+    description: tokenInfo?.description,
+    imageUrl: String(tokenMetadate?.image),
+    price: Number(price),
+    brandName: tokenMetadate?.brand,
+    originalPrice: tokenMoreData.data.price,
+  };
+
+  console.log(response);
+
+  return response;
 }

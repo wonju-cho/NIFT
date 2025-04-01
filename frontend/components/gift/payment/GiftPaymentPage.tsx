@@ -9,8 +9,8 @@ import { GiftCardPreview } from "./GiftCardPreview";
 import { GiftRecipientForm } from "./GiftRecipientForm";
 import { GiftPaymentSummary } from "./GiftPaymentSummary";
 import { Button } from "@/components/ui/button";
-import { getGifticonById } from "@/lib/api/CreateGiftHistory";
 import { getArticleById } from "@/lib/api/ArticleService";
+import { getSerialInfo } from "@/lib/api/web3";
 
 interface Friend {
   uuid: string;
@@ -52,15 +52,16 @@ export default function GiftPaymentPageContent({
             brandName: article.brandName,
           });
         } else if (type === "gifticon") {
-          const gifticon = await getGifticonById(Number(params.id));
+          const gifticon = await getSerialInfo(Number(params.id));
+
           setArticle({
             gifticonId: gifticon.gifticonId,
             serialNum: gifticon.serialNum,
             image: gifticon.imageUrl,
             title: gifticon.gifticonTitle,
             description: gifticon.description,
-            price: 0,
-            originalPrice: 0,
+            price: gifticon.price,
+            originalPrice: gifticon.originalPrice,
             brandName: gifticon.brandName,
           });
         }

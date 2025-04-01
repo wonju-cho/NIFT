@@ -70,6 +70,18 @@
         "type": "uint256"
       },
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "aliasName",
+        "type": "string"
+      },
+      {
         "indexed": true,
         "internalType": "address",
         "name": "recipient",
@@ -122,6 +134,12 @@
       {
         "indexed": true,
         "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
         "name": "serialNumber",
         "type": "uint256"
       },
@@ -136,6 +154,18 @@
         "internalType": "address",
         "name": "seller",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "expirationDate",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "metadataURI",
+        "type": "string"
       },
       {
         "indexed": false,
@@ -188,7 +218,7 @@
         "type": "address"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "uint256",
         "name": "serialNumber",
         "type": "uint256"
@@ -464,6 +494,19 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "aliasName",
+        "type": "string"
+      }
+    ],
+    "name": "claimGiftByAlias",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "serialNumber",
         "type": "uint256"
@@ -630,6 +673,24 @@
       }
     ],
     "name": "giftToFriend",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "serialNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "aliasName",
+        "type": "string"
+      }
+    ],
+    "name": "giftToFriendByAlias",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

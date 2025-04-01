@@ -33,6 +33,77 @@ export function GiftPaymentSummary({
   selectedFriend,
   type,
 }: GiftPaymentSummaryProps) {
+  console.log(selectedFriend);
+
+  const handlePayment = async () => {
+    if (!agreedTerms) {
+      alert("주문 내용 확인 및 결제 진행에 동의해주세요.");
+      return;
+    }
+    console.log("handlePayment 실행됨");
+
+    try {
+      const accessToken = localStorage.getItem("access_token");
+      const rawCardData = localStorage.getItem(`card-data-${cardId}`);
+      if (!rawCardData) throw new Error("카드 데이터 없음");
+
+      const cardData = JSON.parse(rawCardData);
+      const mongoId = await postCardDesign(cardData, accessToken!);
+      const idToSend = type === "article" ? Number(cardId) : article.gifticonId;
+
+      localStorage.setItem(
+        `article-data-${cardId}`,
+        JSON.stringify(
+          {
+            ...article,
+            profile_nickname: selectedFriend?.profile_nickname || "수령인",
+          },
+          (_, value) => (typeof value === "bigint" ? value.toString() : value)
+        )
+      );
+
+      console.log(
+        "giftToFriend params",
+        article.serialNum,
+        article.price,
+        selectedFriend?.kakaoId
+      );
+
+      console.log("giftToFriend 호출 전");
+
+      const tx = await giftToFriend(
+        article.serialNum,
+        String(selectedFriend?.kakaoId)
+      );
+
+      if (!tx.success) {
+        throw new Error("NFT 선물 전송 실패");
+      }
+
+      console.log("sendGiftHistory 호출 전");
+
+      // 선물 보내기 API 호출
+      await sendGiftHistory({
+        toUserKakaoId: Number(selectedFriend!.kakaoId),
+        gifticonId: Number(idToSend),
+        mongoId,
+        type,
+        txHashPurchase: String(tx.txHashPurchase),
+        txHashGift: String(tx.txHashGift),
+      });
+
+      // 카드 데이터 localStorage에서 삭제
+      setTimeout(() => {
+        localStorage.removeItem(`card-data-${cardId}`);
+      }, 60 * 1000); // 1분 뒤 삭제
+
+      await onSubmit(); // 이후 gift_histories 저장 등 진행
+    } catch (err) {
+      alert(`결제 처리 중 오류 발생: ${(err as Error).message}`);
+      console.error(err);
+    }
+  };
+
   return (
     <Card className="sticky top-24">
       <CardContent className="p-6">
@@ -82,55 +153,10 @@ export function GiftPaymentSummary({
             article={article}
             isLoading={isLoading}
             disabled={!agreedTerms}
-            onClick={async () => {
-              if (!agreedTerms) {
-                alert("주문 내용 확인 및 결제 진행에 동의해주세요.");
-                return;
-              }
+            onClick={() => {
+              console.log("함수 호출됨 ");
 
-              try {
-                const accessToken = localStorage.getItem("access_token");
-                const rawCardData = localStorage.getItem(`card-data-${cardId}`);
-                if (!rawCardData) throw new Error("카드 데이터 없음");
-
-                const cardData = JSON.parse(rawCardData);
-                const mongoId = await postCardDesign(cardData, accessToken!);
-                const idToSend =
-                  type === "article" ? Number(cardId) : article.gifticonId;
-
-                localStorage.setItem(
-                  `article-data-${cardId}`,
-                  JSON.stringify({
-                    ...article,
-                    profile_nickname:
-                      selectedFriend?.profile_nickname || "수령인",
-                  })
-                );
-
-                giftToFriend(
-                  article.serialNum,
-                  article.price,
-                  String(selectedFriend?.kakaoId)
-                );
-
-                // 선물 보내기 API 호출
-                await sendGiftHistory(accessToken!, {
-                  toUserKakaoId: Number(selectedFriend?.kakaoId),
-                  gifticonId: idToSend,
-                  mongoId,
-                  type,
-                });
-
-                // 카드 데이터 localStorage에서 삭제
-                setTimeout(() => {
-                  localStorage.removeItem(`card-data-${cardId}`);
-                }, 60 * 1000); // 1분 뒤 삭제
-
-                await onSubmit(); // 이후 gift_histories 저장 등 진행
-              } catch (err) {
-                alert("카드 저장 또는 결제 처리 중 오류가 발생했습니다.");
-                console.error(err);
-              }
+              handlePayment();
             }}
           />
         </div>

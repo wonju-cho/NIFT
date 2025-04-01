@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getTokenIdBySerial } from "./web3";
+import { apiClient } from "./CustomAxios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -9,24 +10,18 @@ interface CreateGiftHistoryParams {
   gifticonId: number;
 }
 
-export async function sendGiftHistory(
-  accessToken: string,
-  dto: {
-    toUserKakaoId: number;
-    gifticonId: number;
-    mongoId: string;
-    type: string;
-  }
-) {
-  const res = await fetch(`${BASE_URL}/gift-histories/send`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(dto),
-  });
-  if (!res.ok) throw new Error("선물 보내기 실패");
+export async function sendGiftHistory(dto: {
+  toUserKakaoId: number;
+  gifticonId: number;
+  mongoId: string;
+  type: string;
+  txHashPurchase: string;
+  txHashGift: string;
+}) {
+  console.log(dto.toUserKakaoId);
+
+  const res = await apiClient.post("/gift-histories/send", dto);
+  if (res.status !== 200) throw new Error("선물 보내기 실패");
 }
 
 export async function createGiftHistory({
@@ -109,32 +104,5 @@ export interface GetGifticonResponse {
   imageUrl: string;
   price: number;
   brandName: string;
-}
-
-// TODO: 스마트컨트랙트와 연결
-export async function getGifticonById(
-  serialNum: number
-): Promise<GetGifticonResponse> {
-  try {
-    const tokenId = await getTokenIdBySerial(serialNum);
-
-    const response = await axios.get(`${BASE_URL}/gifticons/${tokenId}`);
-
-    if (response.status !== 200) throw new Error("gifticon 조회 실패");
-
-    const data: GetGifticonResponse = {
-      gifticonId: response.data.gifticonId,
-      serialNum: response.data.serialNum,
-      gifticonTitle: response.data.gifticonTitle,
-      description: response.data.description,
-      imageUrl: response.data.imageUrl,
-      price: response.data.price,
-      brandName: response.data.brandName,
-    };
-
-    return data;
-  } catch (err) {
-    console.error("gifticon 조회 실패: ", err);
-    throw err;
-  }
+  originalPrice: number;
 }
