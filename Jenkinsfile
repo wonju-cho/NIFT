@@ -145,7 +145,7 @@ pipeline {
 	                if (env.IMAGE_BUILD_SUCCESS == "true") {
 
 						def message = """
-						${issueEmoji} *Static Analysis Report*
+						*Static Analysis Report*
 						- Job: ${env.JOB_NAME}
 						- Build: #${env.BUILD_NUMBER}
 						- 툴별 결과:
