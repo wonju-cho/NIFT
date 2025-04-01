@@ -128,7 +128,7 @@ pipeline {
 								"MYSQL_DATABASE=${props.MYSQL_DATABASE}"
 							]) {
 								sh """
-								docker exec -i mysql mysql -u\$MYSQL_USER -p\$MYSQL_PASSWORD \$MYSQL_DATABASE < ./backend/src/main/resources/dev_init.sql
+								docker exec -i mysql mysql -h127.0.0.1 -u\$MYSQL_USER -p\$MYSQL_PASSWORD \$MYSQL_DATABASE < ./backend/src/main/resources/dev_init.sql
 								"""
 							}
 						} catch (Exception e) {
