@@ -116,19 +116,23 @@ pipeline {
 		stage('Insert Dummy Data') {
 			steps {
 				script {
-
-					if(env.IMAGE_BUILD_SUCCESS == "true")
+					if (env.IMAGE_BUILD_SUCCESS?.toBoolean())
 					{
 						try {
-							def user = env.MYSQL_USER
-							def password = env.MYSQL_PASSWORD
-							def database = env.MYSQL_DATABASE
 
-							sh "ls -al ./backend/src/main/resources/"
-
-							def command = "mysql -u${user} -p${password} ${database} < /docker-entrypoint-initdb.d/init.sql"
-							sh "docker exec mysql bash -c '${command}'"
+							def props = readProperties file: '.env'
+							
+							withEnv([
+								"MYSQL_USER=${props.MYSQL_USER}",
+								"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
+								"MYSQL_DATABASE=${props.MYSQL_DATABASE}"
+							]) {
+								sh """
+								docker exec -i mysql mysql -u\$MYSQL_USER -p\$MYSQL_PASSWORD \$MYSQL_DATABASE < ./backend/src/main/resources/dev_init.sql
+								"""
+							}
 						} catch (Exception e) {
+							env.IMAGE_BUILD_SUCCESS = "false"
 							error("❌ 더미 데이터 삽입 실패: ${e.message}")
 						}
 					}
