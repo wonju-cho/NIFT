@@ -116,18 +116,23 @@ pipeline {
 		stage('Insert Dummy Data') {
 			steps {
 				script {
-					if (env.IMAGE_BUILD_SUCCESS?.toBoolean())
-					{
+					if (env.IMAGE_BUILD_SUCCESS?.toBoolean()) {
 						try {
-
 							def props = readProperties file: '.env'
-							
+
 							withEnv([
 								"MYSQL_USER=${props.MYSQL_USER}",
 								"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
 								"MYSQL_DATABASE=${props.MYSQL_DATABASE}"
 							]) {
 								sh """
+								# MySQL이 완전히 기동될 때까지 대기
+								until docker exec mysql mysqladmin ping -h127.0.0.1 --silent; do
+									echo "⏳ Waiting for MySQL...";
+									sleep 2;
+								done
+
+								# 더미 데이터 삽입
 								docker exec -i mysql mysql -h127.0.0.1 -u\$MYSQL_USER -p\$MYSQL_PASSWORD \$MYSQL_DATABASE < ./backend/src/main/resources/dev_init.sql
 								"""
 							}
@@ -135,13 +140,13 @@ pipeline {
 							env.IMAGE_BUILD_SUCCESS = "false"
 							error("❌ 더미 데이터 삽입 실패: ${e.message}")
 						}
-					}
-					else {
-						echo "이미지 빌드 실패로 Dummay Data 스킵"
+					} else {
+						echo "이미지 빌드 실패로 Dummy Data 스킵"
 					}
 				}
 			}
 		}
+
 	}
 
 	post {
