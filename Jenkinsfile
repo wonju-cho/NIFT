@@ -124,7 +124,9 @@ pipeline {
 							def password = env.MYSQL_PASSWORD
 							def database = env.MYSQL_DATABASE
 
-							def command = "mysql -u${user} -p${password} ${database} < /docker-entrypoint-initdb./init.sql"
+							sh "ls -al ./backend/src/main/resources/"
+
+							def command = "mysql -u${user} -p${password} ${database} < /docker-entrypoint-initdb.d/init.sql"
 							sh "docker exec mysql bash -c '${command}'"
 						} catch (Exception e) {
 							error("❌ 더미 데이터 삽입 실패: ${e.message}")
