@@ -19,6 +19,8 @@ public class usedHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long usedHistoryId;
     private String createdAt;
+    private String txHash;
+    private Long serialNum;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

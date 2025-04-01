@@ -64,6 +64,12 @@
         "type": "address"
       },
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
         "indexed": true,
         "internalType": "uint256",
         "name": "serialNumber",
@@ -122,6 +128,12 @@
       {
         "indexed": true,
         "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
         "name": "serialNumber",
         "type": "uint256"
       },
@@ -136,6 +148,18 @@
         "internalType": "address",
         "name": "seller",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "expirationDate",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "metadataURI",
+        "type": "string"
       },
       {
         "indexed": false,

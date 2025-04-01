@@ -2,12 +2,8 @@ package com.e101.nift.secondhand.entity;
 
 import com.e101.nift.gifticon.entity.Gifticon;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,6 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +29,7 @@ public class Article {
     private Float currentPrice;
     private LocalDateTime createdAt;
     private Integer viewCnt = 0;
+    private String txHash;
 
     @ManyToOne
     @JoinColumn(name = "gifticon_id", nullable = false)
@@ -39,7 +37,9 @@ public class Article {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        if(this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
 
     @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")

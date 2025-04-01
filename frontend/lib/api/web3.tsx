@@ -146,7 +146,11 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
         const [price, seller] = await contract.getSerialInfo(serial);
         const [, , , metadataURI] = await contract.getTokenInfo(tokenId);
 
-        const metadata = await fetchMetadata(metadataURI, serial, tokenId);
+        const metadata = await fetchMetadata(
+          metadataURI,
+          serial,
+          Number(tokenId)
+        );
         console.log(`🪙 토큰 정보: tokenId: ${tokenId}`, metadata);
 
         return {
@@ -174,12 +178,22 @@ export async function listGifticonForSale(serialNumber: number, price: number) {
   if (!window.ethereum) throw new Error("Metamask not found");
 
   const provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []); // 연결 요청
   const signer = await provider.getSigner();
   const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
 
-  const tx = await contract.listForSale(serialNumber, price);
-  await tx.wait();
-  return tx;
+  try {
+    const tx = await contract.listForSale(serialNumber, price);
+    const receipt = await tx.wait();
+    console.log("✅ Success:", receipt);
+    return receipt;
+  } catch (error: any) {
+    console.error(
+      "❌ 트랜잭션 실패:",
+      error?.reason || error?.message || error
+    );
+    throw error;
+  }
 }
 
 export async function isSellerApprovedForSerial(

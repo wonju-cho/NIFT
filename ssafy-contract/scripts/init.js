@@ -6,7 +6,7 @@ async function main() {
   const sellerAddress = "0xe911090F1ca13EE23f3C1eE964c5d4e323987e9f";
 
   const tokenId = 1;
-  const mintAmount = 4;
+  const mintAmount = 10;
 
   const ssfDecimals = 0;
   const price = ethers.parseUnits("10", ssfDecimals);
