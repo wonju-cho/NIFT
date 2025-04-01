@@ -18,9 +18,10 @@
         "name": "next"
       }
     ],
-    
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/components/*": ["components/*"]
     },
     "forceConsistentCasingInFileNames": true
   },

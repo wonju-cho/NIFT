@@ -22,10 +22,6 @@ const nextConfig = {
       },
     ],
   },
-
-  compiler: {
-    tsconfigPaths: true,
-  },
 };
 
 module.exports = nextConfig;
