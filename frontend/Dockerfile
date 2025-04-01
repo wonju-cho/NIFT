@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Docker Compose에서 넘긴 NODE_ENV를 받음
 ARG NODE_ENV
+ENV NODE_ENV=$NODE_ENV
 
 # package.json과 package-lock.json 복사
 COPY package*.json ./
