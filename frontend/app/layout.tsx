@@ -36,5 +36,5 @@ export default function RootLayout({
 
 
 import './globals.css'
-import ClientLayout from "./ClientLayout";
+import ClientLayout from "../components/ClientLayout";
 
