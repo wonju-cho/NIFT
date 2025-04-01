@@ -68,6 +68,8 @@ services:
         NODE_ENV: development
     restart: always
     container_name: frontend
+    environment:
+      - NODE_ENV=development
     depends_on: 
       - backend
     ports:
