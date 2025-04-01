@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { sendKakaoTokenToBackend } from "./kakao"; // 네가 만든 함수 위치에 맞게 import 경로 수정
+import { sendKakaoTokenToBackend } from "../api/kakao"; // 네가 만든 함수 위치에 맞게 import 경로 수정
 
 export default function KakaoRedirectPage() {
   const router = useRouter();
@@ -33,11 +33,11 @@ export default function KakaoRedirectPage() {
       });
 
       const data = await res.json();
-      console.log("카카오 토큰:", data);
+      // console.log("카카오 토큰:", data);
 
       if (data.access_token) {
         const backendResponse = await sendKakaoTokenToBackend(data.access_token);
-        console.log("백엔드 응답 확인:", backendResponse);
+        // console.log("백엔드 응답 확인:", backendResponse);
 
         // 토큰을 로컬 스토리지 등에 저장하고 페이지 이동
         if (backendResponse?.token) {
