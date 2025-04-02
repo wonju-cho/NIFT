@@ -7,6 +7,7 @@ import PageHeader from "@/components/page-header";
 import SearchControls from "./components/SearchControls";
 import FilterPanel from "./components/FilterPanel";
 import ProductResults from "./components/ProductResults";
+import MintingModal from "@/components/modals/MintingModal";
 
 export default function ProductSearchPage() {
   const searchParams = useSearchParams();
@@ -141,6 +142,12 @@ export default function ProductSearchPage() {
         viewMode={viewMode}
         hasSearched={hasSearched}
         openMintModal={openMintModal} // ✅ product 넘기는 구조로 연결됨
+      />
+      <MintingModal
+        open={mintModalOpen}
+        setOpen={setMintModalOpen}
+        product={selectedProduct}
+        handleMint={handleMint}
       />
     </div>
   );

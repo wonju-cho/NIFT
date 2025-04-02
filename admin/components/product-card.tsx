@@ -11,7 +11,6 @@ interface ProductCardProps {
   image: string;
   category?: string;
   brand?: string;
-  onMintClick?: () => void; // ✅ 요거 필요함!
 }
 
 export default function ProductCard({

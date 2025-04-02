@@ -22,16 +22,20 @@ export default function ProductGrid({
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {products.map((product) => (
-        <ProductCard
-          key={product.gifticonId}
-          id={String(product.gifticonId)}
-          name={product.gifticonTitle ?? "제목 없음"}
-          price={Math.floor(product.price)}
-          image={toValidImageUrl(product.imageUrl) ?? "/default.png"}
-          category={product.categoryName ?? "기타"}
-          brand={product.brandName ?? "브랜드 없음"}
-          onMintClick={() => openMintModal(String(product.gifticonId))}
-        />
+        <div key={product.gifticonId}>
+          <ProductCard
+            key={product.gifticonId}
+            id={String(product.gifticonId)}
+            name={product.gifticonTitle ?? "제목 없음"}
+            price={Math.floor(product.price)}
+            image={toValidImageUrl(product.imageUrl) ?? "/default.png"}
+            category={product.categoryName ?? "기타"}
+            brand={product.brandName ?? "브랜드 없음"}
+          />
+          <button onClick={() => openMintModal(String(product.gifticonId))}>
+            Minting
+          </button>
+        </div>
       ))}
     </div>
   );
