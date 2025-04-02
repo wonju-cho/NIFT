@@ -56,6 +56,7 @@ export default function MintingModal({
         <DialogFooter>
           <Button
             type="submit"
+            className="bg-blue-600 text-white hover:bg-blue-700"
             onClick={() => handleMint(product.gifticonId, quantity)}
           >
             민팅

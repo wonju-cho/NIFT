@@ -31,10 +31,8 @@ export default function ProductGrid({
             image={toValidImageUrl(product.imageUrl) ?? "/default.png"}
             category={product.categoryName ?? "기타"}
             brand={product.brandName ?? "브랜드 없음"}
+            openMintModal={openMintModal}
           />
-          <button onClick={() => openMintModal(String(product.gifticonId))}>
-            Minting
-          </button>
         </div>
       ))}
     </div>

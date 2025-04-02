@@ -11,6 +11,7 @@ interface ProductCardProps {
   image: string;
   category?: string;
   brand?: string;
+  openMintModal?: (gifticonId: string) => void;
 }
 
 export default function ProductCard({
@@ -20,6 +21,7 @@ export default function ProductCard({
   image,
   category,
   brand,
+  openMintModal,
 }: ProductCardProps) {
   return (
     <Card className="overflow-hidden transition-shadow hover:shadow-md">
@@ -59,6 +61,14 @@ export default function ProductCard({
             수정
           </Button>
         </Link>
+        {openMintModal && (
+          <Button
+            className="ml-2 bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => openMintModal(id)}
+          >
+            민팅
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
