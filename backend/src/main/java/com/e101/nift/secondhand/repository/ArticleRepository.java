@@ -38,7 +38,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     // 카테고리와 가격 조건 모두 적용
     @Query("SELECT p FROM Article p " +
-            "WHERE p.gifticon.category IN :categories " +
+            "WHERE p.gifticon.category.categoryId IN :categories " +
             "AND (:minPrice IS NULL OR p.currentPrice >= :minPrice) " +
             "AND (:maxPrice IS NULL OR p.currentPrice <= :maxPrice) " +
             "AND p.state = :state")
@@ -47,6 +47,10 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                                               @Param("maxPrice") Integer maxPrice,
                                               @Param("state") SaleStatus state,
                                               Pageable pageable);
+
+    // 가격 필터링 최대 가격 조회
+    @Query("SELECT MAX(a.currentPrice) FROM Article a")
+    Float findMaxCurrentPrice();
 
     // 중고 기프티콘의 상세 정보 조회
     @Query("SELECT a FROM Article a " +

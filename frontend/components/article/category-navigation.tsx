@@ -35,22 +35,26 @@ export function CategoryNavigation({
   }
 
   return (
-    <div className={cn("relative", className)}>
-      <div className="grid grid-rows-2 border-b">
+    <div className={cn("relative mb-6", className)}>
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
         {/* 첫 번째 줄 */}
         <div className="flex w-full">
-          {firstRow.map((category) => {
+          {firstRow.map((category, index) => {
             const isActive = selectedCategories.includes(category.value)
             return (
               <button
                 key={category.value}
                 onClick={() => toggleCategory(category.value)}
                 className={cn(
-                  "flex-1 whitespace-nowrap px-4 py-3 text-center text-sm font-medium transition-colors",
-                  isActive ? "bg-gray-900 text-white" : "hover:text-primary",
+                  "flex-1 whitespace-nowrap px-4 py-3.5 text-center text-sm transition-all relative",
+                  isActive
+                    ? "bg-primary/10 text-gray-900 font-semibold"
+                    : "bg-white text-gray-600 hover:text-gray-800 font-normal",
+                  "border-b border-r last:border-r-0 border-gray-200",
                 )}
               >
                 {category.name}
+                {isActive && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></span>}
               </button>
             )
           })}
@@ -58,18 +62,22 @@ export function CategoryNavigation({
 
         {/* 두 번째 줄 */}
         <div className="flex w-full">
-          {secondRow.map((category) => {
+          {secondRow.map((category, index) => {
             const isActive = selectedCategories.includes(category.value)
             return (
               <button
                 key={category.value}
                 onClick={() => toggleCategory(category.value)}
                 className={cn(
-                  "flex-1 whitespace-nowrap px-4 py-3 text-center text-sm font-medium transition-colors",
-                  isActive ? "bg-gray-900 text-white" : "hover:text-primary",
+                  "flex-1 whitespace-nowrap px-4 py-3.5 text-center text-sm transition-all relative",
+                  isActive
+                    ? "bg-primary/10 text-gray-900 font-semibold"
+                    : "bg-white text-gray-600 hover:text-gray-800 font-normal",
+                  "border-r last:border-r-0 border-gray-200",
                 )}
               >
                 {category.name}
+                {isActive && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></span>}
               </button>
             )
           })}

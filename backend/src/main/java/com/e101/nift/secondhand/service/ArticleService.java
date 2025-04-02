@@ -16,4 +16,6 @@ public interface ArticleService {
     ArticleDetailDto getArticleDetail(Long id, Long userId);
 
     void deleteArticle(Long id);
+
+    Float getMaxCurrentPrice();
 }
