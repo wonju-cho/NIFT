@@ -132,7 +132,7 @@ pipeline {
 							sh """
 							echo "😒 Running Flyway Migration..."
 							docker run --rm \
-							  --network backend-tier \
+							  --network shared_backend \
 							  -v \$PWD/backend/src/main/resources/db/migration:/flyway/sql \
 							  flyway/flyway \
 							  -url=jdbc:mysql://mysql:3306/\$MYSQL_DATABASE \
