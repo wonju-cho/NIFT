@@ -8,38 +8,6 @@ networks:
     name: shared_frontend
 
 services:
-  mysql:
-    image: mysql:8.0
-    restart: always
-    container_name: mysql
-    env_file:
-      - .env
-    volumes:
-      - ./backend/src/main/resources/prod_init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "3307:3306"
-    networks:
-      - backend-tier
-
-  mongo:
-    image: mongo
-    restart: always
-    container_name: mongo
-    env_file:
-      - .env
-    networks:
-      - backend-tier
-
-  ipfs:
-    image: ipfs/go-ipfs
-    container_name: ipfs_node
-    ports: 
-      - "5001:5001"
-    volumes:
-      - ./ipfs_data:/data/ipfs
-    networks:
-      - backend-tier
-
   backend:
     build: 
       context: ./backend
