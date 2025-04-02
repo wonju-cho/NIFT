@@ -1,14 +1,15 @@
 package com.e101.nift.gifticon.entity;
 
+import com.e101.nift.brand.entity.Brand;
+import com.e101.nift.category.entity.Category;
 import com.e101.nift.secondhand.entity.Article;
-import com.e101.nift.secondhand.entity.Brand;
-import com.e101.nift.secondhand.entity.Category;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Entity
@@ -19,13 +20,15 @@ import java.util.List;
 @AllArgsConstructor
 public class Gifticon {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long gifticonId;
     
     private String gifticonTitle;
     private String description;
     private Float price;
     private String imageUrl;
+    private String metadataUrl;
+    private Timestamp createdAt;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)

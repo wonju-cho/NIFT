@@ -5,7 +5,6 @@ import { getUserNFTsAsJson, UserNFT } from "@/lib/api/web3";
 import { RegisterPageLayout } from "@/components/registerArticle/RegisterPageLayout";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { listGifticonForSale } from "@/lib/api/web3";
 import { useLoading } from "@/components/LoadingContext";

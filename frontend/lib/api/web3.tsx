@@ -102,7 +102,19 @@ export const fetchMetadata = async (
   tokenId: number // 🔥 tokenId 파라미터 추가!
 ) => {
   try {
+    // ✅ 여기에 디버깅 코드 추가 👇
+    // console.log("🎯 metadataURI:", metadataUrl);
+    // console.log("🌐 실제 요청 주소:", convertIpfsUrl(metadataUrl));
+
     const response = await fetch(convertIpfsUrl(metadataUrl));
+
+    // ✅ 응답 타입 확인
+    // const contentType = response.headers.get("content-type");
+    // console.log("📦 콘텐츠 타입:", contentType);
+    // if (!contentType?.includes("application/json")) {
+    //   throw new Error("😡 이건 JSON이 아닌 파일입니다. CID를 확인하세요!");
+    // }
+
     const metadata = await response.json();
 
     // attributes에서 정보 추출
@@ -110,13 +122,19 @@ export const fetchMetadata = async (
     const brandAttr = attributes.find(
       (attr: any) => attr.trait_type === "Brand"
     );
+    const categoryAttr = attributes.find(
+      (attr: any) => attr.trait_type === "Category"
+    );
+    const expiryAttr = attributes.find(
+      (attr: any) => attr.trait_type === "Valid Until"
+    );
 
     return {
       id: tokenId || `Unknown`,
       serialNum: serialNumber,
       title: metadata.name || `NFT 기프티콘`,
       brand: brandAttr ? brandAttr.value : "알 수 없음",
-      category: "디지털 상품권",
+      category: categoryAttr ? categoryAttr.value : "알 수 없음", // ✅ 수정된 부분!
       image: convertIpfsUrl(metadata.image),
     };
   } catch (error) {
@@ -135,6 +153,7 @@ export interface UserNFT {
   isSelling: true;
   pendingDate: BigInt;
   pendingRecipient: string;
+  expiryDate: string;
   price: number;
   redeemed: false;
   redeemedAt: BigInt;
@@ -160,20 +179,37 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
         const serial = serialBigNum;
 
         // tokenId 및 메타데이터 URI 조회
-        const tokenId = await contract.getTokenIdBySerial(serialBigNum);
+        const tokenId = await contract.getTokenIdBySerial(Number(serial));
+
+        // 로그 찍어보기
+        const info = await contract.getSerialInfo(serial);
+        console.log("📦 전체 SerialInfo 결과:", info); // <-- ✅ 이거 추가
+
+        // ⭐ 시리얼 정보 조회해서 유효기간 받기
         const [
-          price,
-          seller,
-          owner,
-          originalOwner,
-          expirationDate,
+          price, // 0
+          seller, // 1
+          owner, // 2
+          originalOwner, // 3
+          expirationDate, // ✅ 진짜 유효기간
           redeemed,
           redeemedAt,
           isPending,
           pendingDate,
           pendingRecipient,
-        ] = await contract.getSerialInfo(serialBigNum);
+        ] = await contract.getSerialInfo(serial);
 
+        // 날짜 로그
+        console.log("📅 expirationDate(raw):", Number(expirationDate));
+
+        // ✅ 유효기간 포맷팅 (YYYY-MM-DD 형식)
+        let expiryDateFormatted = "무제한";
+        if (expirationDate && Number(expirationDate) > 0) {
+          const date = new Date(Number(expirationDate) * 1000);
+          if (!isNaN(date.getTime())) {
+            expiryDateFormatted = date.toISOString().split("T")[0];
+          }
+        }
         const [, , , metadataURI] = await contract.getTokenInfo(tokenId);
 
         const metadata = await fetchMetadata(
@@ -192,7 +228,7 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
           isSelling:
             Number(price) > 0 &&
             seller !== "0x0000000000000000000000000000000000000000",
-          expirationDate: expirationDate,
+          expiryDate: expiryDateFormatted, // ✅ 꼭 필요!
           redeemed: redeemed,
           redeemedAt: redeemedAt,
           isPending: isPending,
@@ -222,6 +258,7 @@ export async function listGifticonForSale(serialNumber: number, price: number) {
   try {
     const tx = await contract.listForSale(serialNumber, price);
     const receipt = await tx.wait();
+
     console.log("✅ Success:", receipt);
     return receipt;
   } catch (error: any) {
