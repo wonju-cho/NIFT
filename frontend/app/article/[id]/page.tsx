@@ -21,6 +21,7 @@ import { ArticlePurchaseDialog } from "@/components/articleDetail/ArticlePurchas
 import { ArticleSellerTab } from "@/components/articleDetail/ArticleSellerTab";
 import { ArticleSimilarList } from "@/components/articleDetail/ArticleSimilarList";
 import { DeleteArticleButton } from "@/components/articleDetail/DeleteArticleButton";
+import { postPurchaseHash, PurchaseParams } from "@/lib/api/purchase";
 
 type ArticleDetail = {
   articleId: number;
@@ -219,6 +220,11 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
 
       if (success) {
         setPurchaseStatus("success");
+        const param: PurchaseParams = {
+          articleId: Number(article?.articleId),
+          txHash: String(success.txHash),
+        };
+        await postPurchaseHash(param);
         const tokenInfo = await fetchTokenInfoBySerial(serialNumber);
         console.log("Token Info:", tokenInfo);
       } else {

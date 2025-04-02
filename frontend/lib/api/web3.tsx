@@ -463,8 +463,8 @@ export async function buyNFT(serialNumber: number): Promise<BuyNFTResponse> {
     console.log("🚀 NFT 구매 트랜잭션 실행 시작...");
     const tx = await nftContract.purchaseBySerial(serialNumber);
     console.log("⏳ 트랜잭션 전송됨. 대기 중...");
-    await tx.wait();
-    console.log("✅ SSF로 NFT 구매 완료");
+    const receipt = await tx.wait();
+    console.log("✅ SSF로 NFT 구매 완료: ", receipt);
 
     return { success: true, txHash: tx.hash };
   } catch (error) {

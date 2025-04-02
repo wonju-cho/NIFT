@@ -10,7 +10,8 @@ import { GiftRecipientForm } from "./GiftRecipientForm";
 import { GiftPaymentSummary } from "./GiftPaymentSummary";
 import { Button } from "@/components/ui/button";
 import { getArticleById } from "@/lib/api/ArticleService";
-import { getSerialInfo } from "@/lib/api/web3";
+import { getSerialInfo, giftToFriend } from "@/lib/api/web3";
+import { postCardDesign, sendGiftHistory } from "@/lib/api/CreateGiftHistory";
 
 interface Friend {
   uuid: string;
@@ -79,21 +80,73 @@ export default function GiftPaymentPageContent({
   }, [params.id, type]);
 
   const handlePayment = async () => {
+    const cardId = params.id;
     if (!agreedTerms) {
-      alert("결제 진행을 위해 약관에 동의해주세요.");
+      alert("주문 내용 확인 및 결제 진행에 동의해주세요.");
       return;
     }
-    if (!recipientPhone) {
-      alert("받는 분 전화번호를 입력해주세요.");
-      return;
-    }
+
+    console.log("handlePayment 실행됨");
+
     try {
       setIsLoading(true);
+      const accessToken = localStorage.getItem("access_token");
+      const rawCardData = localStorage.getItem(`card-data-${cardId}`);
+      if (!rawCardData) throw new Error("카드 데이터 없음");
+
+      const cardData = JSON.parse(rawCardData);
+      const mongoId = await postCardDesign(cardData, accessToken!);
+      const idToSend = type === "article" ? Number(cardId) : article.gifticonId;
+
+      localStorage.setItem(
+        `article-data-${cardId}`,
+        JSON.stringify(
+          {
+            ...article,
+            profile_nickname: selectedFriend?.profile_nickname || "수령인",
+          },
+          (_, value) => (typeof value === "bigint" ? value.toString() : value)
+        )
+      );
+
+      console.log(
+        "giftToFriend params",
+        article.serialNum,
+        article.price,
+        selectedFriend?.kakaoId
+      );
+
+      console.log("giftToFriend 호출 전");
+
+      const tx = await giftToFriend(
+        article.serialNum,
+        String(selectedFriend?.kakaoId)
+      );
+
+      if (!tx.success) {
+        throw new Error("NFT 선물 전송 실패");
+      }
+
+      console.log("sendGiftHistory 호출 전");
+
+      // 선물 보내기 API 호출
+      await sendGiftHistory({
+        toUserKakaoId: Number(selectedFriend!.kakaoId),
+        gifticonId: Number(idToSend),
+        mongoId,
+        type,
+        txHashPurchase: String(tx.txHashPurchase),
+        txHashGift: String(tx.txHashGift),
+      });
+
+      router.push(`/gift/${params.id}/complete`);
+
+      // 카드 데이터 localStorage에서 삭제
       setTimeout(() => {
-        router.push(`/gift/${params.id}/complete`);
-      }, 1500);
-    } catch (error) {
-      console.error("결제 처리 중 오류가 발생했습니다:", error);
+        localStorage.removeItem(`card-data-${cardId}`);
+      }, 60 * 1000); // 1분 뒤 삭제
+    } catch (err) {
+      console.error("결제 처리 중 오류가 발생했습니다:", err);
       setIsLoading(false);
       alert("결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
