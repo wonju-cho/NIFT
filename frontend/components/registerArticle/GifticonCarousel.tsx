@@ -91,10 +91,7 @@ export function GifticonCarousel({
             <div className="mt-2">
               <h3 className="text-sm font-medium">{gifticon.title}</h3>
               <p className="text-xs text-muted-foreground">
-                유효기간:
-                {new Date(
-                  Number(gifticon.expirationDate) * 1000
-                ).toLocaleString()}
+                유효기간: {gifticon.expiryDate}
               </p>
             </div>
           </div>
