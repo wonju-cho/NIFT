@@ -124,69 +124,48 @@ pipeline {
 		}
 
 		stage('Flyway Migration') {
-		    steps {
-		        script {
-		            if (env.ENV == 'dev') {
-		                def props = readProperties file: '.env'
-		                def migrationPath = "${env.WORKSPACE}/backend/src/main/resources/db/migration"
-		                
-		                // First, let's fix potential permission issues
-		                sh """
-		                # Ensure the migration directory and files are readable
-		                chmod -R 755 ${migrationPath}
-		                
-		                # Create and clean the temporary directory
-		                mkdir -p /tmp/flyway-migrations
-		                rm -rf /tmp/flyway-migrations/*
-		                
-		                # Copy migration files to a temporary location
-		                cp -rv ${migrationPath}/* /tmp/flyway-migrations/
-		                
-		                # Verify the files were copied (with file details)
-		                echo "🧾 Temporary migration files:"
-		                ls -la /tmp/flyway-migrations/
-		                cat /tmp/flyway-migrations/V1__initialInsert.sql | head -5
-		                """
-		                
-		                withEnv([
-		                    "MYSQL_USER=${props.MYSQL_USER}",
-		                    "MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
-		                    "MYSQL_DATABASE=${props.MYSQL_DATABASE}"
-		                ]) {
-		                    sh """
-		                    echo "😒 Running Flyway Migration with debug..."
-		                    docker run --rm \
-		                      --network shared_backend \
-		                      -v /tmp/flyway-migrations:/flyway/sql \
-		                      flyway/flyway \
-		                      -url="jdbc:mysql://mysql:3306/\$MYSQL_DATABASE?allowPublicKeyRetrieval=true&useSSL=false" \
-		                      -user=\$MYSQL_USER \
-		                      -password=\$MYSQL_PASSWORD \
-		                      -locations=filesystem:/flyway/sql \
-		                      -validateMigrationNaming=true \
-		                      -validateOnMigrate=true \
-		                      -logLevel=DEBUG \
-		                      info migrate
-		                    """
-		                    
-		                    // Try listing files inside the container to confirm they're visible
-		                    echo "📂 Files in container:"
-		                    docker run --rm \
-		                      -v /tmp/flyway-migrations:/flyway/sql \
-		                      alpine \
-		                      ls -la /flyway/sql
-		                }
-		                
-		                // Clean up the temporary directory
-		                sh "rm -rf /tmp/flyway-migrations"
-		            } else {
-		                echo "👌 (master branch) Skipping Flyway Migration."
-		            }
-		        }
-		    }
+			steps {
+				script {
+					if (env.ENV == 'dev') {
+						def props = readProperties file: '.env'
+						def migrationPath = "${env.WORKSPACE}/backend/src/main/resources/db/migration"
+
+						sh """
+						echo "🧾 파일 목록:"
+						ls -al ${env.WORKSPACE}/backend/src/main/resources/db/migration
+
+						echo "🧾 flyway 마운트 테스트:"
+						docker run --rm \
+						  -v ${env.WORKSPACE}/backend/src/main/resources/db/migration:/flyway/sql \
+						  ubuntu \
+						  bash -c "ls -al /flyway/sql"
+						"""
+
+						withEnv([
+							"MYSQL_USER=${props.MYSQL_USER}",
+							"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
+							"MYSQL_DATABASE=${props.MYSQL_DATABASE}"
+						]) {
+							sh """
+							echo "😒 Running Flyway Migration..."
+							docker run --rm \
+							  --network shared_backend \
+							  -v ${migrationPath}:/flyway/sql \
+							  flyway/flyway \
+							  -locations=filesystem:/flyway/sql \
+							  -url="jdbc:mysql://mysql:3306/\$MYSQL_DATABASE?allowPublicKeyRetrieval=true&useSSL=false" \
+							  -user=\$MYSQL_USER \
+							  -password=\$MYSQL_PASSWORD \
+							  migrate
+							"""
+						}
+					} else {
+						echo "👌 (master branch) Skipping Flyway Migration."
+					}
+				}
+			}
 		}
 
-		
 		stage('Run Docker Compose') {
 			steps {
 				script {
