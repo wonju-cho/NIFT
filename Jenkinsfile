@@ -156,6 +156,7 @@ pipeline {
 							  -url="jdbc:mysql://mysql:3306/\$MYSQL_DATABASE?allowPublicKeyRetrieval=true&useSSL=false" \
 							  -user=\$MYSQL_USER \
 							  -password=\$MYSQL_PASSWORD \
+							  -X \
 							  migrate
 							"""
 						}
