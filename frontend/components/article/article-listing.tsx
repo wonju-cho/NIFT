@@ -114,6 +114,18 @@ const filterArticles = (articles: any[], searchQuery: string) => {
   });
 };
 
+// 서버에서 최대 가격 가져오는 함수
+const fetchMaxPrice = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/secondhand-articles/max-price`);
+    const data = await res.json();
+    return Math.ceil(data.maxPrice || 30000); // 소수점 방지
+  } catch (e) {
+    console.error("최대 가격 불러오기 실패", e);
+    return 30000;
+  }
+};
+
 export function ArticleListing() {
   // 상품 데이터 및 로딩 상태
   const [articles, setArticles] = useState<any[]>([]);
@@ -125,6 +137,7 @@ export function ArticleListing() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState([0, 30000]);
+  const [maxPrice, setMaxPrice] = useState(30000);
   const [showFilters, setShowFilters] = useState(false);
   const [sortOption, setSortOption] = useState("newest");
 
@@ -136,6 +149,16 @@ export function ArticleListing() {
   // 사용자 ID (로그인 기능 구현 시 실제 사용자 ID로 대체)
   const [userId, setUserId] = useState<number | undefined>(undefined);
 
+  // 컴포넌트 마운트 시 maxPrice 먼저 설정
+  useEffect(() => {
+    const initMaxPrice = async () => {
+      const max = await fetchMaxPrice();
+      setMaxPrice(max);
+      setPriceRange([0, max]); // 초기 슬라이더 범위 설정
+    };
+    initMaxPrice();
+  }, []);
+
   // 상품 데이터 가져오기
   const loadArticles = useCallback(async () => {
     setIsLoading(true);
@@ -146,7 +169,7 @@ export function ArticleListing() {
       page,
       size: pageSize,
       userId,
-      priceRange, // Add priceRange to the fetch parameters
+      priceRange: [Math.floor(priceRange[0]), Math.ceil(priceRange[1])], 
     });
 
     const articlesData = fetchedData.content || [];
@@ -163,6 +186,11 @@ export function ArticleListing() {
   useEffect(() => {
     loadArticles();
   }, [loadArticles]);
+
+  // priceRange가 바뀌었을 때 새로 불러오기
+  useEffect(() => {
+    loadArticles();
+  }, [priceRange]);
 
   // 클라이언트 측 필터링 적용 (검색어만 처리)
   useEffect(() => {
@@ -192,7 +220,7 @@ export function ArticleListing() {
   // 필터 초기화
   const resetFilters = () => {
     setSelectedCategories([]);
-    setPriceRange([0, 30000]);
+    setPriceRange([0, maxPrice]);
     setSearchQuery("");
     setSortOption("newest");
     setPage(1);
@@ -256,7 +284,7 @@ export function ArticleListing() {
             variant="outline"
             size="sm"
             className={`h-8 w-8 ${
-              pageNum === page ? "bg-primary text-primary-foreground" : ""
+              pageNum === page ? "bg-primary text-white hover:bg-primary" : ""
             }`}
             onClick={() => setPage(pageNum)}
           >
@@ -281,12 +309,14 @@ export function ArticleListing() {
       {/* 카테고리 네비게이션 */}
       <CategoryNavigation
         categories={[
-          { name: "카페", value: "1" },
-          { name: "베이커리/도넛/떡", value: "2" },
+          { name: "커피/음료", value: "1" },
+          { name: "베이커리/디저트", value: "2" },
           { name: "아이스크림/빙수", value: "3" },
-          { name: "치킨/피자", value: "4" },
-          { name: "패스트푸드", value: "5" },
+          { name: "치킨", value: "4" },
+          { name: "피자/버거", value: "5" },
           { name: "편의점/마트", value: "6" },
+          { name: "상품권/금액권", value: "7" },
+          { name: "영화/도서", value: "8" },
         ]}
         selectedCategories={selectedCategories}
         onCategoryChange={(categories) => {
@@ -393,10 +423,10 @@ export function ArticleListing() {
                   </span>
                 </div>
                 <Slider
-                  defaultValue={[0, 30000]}
+                  defaultValue={[0, maxPrice]}
                   min={0}
-                  max={30000}
-                  step={1000}
+                  max={maxPrice}
+                  step={0.1}  // 현재 데이터 맞춰서 0.1로 설정해뒀는데 이후에 1000원 단위로 수정할 것
                   value={priceRange}
                   onValueChange={debouncedPriceChange}
                   className="py-4"
@@ -409,7 +439,7 @@ export function ArticleListing() {
         {/* 활성화된 필터 표시 */}
         {(selectedCategories.length > 0 ||
           priceRange[0] > 0 ||
-          priceRange[1] < 30000 ||
+          priceRange[1] < maxPrice ||
           searchQuery) && (
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map((categoryValue) => (
@@ -456,7 +486,7 @@ export function ArticleListing() {
                 </svg>
               </Badge>
             )}
-            {(priceRange[0] > 0 || priceRange[1] < 30000) && (
+            {(priceRange[0] > 0 || priceRange[1] < maxPrice) && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 {priceRange[0].toLocaleString()}원-
                 {priceRange[1].toLocaleString()}원
@@ -466,7 +496,7 @@ export function ArticleListing() {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  onClick={() => setPriceRange([0, 30000])}
+                  onClick={() => setPriceRange([0, maxPrice])}
                 >
                   <path
                     strokeLinecap="round"

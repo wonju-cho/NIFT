@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -54,6 +55,13 @@ public class ArticleController {
         Pageable pageable = PageRequest.of(page-1, size);
         Page<ArticleListDto> articles = articleService.getArticleList(sort, categories, pageable, userId, minPrice, maxPrice);
         return ResponseEntity.ok(articles);
+    }
+
+    @GetMapping("/max-price")
+    @Operation(summary = "최대 가격 조회", description = "판매 중인 중고 상품 중 가장 비싼 currentPrice를 반환합니다.")
+    public ResponseEntity<?> getMaxPrice() {
+        Float maxPrice = articleService.getMaxCurrentPrice();
+        return ResponseEntity.ok().body(Map.of("maxPrice", maxPrice));
     }
 
     @GetMapping("/{articleId}")
