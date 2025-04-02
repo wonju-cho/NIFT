@@ -2,7 +2,7 @@
 
 type ArticlePriceProps = {
   currentPrice: number;
-  originalPrice: number;
+  originalPrice: number; 
 };
 
 export function ArticlePrice({
@@ -13,6 +13,8 @@ export function ArticlePrice({
   const discountPercent = isDiscounted
     ? Math.round((1 - currentPrice / originalPrice) * 100)
     : 0;
+    console.log("currentPrice", currentPrice)
+    console.log("originalPrice",originalPrice)
 
   return (
     <div className="mb-6">

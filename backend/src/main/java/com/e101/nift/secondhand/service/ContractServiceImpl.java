@@ -7,6 +7,7 @@ import com.e101.nift.secondhand.exception.ArticleErrorCode;
 import com.e101.nift.secondhand.exception.ArticleException;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.state.ContractType;
+import com.e101.nift.secondhand.model.state.SaleStatus;
 import com.e101.nift.secondhand.repository.ArticleHistoryRepository;
 import com.e101.nift.secondhand.repository.ArticleRepository;
 import com.e101.nift.user.service.UserService;
@@ -49,7 +50,8 @@ public class ContractServiceImpl implements ContractService {
                         .txHash(txHash)
                         .build()
         );
-        article.setSold(true);
+        // article의 state=SOLD로 변경
+        article.setState(SaleStatus.SOLD);
         articleRepository.save(article);
     }
 }

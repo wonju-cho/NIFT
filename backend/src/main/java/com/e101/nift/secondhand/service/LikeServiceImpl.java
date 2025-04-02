@@ -78,7 +78,8 @@ public class LikeServiceImpl implements LikeService{
                 like.getArticle().getTitle(),
                 like.getArticle().getCountLikes(),
                 like.getArticle().getImageUrl(),
-                like.getArticle().getCurrentPrice()
+                like.getArticle().getCurrentPrice(),
+                like.getArticle().getState()
         ));
     }
 }

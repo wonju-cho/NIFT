@@ -12,6 +12,7 @@ import com.e101.nift.secondhand.exception.GiftHistoryErrorCode;
 import com.e101.nift.secondhand.exception.GiftHistoryException;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.dto.response.ScrollDto;
+import com.e101.nift.secondhand.model.state.SaleStatus;
 import com.e101.nift.secondhand.repository.ArticleRepository;
 import com.e101.nift.secondhand.service.ContractService;
 import com.e101.nift.secondhand.service.TransactionService;

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Getter
 @Builder
@@ -31,7 +32,7 @@ public class ArticleListDto {
 
     public static ArticleListDto from(Article article, boolean isLiked) {
         Float current = article.getCurrentPrice();
-        Float original = current != null ? current + 300 : 0f;
+        Float original = Optional.ofNullable(article.getGifticon().getPrice()).orElse(0f);
 
         PriceInfo priceInfo = new PriceInfo(original, current);
 
