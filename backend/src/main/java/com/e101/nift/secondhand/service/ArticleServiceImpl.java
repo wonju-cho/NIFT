@@ -181,6 +181,7 @@ public class ArticleServiceImpl implements ArticleService {
                         .expirationDate(ConvertUtil.convertTimestampToLocalTime(listedForSaleEventResponse.expirationDate))
                         .currentPrice(listedForSaleEventResponse.price.floatValue())
                         .txHash(postArticleDto.getTxHash())
+                        .state(SaleStatus.ON_SALE)
                         .build()
         );
     }

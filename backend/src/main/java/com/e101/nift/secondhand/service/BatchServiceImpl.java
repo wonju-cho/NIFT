@@ -8,6 +8,7 @@ import com.e101.nift.secondhand.entity.SyncStatus;
 import com.e101.nift.secondhand.exception.ArticleErrorCode;
 import com.e101.nift.secondhand.exception.ArticleException;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
+import com.e101.nift.secondhand.model.state.SaleStatus;
 import com.e101.nift.secondhand.model.state.SyncType;
 import com.e101.nift.secondhand.repository.ArticleHistoryRepository;
 import com.e101.nift.secondhand.repository.ArticleRepository;
@@ -88,6 +89,7 @@ public class BatchServiceImpl implements BatchService {
                                     .createdAt(ConvertUtil.convertTimestampToLocalTime(response.transactionTime))
                                     .txHash(response.log.getTransactionHash())
                                     .userId(getUserId(response.seller))
+                                    .state(SaleStatus.ON_SALE)
                                     .build()
                     );
                 }

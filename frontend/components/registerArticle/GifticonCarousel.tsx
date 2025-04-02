@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { UserNFT } from "@/lib/api/web3";
 
 export function GifticonCarousel({
   gifticons,
@@ -11,8 +12,8 @@ export function GifticonCarousel({
   scrollRef,
   onScroll,
 }: {
-  gifticons: any[];
-  selected: string | null;
+  gifticons: UserNFT[];
+  selected: BigInt | null;
   onSelect: (serialNum: string) => void;
   scrollRef: React.RefObject<HTMLDivElement>;
   onScroll: (dir: "left" | "right") => void;
@@ -41,7 +42,7 @@ export function GifticonCarousel({
       <div ref={scrollRef} className="flex overflow-x-auto gap-4 pb-4">
         {gifticons.map((gifticon) => (
           <div
-            key={gifticon.serialNum}
+            key={Number(gifticon.serialNum)}
             className={`cursor-pointer rounded-lg border p-4 w-[200px] flex-shrink-0 transition-all
               ${
                 selected === gifticon.serialNum
@@ -49,14 +50,14 @@ export function GifticonCarousel({
                   : ""
               }
               ${
-                gifticon.isSelling
+                gifticon.isSelling || gifticon.isPending
                   ? "opacity-40 pointer-events-none"
                   : "hover:border-gray-400"
               }
             `}
             onClick={() => {
               if (gifticon.isSelling) return; // 판매중이면 클릭 막기
-              onSelect(gifticon.serialNum);
+              onSelect(String(gifticon.serialNum));
             }}
           >
             <div className="relative">
@@ -74,6 +75,13 @@ export function GifticonCarousel({
                   </div>
                 </div>
               )}
+              {gifticon.isPending && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold uppercase tracking-wide shadow-lg z-10">
+                    선물 대기 중
+                  </div>
+                </div>
+              )}
               {selected === gifticon.serialNum && (
                 <div className="absolute right-2 top-2 rounded-full bg-primary text-white h-6 w-6 flex items-center justify-center">
                   <Check className="h-4 w-4" />
@@ -83,7 +91,10 @@ export function GifticonCarousel({
             <div className="mt-2">
               <h3 className="text-sm font-medium">{gifticon.title}</h3>
               <p className="text-xs text-muted-foreground">
-                유효기간: {gifticon.expiryDate}
+                유효기간:
+                {new Date(
+                  Number(gifticon.expirationDate) * 1000
+                ).toLocaleString()}
               </p>
             </div>
           </div>
