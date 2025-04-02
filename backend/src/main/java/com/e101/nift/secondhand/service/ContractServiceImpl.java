@@ -50,7 +50,7 @@ public class ContractServiceImpl implements ContractService {
                         .txHash(txHash)
                         .build()
         );
-        // article의 state=SOLD로 변경
+
         article.setState(SaleStatus.SOLD);
         articleRepository.save(article);
     }

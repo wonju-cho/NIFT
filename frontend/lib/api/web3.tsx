@@ -24,7 +24,7 @@ const NFT_ABI = [
   "function balanceOfBatch(address[] accounts, uint256[] ids) view returns (uint256[])",
   "function uri(uint256 id) view returns (string)",
   "function purchaseBySerial(uint256 serialNumber)",
-  "function getSerialInfo(uint256 serialNumber) view returns (uint256 price, address seller, address owner, uint256 expirationDate, bool isRedeemed, uint256 redeemedAt)",
+  "function getSerialInfo(uint256 serialNumber) view returns (uint256 price, address seller, address owner, address originalOwner, uint256 expirationDate, bool redeemed, uint256 redeemedAt, bool isPending, uint256 pendingDate, address pendingRecipient)",
   "function getSerialsByOwner(address) view returns (uint256[])",
   "function getTokenIdBySerial(uint256 serialNumber) view returns (uint256)",
   "function getTokenInfo(uint256 tokenId) view returns (string name, string description, uint256 totalSupply, string metadataURI)",
@@ -110,9 +110,6 @@ export const fetchMetadata = async (
     const brandAttr = attributes.find(
       (attr: any) => attr.trait_type === "Brand"
     );
-    const expiryAttr = attributes.find(
-      (attr: any) => attr.trait_type === "Valid Until"
-    );
 
     return {
       id: tokenId || `Unknown`,
@@ -120,7 +117,6 @@ export const fetchMetadata = async (
       title: metadata.name || `NFT 기프티콘`,
       brand: brandAttr ? brandAttr.value : "알 수 없음",
       category: "디지털 상품권",
-      expiryDate: expiryAttr ? expiryAttr.value : "무제한",
       image: convertIpfsUrl(metadata.image),
     };
   } catch (error) {
@@ -128,6 +124,25 @@ export const fetchMetadata = async (
     return null;
   }
 };
+
+export interface UserNFT {
+  brand: string;
+  category: string;
+  expirationDate: BigInt;
+  id: number;
+  image: string;
+  isPending: true;
+  isSelling: true;
+  pendingDate: BigInt;
+  pendingRecipient: string;
+  price: number;
+  redeemed: false;
+  redeemedAt: BigInt;
+  seller: string;
+  serialNum: BigInt;
+  title: string;
+  tokenId: number;
+}
 
 // ✅ 시리얼 기반으로 사용자 NFT 목록 가져오기
 export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
@@ -145,8 +160,20 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
         const serial = serialBigNum;
 
         // tokenId 및 메타데이터 URI 조회
-        const tokenId = await contract.getTokenIdBySerial(Number(serial));
-        const [price, seller] = await contract.getSerialInfo(serial);
+        const tokenId = await contract.getTokenIdBySerial(serialBigNum);
+        const [
+          price,
+          seller,
+          owner,
+          originalOwner,
+          expirationDate,
+          redeemed,
+          redeemedAt,
+          isPending,
+          pendingDate,
+          pendingRecipient,
+        ] = await contract.getSerialInfo(serialBigNum);
+
         const [, , , metadataURI] = await contract.getTokenInfo(tokenId);
 
         const metadata = await fetchMetadata(
@@ -154,7 +181,6 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
           serial,
           Number(tokenId)
         );
-        console.log(`🪙 토큰 정보: tokenId: ${tokenId}`, metadata);
 
         return {
           ...metadata,
@@ -166,11 +192,19 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
           isSelling:
             Number(price) > 0 &&
             seller !== "0x0000000000000000000000000000000000000000",
+          expirationDate: expirationDate,
+          redeemed: redeemed,
+          redeemedAt: redeemedAt,
+          isPending: isPending,
+          pendingDate: pendingDate,
+          pendingRecipient: pendingRecipient,
         };
       })
     );
 
-    return nftData.filter((nft) => nft !== null);
+    console.log(`🪙 사용자 보유 토큰 정보: `, nftData);
+
+    return nftData;
   } catch (error) {
     console.error("❌ 사용자 NFT 조회 실패:", error);
     return [];
