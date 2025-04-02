@@ -72,7 +72,7 @@ export default function ProductTable({
                   <Button
                     className="bg-blue-600 text-white hover:bg-blue-700"
                     size="sm"
-                    onClick={() => openMintModal(String(product.gifticonId))} // 여기에서 gifticonId를 전달
+                    onClick={() => openMintModal(product)} // Pass the entire product object
                   >
                     민팅
                   </Button>

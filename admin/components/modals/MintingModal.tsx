@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 
 interface MintingModalProps {
   open: boolean;
@@ -24,6 +25,10 @@ export default function MintingModal({
   handleMint,
 }: MintingModalProps) {
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    console.log("MintingModal product:", JSON.stringify(product, null, 2));
+  }, [product]);
 
   if (!product) {
     return null;
@@ -59,7 +64,7 @@ export default function MintingModal({
             className="bg-blue-600 text-white hover:bg-blue-700"
             onClick={() => handleMint(product.gifticonId, quantity)}
           >
-            민팅
+            발급하기
           </Button>
         </DialogFooter>
       </DialogContent>
