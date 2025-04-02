@@ -128,6 +128,7 @@ pipeline {
 				script {
 					if (env.ENV == 'dev') {
 						def props = readProperties file: '.env'
+						def migrationPath = "${env.WORKSPACE}/backend/src/main/resources/db/migration"
 
 						withEnv([
 							"MYSQL_USER=${props.MYSQL_USER}",
@@ -138,7 +139,7 @@ pipeline {
 							echo "😒 Running Flyway Migration..."
 							docker run --rm \
 							  --network shared_backend \
-							  -v \$PWD/backend/src/main/resources/db/migration:/flyway/sql \
+							  -v ${migrationPath}:/flyway/sql \
 							  flyway/flyway \
 							  -locations=filesystem:/flyway/sql \
 							  -url="jdbc:mysql://mysql:3306/\$MYSQL_DATABASE?allowPublicKeyRetrieval=true&useSSL=false" \
