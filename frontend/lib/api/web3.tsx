@@ -24,7 +24,7 @@ const NFT_ABI = [
   "function balanceOfBatch(address[] accounts, uint256[] ids) view returns (uint256[])",
   "function uri(uint256 id) view returns (string)",
   "function purchaseBySerial(uint256 serialNumber)",
-  "function getSerialInfo(uint256 serialNumber) view returns (uint256 price,address seller,address owner,address originalOwner,uint256 expirationDate, bool isRedeemed, uint256 redeemedAt, bool isPending, uint256 pendingDate, address pendingRecipient)",
+  "function getSerialInfo(uint256 serialNumber) view returns (uint256 price, address seller, address owner, address originalOwner, uint256 expirationDate, bool redeemed, uint256 redeemedAt, bool isPending, uint256 pendingDate, address pendingRecipient)",
   "function getSerialsByOwner(address) view returns (uint256[])",
   "function getTokenIdBySerial(uint256 serialNumber) view returns (uint256)",
   "function getTokenInfo(uint256 tokenId) view returns (string name, string description, uint256 totalSupply, string metadataURI)",
@@ -144,6 +144,25 @@ export const fetchMetadata = async (
   }
 };
 
+export interface UserNFT {
+  brand: string;
+  category: string;
+  expirationDate: BigInt;
+  id: number;
+  image: string;
+  isPending: true;
+  isSelling: true;
+  pendingDate: BigInt;
+  pendingRecipient: string;
+  price: number;
+  redeemed: false;
+  redeemedAt: BigInt;
+  seller: string;
+  serialNum: BigInt;
+  title: string;
+  tokenId: number;
+}
+
 // ✅ 시리얼 기반으로 사용자 NFT 목록 가져오기
 export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
   try {
@@ -198,7 +217,6 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
           serial,
           Number(tokenId)
         );
-        console.log(`🪙 토큰 정보: tokenId: ${tokenId}`, metadata);
 
         return {
           ...metadata,
@@ -211,11 +229,18 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
             Number(price) > 0 &&
             seller !== "0x0000000000000000000000000000000000000000",
           expiryDate: expiryDateFormatted, // ✅ 여기 추가!
+          redeemed: redeemed,
+          redeemedAt: redeemedAt,
+          isPending: isPending,
+          pendingDate: pendingDate,
+          pendingRecipient: pendingRecipient,
         };
       })
     );
 
-    return nftData.filter((nft) => nft !== null);
+    console.log(`🪙 사용자 보유 토큰 정보: `, nftData);
+
+    return nftData;
   } catch (error) {
     console.error("❌ 사용자 NFT 조회 실패:", error);
     return [];

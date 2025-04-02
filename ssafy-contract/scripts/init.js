@@ -6,7 +6,7 @@ async function main() {
   const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
 
   const tokenId = 1;
-  const mintAmount = 5;
+  const mintAmount = 8;
 
   const ssfDecimals = 0;
   const price = ethers.parseUnits("10", ssfDecimals);
@@ -58,9 +58,10 @@ async function main() {
       const tx = await gifticonNFT
         .connect(deployer)
         .authorizedTransferBySerial(deployer.address, sellerAddress, serial);
-      await tx.wait();
+      const receipt = await tx.wait();
 
-      console.log(`🔄 전송 완료: Serial ${serial} ${tx}`);
+      // console.log(`🔄 전송 완료: Serial ${serial} ${JSON.stringify(receipt)}`);
+      console.log(`🔄 전송 완료: Serial ${serial} ${receipt.blockNumber}`);
     } else {
       console.log(`⚠️ 소유자가 deployer가 아님. 전송 생략: Serial ${serial}`);
     }

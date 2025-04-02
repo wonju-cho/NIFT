@@ -26,13 +26,17 @@ pipeline {
 					def branch = env.BRANCH_NAME ? env.BRANCH_NAME : env.GIT_BRANCH
 					echo "🚀 Branch: ${branch}"
 
-					if (!params.ENV || params.ENV.trim() == '') {
-						env.ENV = (branch == 'develop') ? 'dev' : 'production'
-						echo "🔄 ENV auto-detected as: ${env.ENV}"
+					def selectedEnv = params.ENV?.trim()?.toLowerCase()
+
+					// null 이거나 공백이거나 잘못된 값일 경우 자동 분기
+					if (!selectedEnv || !(selectedEnv in ['dev', 'production'])) {
+						selectedEnv = (branch == 'develop') ? 'dev' : 'production'
+						echo "🔄 ENV auto-detected as: ${selectedEnv}"
 					} else {
-						env.ENV = params.ENV
-						echo "✅ ENV manually selected: ${env.ENV}"
+						echo "✅ ENV manually selected: ${selectedEnv}"
 					}
+
+					env.ENV = selectedEnv
 				}
 			}
 		}
@@ -84,12 +88,79 @@ pipeline {
 		    }
 		}
 
-
-		stage('Reset containers') {
+		stage('Set the .env value per brancah')
+		{
 			steps {
 				script {
-					if (params.ENV == 'dev') {
-						sh 'docker-compose -f docker-compose-dev.yml --env-file .env down -v'
+					def db = readProperties file: '.env'
+
+					def isDev = (env.ENV == 'dev')
+
+					def mySQLDbName = isDev ? db.MYSQL_DEV_DATABASE : db.MYSQL_DATABASE
+					def mongoDbName = isDev ? 'nift_dev' : 'nift'
+
+					//덮어쓰기
+					db["MYSQL_DATABASE"] = mySQLDbName
+					db["MONGO_INITDB_DATABASE"] = mongoDbName
+
+					//Spring datasource URL DB명 치환
+					db["SPRING_DATASOURCE_URL"] = db["SPRING_DATASOURCE_URL"]
+					.replaceAll(/\/[^\/?]+\?/, "/${mySQLDbName}?")
+
+					//Spring mongo URI도 치환
+					db["SPRING_DATA_MONGODB_URI"] = db["SPRING_DATA_MONGODB_URI"]
+					.replaceAll(/\/[^\/?]+$/, "/${mongoDbName}")
+
+					//바꾼 값들을 반영한 .env 파일 생성
+					def dbContent = db.collect { k, v -> "${k}=${v}"}.join('\n')
+					writeFile file: '.env', text: dbContent
+
+					sh '''
+					echo "📄 ✅ 최종 .env 내용 확인:"
+					cat .env
+					'''
+				}
+			}
+		}
+
+		stage('Flyway Migration') {
+			steps {
+				script {
+					if (env.ENV == 'dev') {
+						def props = readProperties file: '.env'
+						def migrationPath = "${env.WORKSPACE}/backend/src/main/resources/db/migration"
+
+						sh """
+						echo "🧾 파일 목록:"
+						ls -al ${env.WORKSPACE}/backend/src/main/resources/db/migration
+
+						echo "🧾 flyway 마운트 테스트:"
+						docker run --rm \
+						  -v ${env.WORKSPACE}/backend/src/main/resources/db/migration:/flyway/sql \
+						  ubuntu \
+						  bash -c "ls -al /flyway/sql"
+						"""
+
+						withEnv([
+							"MYSQL_USER=${props.MYSQL_USER}",
+							"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
+							"MYSQL_DATABASE=${props.MYSQL_DATABASE}"
+						]) {
+							sh """
+							echo "😒 Running Flyway Migration..."
+							docker run --rm \
+							  --network shared_backend \
+							  -v ${migrationPath}:/flyway/sql \
+							  flyway/flyway \
+							  -locations=filesystem:/flyway/sql \
+							  -url="jdbc:mysql://mysql:3306/\$MYSQL_DATABASE?allowPublicKeyRetrieval=true&useSSL=false" \
+							  -user=\$MYSQL_USER \
+							  -password=\$MYSQL_PASSWORD \
+							  migrate
+							"""
+						}
+					} else {
+						echo "👌 (master branch) Skipping Flyway Migration."
 					}
 				}
 			}
@@ -99,7 +170,7 @@ pipeline {
 			steps {
 				script {
 					try {
-						def composeFile = (params.ENV == 'production') ? 'docker-compose-production.yml' : 'docker-compose-dev.yml'
+						def composeFile = (env.ENV == 'production') ? 'docker-compose-production.yml' : 'docker-compose-dev.yml'
 						sh "docker-compose -f ${composeFile} --env-file .env up -d --build"	
 						env.IMAGE_BUILD_SUCCESS = "true"
 					}
@@ -109,59 +180,6 @@ pipeline {
 						echo"❌ Docker 이미지 생성 실패"
 					}
 					
-				}
-			}
-		}
-
-		stage('Insert Dummy Data') {
-			steps {
-				script {
-					if (env.IMAGE_BUILD_SUCCESS?.toBoolean()) {
-						try {
-							def props = readProperties file: '.env'
-
-							withEnv([
-								"MYSQL_USER=${props.MYSQL_USER}",
-								"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
-								"MYSQL_DATABASE=${props.MYSQL_DATABASE}"
-							]) {
-								sh '''
-								# ✅ MySQL 대기 (timeout 포함)
-								i=0
-								until docker exec mysql mysqladmin ping -h127.0.0.1 --silent || [ $i -eq 30 ]; do
-								  echo "⏳ Waiting for MySQL... ($i)"
-								  sleep 2
-								  i=$((i+1))
-								done
-								if [ $i -eq 30 ]; then
-								  echo "❌ MySQL startup timed out"
-								  exit 1
-								fi
-
-								# ✅ Backend Health Check 대기 (timeout 포함)
-								i=0
-								until docker exec backend curl -sf http://localhost:8081/actuator/health | grep '"status":"UP"' || [ $i -eq 60 ]; do
-								  echo "⏳ Waiting for backend health... ($i)"
-								  sleep 2
-								  i=$((i+1))
-								done
-								if [ $i -eq 60 ]; then
-								  echo "❌ Backend health check timed out"
-								  exit 1
-								fi
-
-								# ✅ 더미 데이터 삽입
-								echo "✅ All systems go. Inserting dummy data..."
-								docker exec -i mysql mysql -h127.0.0.1 -u\$MYSQL_USER -p\$MYSQL_PASSWORD \$MYSQL_DATABASE < ./backend/src/main/resources/dev_init.sql
-								'''
-							}
-						} catch (Exception e) {
-							env.IMAGE_BUILD_SUCCESS = "false"
-							error("❌ 더미 데이터 삽입 실패: ${e.message}")
-						}
-					} else {
-						echo "이미지 빌드 실패로 Dummy Data 스킵"
-					}
 				}
 			}
 		}
@@ -209,7 +227,7 @@ pipeline {
 
 		success {
 			script {
-				if (params.ENV == 'production') {
+				if (env.ENV == 'production') {
 					echo '✅ Build succeeded, tagging as stable...'
 					sh '''
 						docker tag backend backend:stable
@@ -223,7 +241,7 @@ pipeline {
 
 		failure {
 			script {
-				if (params.ENV == 'production') {
+				if (env.ENV == 'production') {
 					echo '❗ Build failed. Rolling back to stable image...'
 					sh '''
 						docker stop backend || true

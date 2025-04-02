@@ -1,18 +1,19 @@
-import { GiftCard } from "@/components/gift/gift-card"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { GiftCard } from "@/components/gift/gift-card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { UserNFT } from "@/lib/api/web3";
 
 interface GiftTabProps {
-  availableGiftCards: any[]
-  usedGiftCards: any[]
-  ITEMS_PER_PAGE: number
-  availableCurrentPage: number
-  setAvailableCurrentPage: (page: number) => void
-  usedCurrentPage: number
-  setUsedCurrentPage: (page: number) => void
-  calculateDday: (expiry: string) => number
-  giftCardTab: string
-  setGiftCardTab: (tab: string) => void
+  availableGiftCards: any[];
+  usedGiftCards: any[];
+  ITEMS_PER_PAGE: number;
+  availableCurrentPage: number;
+  setAvailableCurrentPage: (page: number) => void;
+  usedCurrentPage: number;
+  setUsedCurrentPage: (page: number) => void;
+  calculateDday: (expiry: number) => number;
+  giftCardTab: string;
+  setGiftCardTab: (tab: string) => void;
 }
 
 export function GiftTab({
@@ -25,10 +26,11 @@ export function GiftTab({
   setUsedCurrentPage,
   calculateDday,
   giftCardTab,
-  setGiftCardTab
+  setGiftCardTab,
 }: GiftTabProps) {
-  const availableTotalPage = Math.ceil(availableGiftCards.length / ITEMS_PER_PAGE) || 1
-  const usedTotalPage = Math.ceil(usedGiftCards.length / ITEMS_PER_PAGE) || 1
+  const availableTotalPage =
+    Math.ceil(availableGiftCards.length / ITEMS_PER_PAGE) || 1;
+  const usedTotalPage = Math.ceil(usedGiftCards.length / ITEMS_PER_PAGE) || 1;
 
   return (
     <Tabs value={giftCardTab} onValueChange={setGiftCardTab}>
@@ -46,16 +48,13 @@ export function GiftTab({
           {availableGiftCards
             .slice(
               availableCurrentPage * ITEMS_PER_PAGE,
-              (availableCurrentPage + 1) * ITEMS_PER_PAGE,
+              (availableCurrentPage + 1) * ITEMS_PER_PAGE
             )
-            .map((card) => (
+            .map((card: UserNFT) => (
               <GiftCard
-                key={card.serialNum}
-                serialNum={card.serialNum}
-                title={card.title}
-                brand={card.brand}
-                imageUrl={card.image}
-                expiryDays={`D-${calculateDday(card.expiryDate)}`}
+                key={Number(card.serialNum)}
+                expiryDays={`D-${calculateDday(Number(card.expirationDate))}`}
+                card={card}
               />
             ))}
         </div>
@@ -76,15 +75,15 @@ export function GiftTab({
       <TabsContent value="used" className="mt-6">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {usedGiftCards
-            .slice(usedCurrentPage * ITEMS_PER_PAGE, (usedCurrentPage + 1) * ITEMS_PER_PAGE)
-            .map((card) => (
+            .slice(
+              usedCurrentPage * ITEMS_PER_PAGE,
+              (usedCurrentPage + 1) * ITEMS_PER_PAGE
+            )
+            .map((card: UserNFT) => (
               <GiftCard
-                key={card.serialNum}
-                serialNum={card.serialNum}
-                title={card.title}
-                brand={card.brand}
-                imageUrl={card.imageUrl}
-                usedDate={card.usedDate || "사용일 미지정"}
+                key={Number(card.serialNum)}
+                expiryDays={`D-${calculateDday(Number(card.expirationDate))}`}
+                card={card}
               />
             ))}
         </div>
@@ -102,11 +101,19 @@ export function GiftTab({
         )}
       </TabsContent>
     </Tabs>
-  )
+  );
 }
 
 // 내부용 Pagination 컴포넌트
-function Pagination({ currentPage, totalPage, setCurrentPage }: { currentPage: number; totalPage: number; setCurrentPage: (page: number) => void }) {
+function Pagination({
+  currentPage,
+  totalPage,
+  setCurrentPage,
+}: {
+  currentPage: number;
+  totalPage: number;
+  setCurrentPage: (page: number) => void;
+}) {
   const maxButtons = 5;
   const start = Math.floor(currentPage / maxButtons) * maxButtons;
   const end = Math.min(start + maxButtons, totalPage);
@@ -122,16 +129,18 @@ function Pagination({ currentPage, totalPage, setCurrentPage }: { currentPage: n
         ‹ 이전
       </Button>
 
-      {Array.from({ length: end - start }, (_, i) => i + start).map((pageNum) => (
-        <Button
-          key={pageNum}
-          variant={currentPage === pageNum ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setCurrentPage(pageNum)}
-        >
-          {pageNum + 1}
-        </Button>
-      ))}
+      {Array.from({ length: end - start }, (_, i) => i + start).map(
+        (pageNum) => (
+          <Button
+            key={pageNum}
+            variant={currentPage === pageNum ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setCurrentPage(pageNum)}
+          >
+            {pageNum + 1}
+          </Button>
+        )
+      )}
 
       <Button
         variant="ghost"
