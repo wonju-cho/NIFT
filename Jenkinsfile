@@ -105,7 +105,7 @@ pipeline {
 
 					//Spring datasource URL DB명 치환
 					db["SPRING_DATASOURCE_URL"] = db["SPRING_DATASOURCE_URL"]
-					.replaceAll(/\/[^\/?]+\?/, "/${mysqlDbName}?")
+					.replaceAll(/\/[^\/?]+\?/, "/${mySQLDbName}?")
 
 					//Spring mongo URI도 치환
 					db["SPRING_DATA_MONGODB_URI"] = db["SPRING_DATA_MONGODB_URI"]
