@@ -67,23 +67,23 @@ async function main() {
   }
 
   // ✅ 자동 판매 등록
-  console.log("🎉 전송 완료! 이제 전부 자동 판매 등록 시작");
+  // console.log("🎉 전송 완료! 이제 전부 자동 판매 등록 시작");
 
-  const sellPrice = ethers.parseUnits("2", ssfDecimals);
+  // const sellPrice = ethers.parseUnits("2", ssfDecimals);
 
-  for (const serial of serials) {
-    console.log(`🚀 listForSale.js 실행 중 (Serial: ${serial})`);
-    try {
-      execSync(
-        `node scripts/listForSale.js ${serial} ${sellPrice.toString()}`,
-        {
-          stdio: "inherit",
-        }
-      );
-    } catch (error) {
-      console.error(`❌ listForSale.js 실행 중 오류 발생:`, error.message);
-    }
-  }
+  // for (const serial of serials) {
+  //   console.log(`🚀 listForSale.js 실행 중 (Serial: ${serial})`);
+  //   try {
+  //     execSync(
+  //       `node scripts/listForSale.js ${serial} ${sellPrice.toString()}`,
+  //       {
+  //         stdio: "inherit",
+  //       }
+  //     );
+  //   } catch (error) {
+  //     console.error(`❌ listForSale.js 실행 중 오류 발생:`, error.message);
+  //   }
+  // }
 }
 
 main().catch((err) => {

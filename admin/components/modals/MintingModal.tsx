@@ -1,70 +1,76 @@
-import { useState } from "react";
+// components/MintingModal.tsx
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { mintNFT } from "@/lib/mintNFT";
 
-interface MintingModalProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  product: any;
-  handleMint: (id: string, quantity: number) => void;
-}
-
-export default function MintingModal({
-  open,
-  setOpen,
-  product,
-  handleMint,
-}: MintingModalProps) {
+export default function MintingModal({ open, setOpen, product }: any) {
   const [quantity, setQuantity] = useState(1);
+  const [minting, setMinting] = useState(false);
 
-  useEffect(() => {
-    console.log("MintingModal product:", JSON.stringify(product, null, 2));
-  }, [product]);
+  const handleMint = async () => {
+    if (!product) return;
 
-  if (!product) {
-    return null;
-  }
+    try {
+      setMinting(true);
+      const address = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const userAddress = address[0];
+
+      const txHash = await mintNFT({
+        userAddress,
+        gifticonId: product.gifticonId,
+        quantity,
+        price: product.price,
+        name: product.gifticonTitle,
+        description: product.description,
+        metadataURI: product.imageUrl || "ipfs://default",
+      });
+
+      console.log("✅ 민팅 성공:", txHash);
+    } catch (err) {
+      console.error("❌ 민팅 실패:", err);
+    } finally {
+      setMinting(false);
+      setOpen(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>민팅하기</DialogTitle>
           <DialogDescription>
-            {product.gifticonTitle}을 민팅합니다. 수량을 선택하세요.
+            {product?.gifticonTitle} NFT를 민팅합니다.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="quantity" className="text-right">
-              수량
-            </label>
-            <Input
-              id="quantity"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              className="col-span-3"
-              type="number"
-              min="1"
-            />
-          </div>
+        <div className="flex items-center gap-2 mt-4">
+          <span>수량</span>
+          <Input
+            type="number"
+            value={quantity}
+            min={1}
+            onChange={(e) => setQuantity(Number(e.target.value))}
+            className="w-20"
+          />
         </div>
         <DialogFooter>
           <Button
-            type="submit"
             className="bg-blue-600 text-white hover:bg-blue-700"
-            onClick={() => handleMint(product.gifticonId, quantity)}
+            onClick={handleMint}
+            disabled={minting}
           >
-            발급하기
+            {minting ? "발급 중..." : "발급하기"}
           </Button>
         </DialogFooter>
       </DialogContent>
