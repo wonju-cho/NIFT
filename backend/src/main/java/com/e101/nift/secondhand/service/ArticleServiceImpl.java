@@ -10,8 +10,9 @@ import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
-import com.e101.nift.secondhand.repository.ArticleRepository;
+import com.e101.nift.secondhand.model.state.SaleStatus;
 import com.e101.nift.secondhand.repository.LikeRepository;
+import com.e101.nift.secondhand.repository.ArticleRepository;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.repository.UserRepository;
 import com.e101.nift.user.service.UserService;
@@ -51,6 +52,9 @@ public class ArticleServiceImpl implements ArticleService {
             default -> Sort.by(Sort.Direction.DESC, "createdAt").and(Sort.by("articleId"));
         };
 
+        // 판매 중인 상태만 조회 가능하게
+        SaleStatus targetState = SaleStatus.ON_SALE;
+
         // 정렬이 적용된 Pageable 생성
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortBy);
 
@@ -61,7 +65,7 @@ public class ArticleServiceImpl implements ArticleService {
             // 카테고리 필터가 적용된 경우
             if (minPrice != null || maxPrice != null) {
                 // 카테고리 + 가격 조건 모두 적용
-                articles = articleRepository.findByCategoryAndPriceRange(categories, minPrice, maxPrice, sortedPageable)
+                articles = articleRepository.findByCategoryAndPriceRange(categories, minPrice, maxPrice, targetState, sortedPageable)
                         .map(article -> {
                             boolean isLiked = (userId != null) &&
                                     likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
@@ -69,7 +73,7 @@ public class ArticleServiceImpl implements ArticleService {
                         });
             } else {
                 // 카테고리만 적용
-                articles = articleRepository.findByCategoryIds(categories, sortedPageable)
+                articles = articleRepository.findByCategoryIds(categories, targetState, sortedPageable)
                         .map(article -> {
                             boolean isLiked = (userId != null) &&
                                     likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
@@ -80,7 +84,7 @@ public class ArticleServiceImpl implements ArticleService {
             // 카테고리 필터가 없는 경우
             if (minPrice != null || maxPrice != null) {
                 // 가격 조건만 적용
-                articles = articleRepository.findByPriceRange(minPrice, maxPrice, sortedPageable)
+                articles = articleRepository.findByPriceRange(minPrice, maxPrice, targetState, sortedPageable)
                         .map(article -> {
                             boolean isLiked = (userId != null) &&
                                     likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);

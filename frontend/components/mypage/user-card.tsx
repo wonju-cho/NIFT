@@ -15,7 +15,7 @@ interface UserCardProps {
   copyToClipboard: () => void;
   connectOrUpdateWallet: () => void;
 }
-
+const shortenAddress = (address: string | null) => (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "연결되지 않음")
 export function UserCard({ user, walletAddress, ssfBalance, copied, copyToClipboard, connectOrUpdateWallet }: UserCardProps) {
   return (
     <Card className="overflow-hidden border-none shadow-md">
@@ -33,7 +33,7 @@ export function UserCard({ user, walletAddress, ssfBalance, copied, copyToClipbo
         <CardTitle className="text-center text-white">{user.nickname}</CardTitle>
         {walletAddress ? (
           <div className="flex items-center justify-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs backdrop-blur-sm mt-1">
-            <span className="truncate">{walletAddress}</span>
+            <span className="truncate">{shortenAddress(walletAddress)}</span>
             <button onClick={copyToClipboard} className="ml-1 rounded-full p-1 hover:bg-white/20">
               <Copy className="h-3 w-3" />
               <span className="sr-only">복사</span>

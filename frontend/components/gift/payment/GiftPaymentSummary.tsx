@@ -103,6 +103,11 @@ export function GiftPaymentSummary({
     } catch (err) {
       alert(`결제 처리 중 오류 발생: ${(err as Error).message}`);
       console.error(err);
+
+      // ⚠️ 실패해도 일정 시간 뒤에 card-data 삭제 예약
+      setTimeout(() => {
+        localStorage.removeItem(`card-data-${cardId}`);
+      }, 60 * 5000); // 5분 뒤 삭제
     }
   };
 

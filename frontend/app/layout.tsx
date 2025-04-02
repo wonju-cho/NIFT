@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   description: "안전하고 투명한 NFT 기반 기프티콘 중고거래 플랫폼",
   generator: 'v0.dev',
   icons: {
-    icon: "./frontend/favicon-nft.ico",
+    icon: "/frontend/favicon-nft.ico",
   },
 }
 
