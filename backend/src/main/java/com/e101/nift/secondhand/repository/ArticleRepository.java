@@ -63,7 +63,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     // 중고 기프티콘 판매자의 ID와 페이지로 조회
     Page<Article> findByUserId(Long userId, Pageable pageable);
 
-    Optional<Article> findArticleBySerialNum(Long serialNum);
+    Optional<Article> findArticleBySerialNumAndState(Long serialNum, SaleStatus status);
 
     Optional<Article> findArticleByTxHash(String txHash);
 }

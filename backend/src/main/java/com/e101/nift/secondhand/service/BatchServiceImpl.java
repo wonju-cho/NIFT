@@ -1,19 +1,14 @@
 package com.e101.nift.secondhand.service;
 
 import com.e101.nift.common.util.ConvertUtil;
-import com.e101.nift.gifticon.entity.Gifticon;
-import com.e101.nift.gifticon.repository.GifticonRepository;
 import com.e101.nift.secondhand.entity.Article;
 import com.e101.nift.secondhand.entity.SyncStatus;
-import com.e101.nift.secondhand.exception.ArticleErrorCode;
-import com.e101.nift.secondhand.exception.ArticleException;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.state.SaleStatus;
 import com.e101.nift.secondhand.model.state.SyncType;
 import com.e101.nift.secondhand.repository.ArticleHistoryRepository;
 import com.e101.nift.secondhand.repository.ArticleRepository;
 import com.e101.nift.secondhand.repository.SyncStatusRepository;
-import com.e101.nift.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,8 +26,6 @@ public class BatchServiceImpl implements BatchService {
     private final ArticleHistoryRepository articleHistoryRepository;
     private final ArticleRepository articleRepository;
     private final ContractService contractService;
-    private final GifticonRepository gifticonRepository;
-    private final UserService userService;
     private final SyncStatusRepository syncStatusRepository;
 
     @Scheduled(fixedDelay = 90000)
@@ -85,10 +78,10 @@ public class BatchServiceImpl implements BatchService {
                                     .viewCnt(0)
                                     .serialNum(response.serialNumber.longValue())
                                     .countLikes(0)
-                                    .gifticon(getGifticon(response.tokenId.longValue()))
+                                    .gifticon(transactionService.getGifticon(response.tokenId))
                                     .createdAt(ConvertUtil.convertTimestampToLocalTime(response.transactionTime))
                                     .txHash(response.log.getTransactionHash())
-                                    .userId(getUserId(response.seller))
+                                    .userId(transactionService.getUserId(response.seller))
                                     .state(SaleStatus.ON_SALE)
                                     .build()
                     );
@@ -110,7 +103,7 @@ public class BatchServiceImpl implements BatchService {
                     contractService.addArticleHistory(
                             response.serialNumber.longValue(),
                             response.log.getTransactionHash(),
-                            getUserId(response.buyer)
+                            transactionService.getUserId(response.buyer)
                     );
                 }
             } catch (Exception e) {
@@ -119,19 +112,4 @@ public class BatchServiceImpl implements BatchService {
         });
     }
 
-    private Gifticon getGifticon(Long gifticonId) {
-        return gifticonRepository.findById(gifticonId)
-                .orElseThrow(() -> new ArticleException(ArticleErrorCode.UNPROCESSABLE_TRANSACTION));
-    }
-
-    private Long getUserId(String userAddress) {
-        return userService.findUserIdByAddress(userAddress)
-                .orElseThrow(() -> new ArticleException(ArticleErrorCode.CANNOT_FIND_BY_ADDRESS));
-    }
-
-    private Long getArticleId(Long serialNumber) {
-        return articleRepository.findArticleBySerialNum(serialNumber)
-                .orElseThrow(() -> new ArticleException(ArticleErrorCode.UNPROCESSABLE_TRANSACTION))
-                .getArticleId();
-    }
 }

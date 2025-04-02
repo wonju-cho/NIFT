@@ -1,8 +1,9 @@
 package com.e101.nift.secondhand.service;
 
 
-import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
+import com.e101.nift.secondhand.model.dto.request.TxHashDTO;
+import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,7 @@ public interface ArticleService {
 
     ArticleDetailDto getArticleDetail(Long id, Long userId);
 
-    void deleteArticle(Long id);
+    void deleteArticle(Long articleId, TxHashDTO txHashDTO);
 
     Float getMaxCurrentPrice();
 }
