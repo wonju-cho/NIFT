@@ -3,6 +3,9 @@
 import { UserNFT } from "@/lib/api/web3";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { getTokenIdBySerial } from "@/lib/api/web3";
+import { useState } from "react";
+import QrScanner from "../ui/QrScanner";
 
 interface GiftCardProps {
   expiryDays: string;
@@ -20,6 +23,8 @@ export function GiftCard({ expiryDays, card }: GiftCardProps) {
       alert("기프티콘 정보를 가져오지 못했습니다.");
     }
   };
+
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false)
 
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-white transition-all hover:shadow-md">
@@ -84,9 +89,13 @@ export function GiftCard({ expiryDays, card }: GiftCardProps) {
       </div>
       {!card.redeemed && !card.isPending && !card.isSelling && (
         <div className="grid grid-cols-2 gap-2 p-3 pt-0">
-          <button className="rounded border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary hover:text-white transition-colors">
+          <button
+            className="rounded border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary hover:text-white transition-colors"
+            onClick={() => setIsQrScannerOpen(true)}
+          >
             사용하기
           </button>
+
           <button
             className="rounded border border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-700 hover:text-white transition-colors"
             onClick={() => handleGift(Number(card.serialNum))}
@@ -94,6 +103,17 @@ export function GiftCard({ expiryDays, card }: GiftCardProps) {
             선물하기
           </button>
         </div>
+      )}
+
+      {isQrScannerOpen && (
+        <QrScanner
+          onClose={() => setIsQrScannerOpen(false)}
+          onScanSuccess={(walletAddress) => {
+            console.log("✅ 인식된 지갑 주소:", walletAddress)
+            setIsQrScannerOpen(false)
+            // TODO: 여기서 API 호출로 gift 사용 처리
+          }}
+        />
       )}
     </div>
   );
