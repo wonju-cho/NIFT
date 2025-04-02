@@ -135,7 +135,7 @@ pipeline {
 							  --network shared_backend \
 							  -v \$PWD/backend/src/main/resources/db/migration:/flyway/sql \
 							  flyway/flyway \
-							  -url=jdbc:mysql://mysql:3306/\$MYSQL_DATABASE?allowPublicKeyRetrieval=true&useSSL=false \
+							  -url="jdbc:mysql://mysql:3306/\$MYSQL_DATABASE?allowPublicKeyRetrieval=true&useSSL=false" \
 							  -user=\$MYSQL_USER \
 							  -password=\$MYSQL_PASSWORD \
 							  migrate
