@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { getUserNFTsAsJson } from "@/lib/api/web3";
+import { getUserNFTsAsJson, UserNFT } from "@/lib/api/web3";
 import { RegisterPageLayout } from "@/components/registerArticle/RegisterPageLayout";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -32,7 +32,7 @@ const convertIpfsUrl = (url: string) => {
 
 export default function RegisterPage() {
   const { isLoading, setIsLoading } = useLoading();
-  const [ownedGifticons, setOwnedGifticons] = useState<any[]>([]);
+  const [ownedGifticons, setOwnedGifticons] = useState<UserNFT[]>([]);
   const [selectedGifticon, setSelectedGifticon] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -101,7 +101,7 @@ export default function RegisterPage() {
   }, [accessToken]);
 
   const selectedGifticonData = selectedGifticon
-    ? ownedGifticons.find((g) => g.serialNum === selectedGifticon)
+    ? ownedGifticons.find((g) => String(g.serialNum) === selectedGifticon)
     : null;
 
   const handleScroll = (direction: "left" | "right") => {

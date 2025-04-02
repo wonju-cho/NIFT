@@ -252,6 +252,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   };
 
   if (!article) return <div className="p-10 text-center">로딩 중...</div>;
+  console.log(article);
 
   return (
     <div className="flex min-h-screen flex-col">
