@@ -135,7 +135,6 @@ export const fetchMetadata = async (
       title: metadata.name || `NFT 기프티콘`,
       brand: brandAttr ? brandAttr.value : "알 수 없음",
       category: categoryAttr ? categoryAttr.value : "알 수 없음", // ✅ 수정된 부분!
-      expiryDate: expiryAttr ? expiryAttr.value : "무제한",
       image: convertIpfsUrl(metadata.image),
     };
   } catch (error) {
@@ -154,6 +153,7 @@ export interface UserNFT {
   isSelling: true;
   pendingDate: BigInt;
   pendingRecipient: string;
+  expiryDate: string;
   price: number;
   redeemed: false;
   redeemedAt: BigInt;
@@ -228,7 +228,7 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
           isSelling:
             Number(price) > 0 &&
             seller !== "0x0000000000000000000000000000000000000000",
-          expiryDate: expiryDateFormatted, // ✅ 여기 추가!
+          expiryDate: expiryDateFormatted, // ✅ 꼭 필요!
           redeemed: redeemed,
           redeemedAt: redeemedAt,
           isPending: isPending,

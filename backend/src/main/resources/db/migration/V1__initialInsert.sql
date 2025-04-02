@@ -1,60 +1,128 @@
---
--- Dumping data for table `article_histories`
---
+-- Drop and recreate the database
+-- DROP DATABASE IF EXISTS nift;
+-- CREATE DATABASE nift;
+-- USE nift;
 
-INSERT INTO `article_histories` VALUES (1,1,'2025-03-25 11:00:00.000000',1,2,NULL),(2,2,'2025-03-25 11:05:00.000000',1,1,NULL),(3,3,'2025-03-25 11:10:00.000000',1,3,NULL),(4,4,'2025-03-25 11:15:00.000000',3,4,NULL),(5,5,'2025-03-25 11:20:00.000000',2,5,NULL),(6,6,'2024-03-26 11:00:00.000000',1,3,NULL),(7,7,'2023-03-26 09:00:00.000000',1,4,NULL),(8,8,'2025-03-24 09:00:00.000000',1,5,NULL),(9,9,'2025-03-23 09:00:00.000000',1,2,NULL),(11,11,'2025-03-20 09:00:00.000000',1,4,NULL),(12,12,'2025-03-19 09:00:00.000000',1,5,NULL),(13,13,'2025-03-18 09:00:00.000000',1,2,NULL),(47,16,'2025-04-01 10:26:00.074872',3,6,NULL);
+-- 1. brands
+INSERT INTO brands (brand_id, brand_name) VALUES
+                                              (1, '이디야커피'),
+                                              (2, '스타벅스'),
+                                              (3, '던킨도너츠'),
+                                              (4, '배스킨라빈스'),
+                                              (5, '교촌치킨'),
+                                              (6, '버거킹'),
+                                              (7, '맥도날드'),
+                                              (8, 'BBQ'),
+                                              (9, '굽네치킨'),
+                                              (10, '파리바게뜨'),
+                                              (11, '뚜레쥬르'),
+                                              (12, '이마트24'),
+                                              (13, 'GS25'),
+                                              (14, 'CU'),
+                                              (15, '컬리'),
+                                              (16, '신세계상품권'),
+                                              (17, '교보문고'),
+                                              (18, 'YES24'),
+                                              (19, '투썸플레이스'),
+                                              (20, 'CGV');
 
---
--- Dumping data for table `articles`
---
+-- 2. categories
+INSERT INTO categories (category_id, category_name) VALUES
+                                                        (1, '카페/음료'),
+                                                        (2, '베이커리/디저트'),
+                                                        (3, '아이스크림/빙수'),
+                                                        (4, '치킨'),
+                                                        (5, '버거/피자'),
+                                                        (6, '편의점/마트'),
+                                                        (7, '상품권/금액권'),
+                                                        (8, '영화/도서');
 
-INSERT INTO `articles` VALUES (1,NULL,5,'2025-03-25 10:00:00.000000',3.9,'12','2025-12-31 23:59:59.000000','https://sitem.ssgcdn.com/86/57/48/item/1000534485786_i1_750.jpg','15',1,120,1,'ON_SALE',0,NULL,NULL),(2,NULL,9,'2025-03-25 10:10:00.000000',4.5,'달달하고 맛있어요!','2025-11-30 23:59:59.000000','https://sitem.ssgcdn.com/93/69/80/item/1000556806993_i1_750.jpg','14',1,95,2,'ON_SALE',0,NULL,NULL),(3,NULL,10,'2025-03-25 10:20:00.000000',6,'점심용으로 적당합니다.','2025-10-15 23:59:59.000000','https://sitem.ssgcdn.com/86/57/48/item/1000534485786_i1_750.jpg','13',3,80,3,'ON_SALE',0,NULL,NULL),(4,NULL,3,'2025-03-25 10:30:00.000000',3.2,'편하게 쓰세요~','2025-09-30 23:59:59.000000','https://sitem.ssgcdn.com/69/86/21/item/0000008218669_i1_750.jpg','12',4,60,4,'ON_SALE',0,NULL,NULL),(5,NULL,16,'2025-03-25 10:40:00.000000',8.8,'11','2026-01-01 23:59:59.000000','https://sitem.ssgcdn.com/58/67/47/item/1000337476758_i1_750.jpg','11',5,200,5,'ON_SALE',0,NULL,NULL),(7,NULL,17,'2025-03-25 10:40:00.000000',8.8,'9','2026-01-01 23:59:59.000000','https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg','9',1,200,5,'ON_SALE',0,NULL,NULL),(8,NULL,15,'2025-03-25 10:40:00.000000',8.8,'8','2026-01-01 23:59:59.000000','https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg','8',1,200,5,'ON_SALE',0,NULL,NULL),(9,NULL,15,'2025-03-25 10:40:00.000000',8.8,'7','2026-01-01 23:59:59.000000','https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg','7',1,200,5,'ON_SALE',0,NULL,NULL),(10,NULL,15,'2025-03-25 10:40:00.000000',8.8,'6','2026-01-01 23:59:59.000000','https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg','중고거래선물테스트',2,200,5,'ON_SALE',0,NULL,NULL),(11,NULL,15,'2025-03-25 10:40:00.000000',8.8,'5','2026-01-01 23:59:59.000000','https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg','5',1,200,5,'ON_SALE',0,NULL,NULL),(12,NULL,15,'2025-03-25 10:40:00.000000',8.8,'4','2026-01-01 23:59:59.000000','https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg','4',1,200,5,'ON_SALE',0,NULL,NULL),(13,NULL,15,'2025-03-25 10:40:00.000000',8.8,'3','2026-01-01 23:59:59.000000','https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg','3',1,200,5,'ON_SALE',0,NULL,NULL),(14,NULL,15,'2025-03-25 10:40:00.000000',8.8,'2','2026-01-01 23:59:59.000000','https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg','2',1,200,5,'ON_SALE',0,NULL,NULL),(15,NULL,15,'2025-03-25 10:40:00.000000',8.8,'1','2026-01-01 23:59:59.000000','https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg','1',2,200,5,'ON_SALE',0,NULL,NULL),(16,NULL,1,'2025-03-27 10:40:00.000000',1.53,'테스트','2026-01-01 23:59:59.000000','https://sitem.ssgcdn.com/11/78/03/item/1000291037811_i1_750.jpg','테스트',1,0,1,'SOLD',1,NULL,NULL);
+-- 3. users
+INSERT INTO users (user_id, kakao_id, nick_name, wallet_address, profile_image, gender, age, role) VALUES
+                                                                                                       (1, 100001, '도원이', '0xAbC123...', 'https://example.com/profile1.png', 'male', '20', 0),
+                                                                                                       (2, 100002, '지혜짱', '0xDef456...', 'https://example.com/profile2.png', 'female', '23', 1),
+                                                                                                       (3, 100003, '승호형', '0x789abc...', 'https://example.com/profile3.png', 'male', '27', 0),
+                                                                                                       (4, 100004, '혜민쓰', '0x321fed...', 'https://example.com/profile4.png', 'female', '25', 2),
+                                                                                                       (5, 100005, '현수', '0xa1b2c3...', 'https://example.com/profile5.png', 'male', '21', 1),
+                                                                                                       (6, 100006, '기훈이', '0xb3c4d5...', 'https://example.com/profile6.png', 'male', '22', 0),
+                                                                                                       (7, 100007, '혜진님', '0xc5d6e7...', 'https://example.com/profile7.png', 'female', '24', 2),
+                                                                                                       (8, 100008, '성현이', '0xd7e8f9...', 'https://example.com/profile8.png', 'male', '26', 1),
+                                                                                                       (9, 100009, '유림짱', '0xe9f0a1...', 'https://example.com/profile9.png', 'female', '23', 0),
+                                                                                                       (10, 100010, '정우대장', '0xf1a2b3...', 'https://example.com/profile10.png', 'male', '29', 2);
 
---
--- Dumping data for table `brands`
---
+-- 4. gifticons
+INSERT INTO gifticons (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id)
+VALUES (1, '아메리카노', '따뜻한 커피 한 잔', 4.5, 'https://example.com/gift1.png', 1, 4);
+INSERT INTO gifticons (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id)
+VALUES (2, '초코케이크', '달콤한 디저트', 5.0, 'https://example.com/gift2.png', 2, 3);
+INSERT INTO gifticons (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id)
+VALUES (3, '버거세트', '한 끼 식사로 충분', 7.5, 'https://example.com/gift3.png', 3, 5);
+INSERT INTO gifticons (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id)
+VALUES (4, '도시락', '편의점 도시락', 4.0, 'https://example.com/gift4.png', 4, 1);
+INSERT INTO gifticons (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id)
+VALUES (5, '기프트카드', '모든 곳에서 사용 가능', 10.0, 'https://example.com/gift5.png', 5, 2);
 
-INSERT INTO `brands` VALUES (1,'삼성전자'),(2,'LG생활건강'),(3,'이디야커피'),(4,'스타벅스'),(5,'던킨도너츠');
+-- 5. articles
+INSERT INTO articles (article_id, serial_num, title, description, user_id, expiration_date, image_url, count_likes, current_price, created_at, view_cnt, gifticon_id) VALUES
+                                                                                                                                                                          (1, 20250325001, '기프티콘 팝니다 - 스타벅스 아메리카노', '따뜻한 아메리카노 필요하신 분!', 1, '2025-12-31 23:59:59', 'https://example.com/starbucks1.png', 5, 4.2, '2025-03-25 13:00:00', 120, 1),
+                                                                                                                                                                          (2, 20250325002, '할인된 파리바게뜨 케이크', '유통기한 넉넉해요!', 2, '2025-12-15 23:59:59', 'https://example.com/cake1.png', 8, 6.5, '2025-03-25 13:05:00', 87, 2),
+                                                                                                                                                                          (3, 20250325003, '던킨도너츠 도넛팩', '6개 묶음 세트입니다.', 3, '2025-11-30 23:59:59', 'https://example.com/dunkin1.png', 3, 5.0, '2025-03-25 13:10:00', 60, 3),
+                                                                                                                                                                          (4, 20250325004, 'GS25 도시락 기프티콘', '점심 해결하세요!', 4, '2025-10-20 23:59:59', 'https://example.com/gs25lunch.png', 2, 4.0, '2025-03-25 13:15:00', 42, 4),
+                                                                                                                                                                          (5, 20250325005, '배스킨라빈스 싱글콘', '무난한 맛 선택 가능 🍦', 5, '2025-09-30 23:59:59', 'https://example.com/brsingle.png', 6, 3.1, '2025-03-25 13:20:00', 53, 5),
+                                                                                                                                                                          (6, 20250325006, '버거킹 와퍼세트', '콜라 포함된 세트!', 1, '2025-12-10 23:59:59', 'https://example.com/whopper.png', 11, 6.9, '2025-03-25 13:25:00', 98, 1),
+                                                                                                                                                                          (7, 20250325007, 'BHC 치킨반반 기프티콘', '순살 구성입니다.', 2, '2025-11-01 23:59:59', 'https://example.com/bhc1.png', 9, 17.8, '2025-03-25 13:30:00', 140, 2),
+                                                                                                                                                                          (8, 20250325008, '이디야 라떼 기프티콘', '따뜻한 커피 한 잔 어떠세요?', 3, '2025-10-05 23:59:59', 'https://example.com/ediya.png', 4, 3.6, '2025-03-25 13:35:00', 41, 3),
+                                                                                                                                                                          (9, 20250325009, '투썸 조각케이크', '디저트 타임용으로 딱입니다!', 4, '2025-09-20 23:59:59', 'https://example.com/twosomecake.png', 7, 5.8, '2025-03-25 13:40:00', 65, 4),
+                                                                                                                                                                          (10, 20250325010, 'CU 편의점 아이스크림', '쿨하게 즐겨요 🍨', 5, '2025-08-31 23:59:59', 'https://example.com/cuice.png', 1, 2.5, '2025-03-25 13:45:00', 23, 5);
 
---
--- Dumping data for table `categories`
---
+-- 6. likes
+INSERT INTO likes (like_id, articles_id, user_id) VALUES (1, 1, 2);
+INSERT INTO likes (like_id, articles_id, user_id) VALUES (2, 2, 3);
+INSERT INTO likes (like_id, articles_id, user_id) VALUES (3, 3, 4);
+INSERT INTO likes (like_id, articles_id, user_id) VALUES (4, 4, 5);
+INSERT INTO likes (like_id, articles_id, user_id) VALUES (5, 5, 1);
 
-INSERT INTO `categories` VALUES (1,'음료'),(2,'디저트'),(3,'패스트푸드'),(4,'편의점'),(5,'기타');
+-- 7. article_histories
+INSERT INTO article_histories (article_history_id, created_at, history_type, user_id, article_id)
+VALUES (1, '2025-03-25 11:00:00', 1, 1, 1);
+INSERT INTO article_histories (article_history_id, created_at, history_type, user_id, article_id)
+VALUES (2, '2025-03-25 11:05:00', 2, 2, 2);
+INSERT INTO article_histories (article_history_id, created_at, history_type, user_id, article_id)
+VALUES (3, '2025-03-25 11:10:00', 1, 3, 3);
+INSERT INTO article_histories (article_history_id, created_at, history_type, user_id, article_id)
+VALUES (4, '2025-03-25 11:15:00', 3, 4, 4);
+INSERT INTO article_histories (article_history_id, created_at, history_type, user_id, article_id)
+VALUES (5, '2025-03-25 11:20:00', 2, 5, 5);
 
---
--- Dumping data for table `gift_histories`
---
 
-INSERT INTO `gift_histories` VALUES (1,'2025-03-31 16:24:09.997518','67ea4319ea86c07d00d4471c',1,1,NULL,_binary '\0',3977733962),(2,'2025-04-01 10:26:00.088507','67eb40a7b1e41f305b469243',6,1,NULL,_binary '\0',3977722266);
+-- 8. gift_histories (JPA 기준에 맞춘 형태)
+INSERT INTO gift_histories (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received)
+VALUES (1, '2025-03-25 12:00:00', 'mongo001', 1, 2, NULL, 1, false);
 
---
--- Dumping data for table `gifticons`
---
+INSERT INTO gift_histories (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received)
+VALUES (2, '2025-03-25 12:10:00', 'mongo002', 2, 3, NULL, 2, false);
 
-INSERT INTO `gifticons` VALUES (1,'따뜻한 커피 한 잔','아메리카노','https://static.megamart.com/product/image/1326/13264314/13264314_1_960.jpg',4.5,4,1,NULL),(2,'달콤한 디저트','초코케이크','https://sitem.ssgcdn.com/93/31/82/item/1000640823193_i1_336.jpg',5,3,2,NULL),(3,'한 끼 식사로 충분','버거세트','https://example.com/gift3.png',7.5,5,3,NULL),(4,'편의점 도시락','도시락','https://example.com/gift4.png',4,1,4,NULL),(5,'모든 곳에서 사용 가능','기프트카드','https://example.com/gift5.png',10,2,5,NULL);
+INSERT INTO gift_histories (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received)
+VALUES (3, '2025-03-25 12:20:00', 'mongo003', 3, 4, NULL, 3, false);
 
---
--- Dumping data for table `likes`
---
+INSERT INTO gift_histories (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received)
+VALUES (4, '2025-03-25 12:30:00', 'mongo004', 4, 5, NULL, 4, false);
 
-INSERT INTO `likes` VALUES (22,2,1),(6,5,1),(21,7,1),(20,16,1),(1,1,2),(2,2,3),(3,3,4),(4,4,5),(19,5,6),(18,7,6);
+INSERT INTO gift_histories (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received)
+VALUES (5, '2025-03-25 12:40:00', 'mongo005', 5, 1, NULL, 5, false);
 
---
--- Dumping data for table `sync_status`
---
+-- 9. used_histories (JPA 기준 반영)
+INSERT INTO used_histories (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id)
+VALUES (1, '0xtxhash001', 100001, '2025-03-25 13:00:00', 1, 1);
 
-INSERT INTO `sync_status` VALUES (1,6700111,'REAL_TIME','2025-04-02 11:13:11.035412');
+INSERT INTO used_histories (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id)
+VALUES (2, '0xtxhash002', 100002, '2025-03-25 13:10:00', 2, 2);
 
---
--- Dumping data for table `used_histories`
---
+INSERT INTO used_histories (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id)
+VALUES (3, '0xtxhash003', 100003, '2025-03-25 13:20:00', 3, 3);
 
-INSERT INTO `used_histories` VALUES (1,'2025-03-25 13:00:00.000000',1,1,NULL,NULL),(2,'2025-03-25 13:10:00.000000',2,2,NULL,NULL),(3,'2025-03-25 13:20:00.000000',3,3,NULL,NULL),(4,'2025-03-25 13:30:00.000000',4,4,NULL,NULL),(5,'2025-03-25 13:40:00.000000',5,5,NULL,NULL);
+INSERT INTO used_histories (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id)
+VALUES (4, '0xtxhash004', 100004, '2025-03-25 13:30:00', 4, 4);
 
---
--- Dumping data for table `users`
---
-
-INSERT INTO `users` VALUES (1,'20~29','female',3976389070,'영민','http://img1.kakaocdn.net/thumb/R640x640.q70/?fname=http://t1.kakaocdn.net/account_images/default_profile.jpeg',0,'0xa7B9A191107081f780E534502C1B2288cFB7cC03'),(2,'29','female',100002,'김영희','https://example.com/image2.png',0,'0xdef456'),(3,'32','male',100003,'이철수','https://example.com/image3.png',0,'0xghi789'),(4,'21','female',100004,'박지민','https://example.com/image4.png',0,'0xjkl012'),(5,'27','female',100005,'최유리','https://example.com/image5.png',0,'0xmnx345'),(6,'20~29','female',4006498484,'조원주','http://img1.kakaocdn.net/thumb/R640x640.q70/?fname=http://t1.kakaocdn.net/account_images/default_profile.jpeg',0,'0xa7B9A191107081f780E534502C1B2288cFB7cC03');
-
+INSERT INTO used_histories (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id)
+VALUES (5, '0xtxhash005', 100005, '2025-03-25 13:40:00', 5, 5);
