@@ -130,6 +130,17 @@ pipeline {
 						def props = readProperties file: '.env'
 						def migrationPath = "${env.WORKSPACE}/backend/src/main/resources/db/migration"
 
+						sh """
+						echo "🧾 파일 목록:"
+						ls -al ${env.WORKSPACE}/backend/src/main/resources/db/migration
+
+						echo "🧾 flyway 마운트 테스트:"
+						docker run --rm \
+						  -v ${env.WORKSPACE}/backend/src/main/resources/db/migration:/flyway/sql \
+						  ubuntu \
+						  bash -c "ls -al /flyway/sql"
+						"""
+
 						withEnv([
 							"MYSQL_USER=${props.MYSQL_USER}",
 							"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
