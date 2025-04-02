@@ -1,6 +1,7 @@
 package com.e101.nift.secondhand.entity;
 
 import com.e101.nift.gifticon.entity.Gifticon;
+import com.e101.nift.secondhand.model.state.SaleStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,6 +43,7 @@ public class Article {
         }
     }
 
-    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private boolean isSold = false; // 판매 완료 여부 표시
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SaleStatus state = SaleStatus.ON_SALE; // 기본값 : 판매 중
 }

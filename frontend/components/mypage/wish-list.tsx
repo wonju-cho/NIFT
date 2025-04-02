@@ -48,15 +48,15 @@ export const WishList = ({
             ))}
           </div>
 
-          {/* 페이지네이션 */}
-          <div className="mt-8 flex justify-center items-center gap-2">
-            <Button
-              variant="ghost"
-              disabled={currentPage === 0}
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-            >
-              ‹ 이전
-            </Button>
+      {/* 페이지네이션 */}
+      <div className="mt-8 flex justify-center items-center gap-2">
+        <Button
+          variant="ghost"
+          disabled={currentPage === 0}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+        >
+          ‹ 이전
+        </Button>
 
             {Array.from({ length: endPage - startPage }, (_, i) => startPage + i).map(
               (pageNum) => (

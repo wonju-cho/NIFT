@@ -32,8 +32,14 @@ public class ArticleHistoryServiceImpl implements ArticleHistoryService {
 
     @Override
     public ScrollDto<PurchaseHistoryDto> getPurchaseHistories(Long userId, Pageable pageable) {
+        // 구매 + 선물 받은 내역 조회
+        List<Short> historyTypes = List.of(
+                ContractType.PURCHASE.getType(),
+                ContractType.GIFT.getType()
+        );
+
         Page<ArticleHistory> page = articleHistoryRepository
-                .findByUserIdAndHistoryType(userId, ContractType.PURCHASE.getType(), pageable);
+                .findByUserIdAndHistoryTypeIn(userId, historyTypes, pageable);
 
         List<PurchaseHistoryDto> responses = page.getContent().stream().map(history -> {
             Article article = articleRepository.findById(history.getArticleId())

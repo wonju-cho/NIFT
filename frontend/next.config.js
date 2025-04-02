@@ -12,6 +12,7 @@ const nextConfig = {
       { protocol: "https", hostname: "sitem.ssgcdn.com" },
       { protocol: "https", hostname: "static.megamart.com" }, 
       { protocol: "https", hostname: "ipfs.io" },
+      { protocol: "https", hostname: "p.kakaocdn.net" },
     ],
   },
   webpack: (config) => {

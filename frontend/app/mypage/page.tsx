@@ -26,8 +26,6 @@ const PAGE_GROUP_SIZE = 5
 const getAccessToken = () => (typeof window !== "undefined" ? localStorage.getItem("access_token") : null)
 const getKakaoToken = () => (typeof window !== "undefined" ? localStorage.getItem("kakao_access_token") : null)
 
-const shortenAddress = (address: string | null) => (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "연결되지 않음")
-
 export default function MyPage() {
   const router = useRouter()
   const [accessToken, setAccessToken] = useState<string | null>(null)
@@ -172,6 +170,7 @@ export default function MyPage() {
           discountRate: 0,
           imageUrl: article.imageUrl,
           isLiked: true,
+          state: article.state
         }))
         setLikedArticles(transformed)
         setTotalPage(data?.totalPage || 1)

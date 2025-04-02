@@ -1,5 +1,6 @@
 package com.e101.nift.secondhand.model.dto.request;
 
+import com.e101.nift.secondhand.model.state.SaleStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,4 +16,5 @@ public class ArticleLikeDTO {
     private int countLikes;
     private String imageUrl;
     private Float currentPrice;
+    private SaleStatus state; // 상태
 }
