@@ -2,7 +2,7 @@ require("dotenv").config();
 const { ethers } = require("hardhat");
 
 async function main() {
-  const nftContractAddress = "0x4BBE553ce148eC354dfed66c60d8140b08E16077"; // GifticonNFT
+  const nftContractAddress = "0x3d68f0Cdb1a378f3e4F9575eF07256e2e86f795b"; // GifticonNFT
   const targetAddress = "0xe911090F1ca13EE23f3C1eE964c5d4e323987e9f";
   const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
   const ssfDecimals = 0;

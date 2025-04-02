@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0x4BBE553ce148eC354dfed66c60d8140b08E16077";
+  const contractAddress = "0x3d68f0Cdb1a378f3e4F9575eF07256e2e86f795b";
   const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
 
   const tokenId = 1;
@@ -60,7 +60,7 @@ async function main() {
         .authorizedTransferBySerial(deployer.address, sellerAddress, serial);
       await tx.wait();
 
-      console.log(`🔄 전송 완료: Serial ${serial}`);
+      console.log(`🔄 전송 완료: Serial ${serial} ${tx}`);
     } else {
       console.log(`⚠️ 소유자가 deployer가 아님. 전송 생략: Serial ${serial}`);
     }

@@ -4,12 +4,10 @@ import com.e101.nift.common.util.ConvertUtil;
 import com.e101.nift.gifticon.entity.Gifticon;
 import com.e101.nift.gifticon.repository.GifticonRepository;
 import com.e101.nift.secondhand.entity.Article;
-import com.e101.nift.secondhand.entity.ArticleHistory;
 import com.e101.nift.secondhand.entity.SyncStatus;
 import com.e101.nift.secondhand.exception.ArticleErrorCode;
 import com.e101.nift.secondhand.exception.ArticleException;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
-import com.e101.nift.secondhand.model.state.ContractType;
 import com.e101.nift.secondhand.model.state.SyncType;
 import com.e101.nift.secondhand.repository.ArticleHistoryRepository;
 import com.e101.nift.secondhand.repository.ArticleRepository;
@@ -31,6 +29,7 @@ public class BatchServiceImpl implements BatchService {
     private final TransactionService transactionService;
     private final ArticleHistoryRepository articleHistoryRepository;
     private final ArticleRepository articleRepository;
+    private final ContractService contractService;
     private final GifticonRepository gifticonRepository;
     private final UserService userService;
     private final SyncStatusRepository syncStatusRepository;
@@ -106,14 +105,10 @@ public class BatchServiceImpl implements BatchService {
             try {
                 if(articleHistoryRepository.findByTxHash(response.log.getTransactionHash()).isEmpty()) {
                     log.debug("[BatchService] DB에 저장되지 않은 Hash 값: {}", response.log.getTransactionHash());
-                    articleHistoryRepository.save(
-                            ArticleHistory.builder()
-                                    .articleId(getArticleId(response.serialNumber.longValue()))
-                                    .createdAt(ConvertUtil.convertTimestampToLocalTime(response.transactionTime))
-                                    .historyType(ContractType.PURCHASE.getType())
-                                    .userId(getUserId(response.buyer))
-                                    .txHash(response.log.getTransactionHash())
-                                    .build()
+                    contractService.addArticleHistory(
+                            response.serialNumber.longValue(),
+                            response.log.getTransactionHash(),
+                            getUserId(response.buyer)
                     );
                 }
             } catch (Exception e) {
