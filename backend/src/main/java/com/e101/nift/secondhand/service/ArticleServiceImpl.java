@@ -103,6 +103,14 @@ public class ArticleServiceImpl implements ArticleService {
         return articles;
     }
 
+    // 가격 필터링 최대 가격
+    @Override
+    @Transactional(readOnly = true)
+    public Float getMaxCurrentPrice() {
+        Float maxPrice = articleRepository.findMaxCurrentPrice();
+        return maxPrice != null ? maxPrice : 0f;
+    }
+
     // 로그인 여부와 관계없이 전체 상품 반환
     // userId == null 이면 isLiked=false로 설정
     private ArticleListDto mapArticleToDto(Article article, Long userId) {
