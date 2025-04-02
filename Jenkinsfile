@@ -128,7 +128,7 @@ pipeline {
 				script {
 					if (env.ENV == 'dev') {
 						def props = readProperties file: '.env'
-						def migrationPath = "${env.WORKSPACE}/backend/src/main/resources/db/migration"
+						def migrationPath = "/home/ubuntu/jenkins-data/jobs/NIFT_MultiBranch/branches/develop/workspace/backend/src/main/resources/db/migration"
 
 						sh """
 						echo "🧾 파일 목록:"
