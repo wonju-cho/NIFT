@@ -2,20 +2,19 @@ package com.e101.nift.secondhand.service;
 
 import com.e101.nift.common.util.ConvertUtil;
 import com.e101.nift.gifticon.entity.Gifticon;
-import com.e101.nift.gifticon.repository.GifticonRepository;
 import com.e101.nift.secondhand.entity.Article;
 import com.e101.nift.secondhand.exception.ArticleErrorCode;
 import com.e101.nift.secondhand.exception.ArticleException;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
+import com.e101.nift.secondhand.model.dto.request.TxHashDTO;
 import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
 import com.e101.nift.secondhand.model.state.SaleStatus;
-import com.e101.nift.secondhand.repository.LikeRepository;
 import com.e101.nift.secondhand.repository.ArticleRepository;
+import com.e101.nift.secondhand.repository.LikeRepository;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.repository.UserRepository;
-import com.e101.nift.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,13 +31,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService {
-
     private final ArticleRepository articleRepository;
     private final LikeRepository likeRepository;
-    private final GifticonRepository gifticonRepository;
     private final UserRepository userRepository;
     private final TransactionService transactionService;
-    private final UserService userService;
 
     @Override
     @Transactional(readOnly = true)
@@ -164,14 +160,12 @@ public class ArticleServiceImpl implements ArticleService {
 
         log.info("[ArticleService] listedForSaleEventResponse: {}", listedForSaleEventResponse);
 
-        Gifticon gifticon = gifticonRepository.findById(listedForSaleEventResponse.tokenId.longValue())
-                .orElseThrow(() -> new IllegalArgumentException("기프티콘이 존재하지 않습니다."));
+        Gifticon gifticon = transactionService.getGifticon(listedForSaleEventResponse.tokenId);
 
-        Long userId = userService.findUserIdByAddress(listedForSaleEventResponse.seller)
-                .orElseThrow(() -> new ArticleException(ArticleErrorCode.CANNOT_FIND_BY_ADDRESS));
+        Long userId = transactionService.getUserId(listedForSaleEventResponse.seller);
 
         if(!userId.equals(loginUser)) {
-            log.info("[ContractService] 트랜잭션 유저 정보: {} {}", userId, loginUser);
+            log.info("[ArticleService] 트랜잭션 유저 정보: {} {}", userId, loginUser);
             throw new ArticleException(ArticleErrorCode.USER_MISMATCH);
         }
 
@@ -195,7 +189,20 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public void deleteArticle(Long id) {
-        articleRepository.deleteById(id);
+    public void deleteArticle(Long articleId, TxHashDTO hashDTO) {
+        GifticonNFT.CancelledSaleEventResponse cancelledSaleEventResponse = transactionService.getCancelledSaleEventByTxHash(hashDTO.getTxHash()).getFirst();
+        log.info("[ArticleService] cancelledSaleEventResponse: {}", cancelledSaleEventResponse);
+
+        // TODO: 사용자 ID 와 transaction 주소 동일한지 비교로직 필요 (ABI 변경됨)
+
+        Article article = transactionService.getArticle(cancelledSaleEventResponse.serialNumber);
+
+        if(!articleId.equals(article.getArticleId())) {
+            log.warn("[ArticleService] 게시글 정보가 다릅니다: {}", article);
+            throw new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND);
+        }
+
+        article.setState(SaleStatus.DELETED);
+        articleRepository.save(article);
     }
 }

@@ -48,7 +48,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     const fetchWallets = async () => {
-      if (!accessToken) return;
+      if (!accessToken || accessToken == "loading") return;
 
       // DB 지갑 주소 불러오기
       try {

@@ -33,9 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
                 }
 
-                Long userId = jwtTokenProvider.getUserFromToken(token).getUserId();
+                Long userId = jwtTokenProvider.getUserIdFromToken(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userId.toString());
-
                 if (userDetails instanceof CustomUserDetails customUserDetails) {
                     Authentication authentication =
                             new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());

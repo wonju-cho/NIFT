@@ -26,29 +26,54 @@ public class ConvertUtil {
     }
 
     public static String convertIpfsUrl(String metadataUrl) {
+        String[] gateways = {
+                "https://ipfs.io/ipfs/",
+                "https://cloudflare-ipfs.com/ipfs/",
+                "https://gateway.pinata.cloud/ipfs/",
+                "https://ipfs.infura.io/ipfs/"
+        };
+
         try {
+            String cid = null;
             if (metadataUrl.startsWith("ipfs://")) {
-                metadataUrl = "https://ipfs.io/ipfs/" + metadataUrl.substring(7);
+                cid = metadataUrl.substring(7);
+            } else if (metadataUrl.contains("/ipfs/")) {
+                cid = metadataUrl.substring(metadataUrl.lastIndexOf("/ipfs/") + 6);
             }
 
-            URL url = new URL(metadataUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+            if (cid == null) {
+                log.error("[ConvertUtil] CID 추출 실패: {}", metadataUrl);
+                return null;
+            }
 
-            try (InputStream is = conn.getInputStream()) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode root = mapper.readTree(is);
-                String ipfsImage = root.get("image").asText();
+            for (String gateway : gateways) {
+                try {
+                    String fullUrl = gateway + cid;
+                    URL url = new URL(fullUrl);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(5000);
+                    conn.setReadTimeout(5000);
+                    conn.setRequestMethod("GET");
 
-                if (ipfsImage.startsWith("ipfs://")) {
-                    return "https://ipfs.io/ipfs/" + ipfsImage.substring(7);
-                } else {
-                    return ipfsImage;
+                    try (InputStream is = conn.getInputStream()) {
+                        ObjectMapper mapper = new ObjectMapper();
+                        JsonNode root = mapper.readTree(is);
+                        String ipfsImage = root.get("image").asText();
+
+                        if (ipfsImage.startsWith("ipfs://")) {
+                            return gateway + ipfsImage.substring(7);
+                        } else {
+                            return ipfsImage;
+                        }
+                    }
+                } catch (Exception inner) {
+                    log.warn("[ConvertUtil] {} 게이트웨이 실패: {}", gateway, inner.getMessage());
                 }
             }
         } catch (Exception e) {
-            log.error("[ConvertUtil] convertIpfsUrl 에러 발생: {}", e.getMessage());
-            return null;
+            log.error("[ConvertUtil] convertIpfsUrl 전체 실패: {}", e.getMessage());
         }
+
+        return null;
     }
 }

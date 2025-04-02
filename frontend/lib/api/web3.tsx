@@ -571,11 +571,20 @@ export async function fetchTokenInfoBySerial(serialNumber: number) {
   }
 }
 
+export type CancelSaleResponse = {
+  success: boolean;
+  txHash?: string;
+};
+
 // NFT 상태 [판매중] -> [판매중] 취소
-export async function cancelSale(serialNumber: number): Promise<boolean> {
+export async function cancelSale(
+  serialNumber: number
+): Promise<CancelSaleResponse> {
+  const fail: CancelSaleResponse = { success: false };
+
   if (!window.ethereum) {
     console.error("Metamask not found");
-    return false;
+    return fail;
   }
 
   try {
@@ -584,13 +593,17 @@ export async function cancelSale(serialNumber: number): Promise<boolean> {
     const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
 
     const tx = await contract.cancelSale(serialNumber);
-    await tx.wait();
+    const receipt = await tx.wait();
 
-    console.log("✅ 판매 취소 완료!");
-    return true;
+    console.log("✅ 판매 취소 완료! ", receipt);
+
+    return {
+      success: true,
+      txHash: tx.hash,
+    };
   } catch (error) {
     console.error("❌ 판매 취소 실패:", error);
-    return false;
+    return fail;
   }
 }
 
