@@ -28,12 +28,9 @@ interface GiftRecipientFormProps {
 }
 
 export function GiftRecipientForm({
-  phone,
   message,
-  isAnonymous,
   setPhone,
   setMessage,
-  setAnonymous,
   selectedFriend,
   setSelectedFriend
 }: GiftRecipientFormProps) {
