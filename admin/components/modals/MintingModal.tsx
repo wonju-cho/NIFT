@@ -19,6 +19,10 @@ export default function MintingModal({ open, setOpen, product }: any) {
   const handleMint = async () => {
     if (!product) return;
 
+    // ✅ 요기에 넣으면 됨!
+    console.log("🐛 민팅 직전 product 확인:", product);
+    console.log("🐛 metadataURI 확인:", product.metadataUrl);
+
     try {
       setMinting(true);
       const address = await window.ethereum.request({
@@ -33,7 +37,7 @@ export default function MintingModal({ open, setOpen, product }: any) {
         price: product.price,
         name: product.gifticonTitle,
         description: product.description,
-        metadataURI: product.imageUrl || "ipfs://default",
+        metadataURI: product.metadataUrl || "ipfs://default",
       });
 
       console.log("✅ 민팅 성공:", txHash);

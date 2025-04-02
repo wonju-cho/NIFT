@@ -9,15 +9,17 @@ interface ProductCardProps {
   name: string;
   price: number;
   image: string;
+  metadata: string;
   category?: string;
   brand?: string;
-  openMintModal?: (gifticonId: string) => void;
+  openMintModal?: (product: any) => void;
 }
 
 export default function ProductCard({
   id,
   name,
   price,
+  metadata,
   image,
   category,
   brand,
@@ -64,7 +66,17 @@ export default function ProductCard({
         {openMintModal && (
           <Button
             className="ml-2 bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={() => openMintModal(id)}
+            onClick={() =>
+              openMintModal({
+                id,
+                name,
+                price,
+                image,
+                metadata,
+                category,
+                brand,
+              })
+            }
           >
             민팅
           </Button>

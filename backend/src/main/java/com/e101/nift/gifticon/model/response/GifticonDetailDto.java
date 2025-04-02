@@ -20,6 +20,7 @@ public class GifticonDetailDto {
     private Float price;
     private String brandName;
     private String categoryName;
+    private String metadataUrl;
     private Timestamp createdAt;
 
 
@@ -31,6 +32,7 @@ public class GifticonDetailDto {
         this.imageUrl = gifticon.getImageUrl();
         this.brandName = gifticon.getBrand().getBrandName();
         this.categoryName = gifticon.getCategory().getCategoryName();
+        this.metadataUrl = gifticon.getMetadataUrl();
         this.createdAt = gifticon.getCreatedAt();
     }
 

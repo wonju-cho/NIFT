@@ -72,13 +72,17 @@ export default function ProductSearchPage() {
   // 초기 로딩
   useEffect(() => {
     const fetchProducts = async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/gifticons`
-      );
-      const data = await res.json();
-      setProducts(data);
-      setFilteredProducts(data);
-      setIsLoading(false);
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/gifticons`
+        );
+        const data = await res.json();
+        setProducts(data);
+        setFilteredProducts(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("❌ 상품 목록 불러오기 실패:", error);
+      }
     };
 
     fetchProducts();

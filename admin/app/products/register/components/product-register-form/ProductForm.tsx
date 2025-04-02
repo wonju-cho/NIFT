@@ -90,6 +90,13 @@ export default function ProductForm() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const selectedBrand = brands.find(
+      (b) => b.brandId === Number(formData.brand)
+    );
+    const selectedCategory = categories.find(
+      (c) => c.categoryId === Number(formData.category)
+    );
+
     try {
       if (
         !formData.name ||
@@ -118,12 +125,10 @@ export default function ProductForm() {
         description: formData.description,
         image: imageUrl,
         attributes: [
-          { trait_type: "브랜드", value: formData.brand },
-          { trait_type: "카테고리", value: formData.category },
-          { trait_type: "가격", value: formData.price },
+          { trait_type: "Brand", value: selectedBrand?.brandName || "Unknown" },
           {
-            trait_type: "시리얼넘버",
-            value: "SN-" + crypto.randomUUID().slice(0, 8),
+            trait_type: "Category",
+            value: selectedCategory?.categoryName || "Unknown",
           },
         ],
       };

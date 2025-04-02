@@ -28,6 +28,7 @@ export default function ProductGrid({
             id={String(product.gifticonId)}
             name={product.gifticonTitle ?? "제목 없음"}
             price={Math.floor(product.price)}
+            metadata={product.metadata}
             image={toValidImageUrl(product.imageUrl) ?? "/default.png"}
             category={product.categoryName ?? "기타"}
             brand={product.brandName ?? "브랜드 없음"}

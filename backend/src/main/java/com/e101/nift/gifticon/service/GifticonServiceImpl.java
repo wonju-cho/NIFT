@@ -34,6 +34,7 @@ public class GifticonServiceImpl implements GifticonService {
                 gifticon.getPrice(),
                 gifticon.getBrand().getBrandName(),
                 gifticon.getCategory().getCategoryName(),
+                gifticon.getMetadataUrl(),
                 gifticon.getCreatedAt()
                 );
     }

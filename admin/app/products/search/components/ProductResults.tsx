@@ -11,8 +11,8 @@ type Product = {
   id: string;
   name: string;
   price: number;
-  image?: string;
   brand: string;
+  metadata: string;
   category: string;
   createdAt?: string;
 };
@@ -21,14 +21,14 @@ type Props = {
   products: Product[];
   viewMode: "grid" | "table";
   hasSearched: boolean;
-  openMintModal: (gifticonId: string) => void; // ✅ 추가
+  openMintModal: (gifticonId: string) => void;
 };
 
 export default function ProductResults({
   products,
   viewMode,
   hasSearched,
-  openMintModal, // ✅ 추가
+  openMintModal,
 }: Props) {
   const totalCount = products.length;
 

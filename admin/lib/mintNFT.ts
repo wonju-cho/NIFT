@@ -56,7 +56,7 @@ export const mintNFT = async ({
     console.log("🛠️ 민팅 트랜잭션 실행 중...");
     // mintBatchWithSerials 호출 시 userAddress 사용
     const tx = await contract.mintBatchWithSerials(
-      userAddress, // userAddress를 파라미터로 전달
+      userAddress,
       gifticonId,
       quantity,
       price,
