@@ -124,46 +124,50 @@ pipeline {
 		}
 
 		stage('Flyway Migration') {
-			steps {
-				script {
-					if (env.ENV == 'dev') {
-						def props = readProperties file: '.env'
-						def migrationPath = "${env.WORKSPACE}/backend/src/main/resources/db/migration"
-
-						sh """
-						echo "🧾 파일 목록:"
-						ls -al ${env.WORKSPACE}/backend/src/main/resources/db/migration
-
-						echo "🧾 flyway 마운트 테스트:"
-						docker run --rm \
-						  -v ${env.WORKSPACE}/backend/src/main/resources/db/migration:/flyway/sql \
-						  ubuntu \
-						  bash -c "ls -al /flyway/sql"
-						"""
-
-						withEnv([
-							"MYSQL_USER=${props.MYSQL_USER}",
-							"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
-							"MYSQL_DATABASE=${props.MYSQL_DEV_DATABASE}"
-						]) {
-							sh """
-							echo "😒 Running Flyway Migration..."
-							docker run --rm \
-							  --network shared_backend \
-							  -v ${migrationPath}:/flyway/sql \
-							  flyway/flyway \
-							  -locations=filesystem:/flyway/sql \
-							  -url="jdbc:mysql://mysql:3306/\$MYSQL_DATABASE?allowPublicKeyRetrieval=true&useSSL=false" \
-							  -user=\$MYSQL_USER \
-							  -password=\$MYSQL_PASSWORD \
-							  migrate
-							"""
-						}
-					} else {
-						echo "👌 (master branch) Skipping Flyway Migration."
-					}
-				}
-			}
+		    steps {
+		        script {
+		            if (env.ENV == 'dev') {
+		                def props = readProperties file: '.env'
+		                def migrationPath = "${env.WORKSPACE}/backend/src/main/resources/db/migration"
+		                
+		                sh """
+		                # Ensure the migration directory and files are readable
+		                chmod -R 755 ${migrationPath}
+		                
+		                # Copy migration files to a temporary location that's known to work with Docker
+		                mkdir -p /tmp/flyway-migrations
+		                cp -r ${migrationPath}/* /tmp/flyway-migrations/
+		                
+		                # Verify the files were copied
+		                echo "🧾 Temporary migration files:"
+		                ls -al /tmp/flyway-migrations/
+		                """
+		                
+		                withEnv([
+		                    "MYSQL_USER=${props.MYSQL_USER}",
+		                    "MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
+		                    "MYSQL_DATABASE=${props.MYSQL_DATABASE}" 
+		                ]) {
+		                    sh """
+		                    echo "😒 Running Flyway Migration..."
+		                    docker run --rm \
+		                      --network shared_backend \
+		                      -v /tmp/flyway-migrations:/flyway/sql \
+		                      flyway/flyway \
+		                      -url="jdbc:mysql://mysql:3306/\$MYSQL_DATABASE?allowPublicKeyRetrieval=true&useSSL=false" \
+		                      -user=\$MYSQL_USER \
+		                      -password=\$MYSQL_PASSWORD \
+		                      migrate
+		                    """
+		                }
+		                
+		                // Clean up the temporary directory
+		                sh "rm -rf /tmp/flyway-migrations"
+		            } else {
+		                echo "👌 (master branch) Skipping Flyway Migration."
+		            }
+		        }
+		    }
 		}
 
 		stage('Run Docker Compose') {
