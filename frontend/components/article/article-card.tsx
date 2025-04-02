@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArticleService } from "@/lib/api/ArticleService";
 import { useState } from "react";
+import { ArticlePrice } from "@/components/articleDetail/ArticlePrice";
+import { ArticlePriceCard } from "./article-card-price";
 
 export interface ArticleCardProps {
   articleId: number;
@@ -34,12 +36,8 @@ export function ArticleCard({
 }: ArticleCardProps) {
   const isSold = state === "SOLD";
 
-  const formattedCurrentPrice = new Intl.NumberFormat("ko-KR").format(
-    currentPrice
-  );
-  const formattedOriginalPrice = new Intl.NumberFormat("ko-KR").format(
-    originalPrice
-  );
+  // const formattedCurrentPrice = new Intl.NumberFormat("ko-KR").format(currentPrice)
+  // const formattedOriginalPrice = new Intl.NumberFormat("ko-KR").format(originalPrice)
 
   const [isLiked, setIsLiked] = useState(initialIsLiked ?? false);
 
@@ -112,16 +110,11 @@ export function ArticleCard({
         <div className="p-3">
           <div className="mb-1 text-xs text-gray-500">{brandName}</div>
           <h3 className="line-clamp-2 text-sm font-medium">{title}</h3>
-          <div className="mt-2 flex items-baseline gap-1">
-            {discountRate > 0 && (
-              <span className="text-sm text-red-500">~{discountRate}%</span>
-            )}
-            <span className="text-base font-bold">{formattedCurrentPrice}</span>
-            {originalPrice > currentPrice && (
-              <span className="text-xs text-gray-500 line-through">
-                {formattedOriginalPrice}
-              </span>
-            )}
+          <div className="mt-2">
+            <ArticlePriceCard
+              currentPrice={currentPrice}
+              originalPrice={originalPrice}
+            />
           </div>
         </div>
       </Link>

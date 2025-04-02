@@ -1,50 +1,110 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArticleGrid } from "@/components/article/article-grid"
 
-// 샘플 데이터
-const popularArticles = [
-  {
-    id: "1",
-    title: "스타벅스 아메리카노 Tall",
-    price: 4500,
-    category: "커피/음료",
-    image: "/placeholder.svg?height=400&width=400",
-    isFavorite: true,
-  },
-  {
-    id: "2",
-    title: "배스킨라빈스 파인트",
-    price: 9800,
-    category: "뷰티/아이스크림",
-    image: "/placeholder.svg?height=400&width=400",
-  },
-  {
-    id: "3",
-    title: "맥도날드 빅맥 세트",
-    price: 8900,
-    category: "치킨/피자/버거",
-    image: "/placeholder.svg?height=400&width=400",
-    isNew: true,
-  },
-  {
-    id: "4",
-    title: "CGV 영화 관람권",
-    price: 13000,
-    category: "문화/생활",
-    image: "/placeholder.svg?height=400&width=400",
-  },
-  {
-    id: "5",
-    title: "GS25 5천원 금액권",
-    price: 5000,
-    category: "편의점/마트",
-    image: "/placeholder.svg?height=400&width=400",
-  },
-]
+// access_token 가져오기
+const getAccessToken = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("access_token") || null
+  }
+  return null
+}
+
+// 백엔드 API에서 상품 데이터를 가져오는 함수
+const fetchArticles = async ({
+  categories = [],
+  sort = "newest",
+  page = 0,
+  size = 5,
+  userId,
+  priceRange = [0, 30000], // Add priceRange parameter
+}: {
+  categories?: number[]
+  sort?: string
+  page?: number
+  size?: number
+  userId?: number
+  priceRange?: number[] // Add type definition
+}) => {
+  try {
+    const accessToken = getAccessToken()
+
+    // URL 쿼리 파라미터 구성
+    const params = new URLSearchParams()
+
+    if (categories.length > 0) {
+      categories.forEach((cat) => params.append("category", cat.toString()))
+    }
+
+    // Add price range parameters
+    
+    params.append("sort", sort)
+    params.append("page", page.toString())
+    params.append("size", size.toString())
+    params.append("minPrice", priceRange[0].toString())
+    params.append("maxPrice", priceRange[1].toString())
+    
+    const queryString = params.toString()
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles${queryString ? `?${queryString}` : ""}`
+
+    console.log("Fetching articles from:", url)
+
+    const headers: HeadersInit = { "Content-Type": "application/json" }
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}` // 로그인한 경우에만 헤더 추가
+    }
+
+    const res = await fetch(url, {
+      method: "GET", 
+      headers,
+      cache: 'no-store' // Disable caching for development
+    })
+
+    if (!res.ok) {
+      console.error(`API error: ${res.status} ${res.statusText}`)
+      throw new Error("Failed to fetch articles")
+    }
+
+    const data = await res.json()
+    console.log("API Response:", data)
+    return data
+  } catch (error) {
+    console.error("Error fetching articles:", error)
+    return { content: [], totalPages: 1, totalElements: 0 }
+  }
+}
+
 
 export function PopularArticles() {
+  const [articles, setArticles] = useState<any[]>([])
+
+  useEffect(() => {
+    const loadLatestArticles = async () => {
+      try {
+        console.log("Loading latest articles...")
+        // Use the fetchArticles function with specific parameters for recently listed
+        const data = await fetchArticles({
+          sort: "likes",
+          page: 1,
+          size: 5,
+          priceRange: [0, 30000]
+        })
+        
+        console.log("Articles data:", data)
+        setArticles(data.content || [])
+      } catch (error) {
+        console.error("Error loading latest articles:", error)
+        setArticles([])
+      }
+    }
+    
+    loadLatestArticles()
+  }, [])
+
   return (
-    <section className="py-12">
+    <section className="py-12 bg-red-50">
       <div className="container">
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">인기 상품</h2>
@@ -61,9 +121,13 @@ export function PopularArticles() {
             </svg>
           </Link>
         </div>
-        {/* <ArticleGrid articles={popularArticles} /> */}
+        <ArticleGrid 
+          articles={articles.map(article => ({
+            ...article,
+            isLiked: article.liked,
+        }))}
+        />
       </div>
     </section>
   )
 }
-
