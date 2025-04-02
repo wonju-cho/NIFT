@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { getArticleById } from "@/lib/api/ArticleService";
 import { getSerialInfo, giftToFriend } from "@/lib/api/web3";
 import { postCardDesign, sendGiftHistory } from "@/lib/api/CreateGiftHistory";
+import { sendKakaoMessage } from "@/lib/api/sendKakaoMessage";
 
 interface Friend {
   uuid: string;
@@ -91,6 +92,7 @@ export default function GiftPaymentPageContent({
     try {
       setIsLoading(true);
       const accessToken = localStorage.getItem("access_token");
+      const kakaoaccessToken = localStorage.getItem("kakao_access_token");
       const rawCardData = localStorage.getItem(`card-data-${cardId}`);
       if (!rawCardData) throw new Error("카드 데이터 없음");
 
@@ -138,6 +140,14 @@ export default function GiftPaymentPageContent({
         txHashPurchase: String(tx.txHashPurchase),
         txHashGift: String(tx.txHashGift),
       });
+
+      // 선물 받을 친구에게 메세지 전송
+      await sendKakaoMessage(
+        kakaoaccessToken!,
+        [selectedFriend!.uuid],
+        118821,
+        { THU: article.image }
+      );
 
       router.push(`/gift/${params.id}/complete`);
 
