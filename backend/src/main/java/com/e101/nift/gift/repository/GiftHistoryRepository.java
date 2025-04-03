@@ -6,9 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 
 public interface GiftHistoryRepository extends JpaRepository<GiftHistory, Long> {
 
     @EntityGraph(attributePaths = {"gifticon", "toUserId"})
     Page<GiftHistory> findByFromUserId_UserId(Long userId, Pageable pageable);
+
+    Optional<GiftHistory> findGiftHistoriesByTxHash(String txHash);
 }
