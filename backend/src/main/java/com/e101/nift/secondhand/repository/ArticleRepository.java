@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,4 +67,16 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     Optional<Article> findArticleBySerialNumAndState(Long serialNum, SaleStatus status);
 
     Optional<Article> findArticleByTxHash(String txHash);
+
+    // 전체 판매 중인 상품 수
+    long countByState(SaleStatus state);
+
+    // 이번 주 매출 합계
+    @Query("SELECT SUM(a.currentPrice) FROM Article a " +
+            "LEFT JOIN ArticleHistory h ON a.articleId = h.articleId " +
+            "WHERE h.createdAt BETWEEN :start AND :end")
+    Long sumPriceByHistoryDateRange(@Param("start") LocalDateTime start,
+                                    @Param("end") LocalDateTime end);
+
+
 }
