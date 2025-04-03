@@ -13,9 +13,9 @@ interface QrScannerProps {
 export default function QrScanner({ onClose, onScanSuccess }: QrScannerProps) {
   const scannerContainerRef = useRef<HTMLDivElement>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const hasScannedRef = useRef(false); // ✅ 중복 방지용 ref
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  const [scanCompleted, setScanCompleted] = useState(false); // 스캔 완료 상태 추가
 
   const safelyStopScanner = async () => {
     if (!scannerRef.current) return;
@@ -38,7 +38,7 @@ export default function QrScanner({ onClose, onScanSuccess }: QrScannerProps) {
 
   const handleClose = async () => {
     await safelyStopScanner();
-    onClose(); // 상위 상태 업데이트
+    onClose();
   };
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function QrScanner({ onClose, onScanSuccess }: QrScannerProps) {
 
       container.innerHTML = "";
       scannerRef.current = new Html5Qrcode(container.id);
-      setScanCompleted(false); // 스캐너 시작 시 스캔 완료 상태 초기화
+      hasScannedRef.current = false; // ✅ 스캐너 시작 시 초기화
 
       try {
         setIsScanning(true);
@@ -63,9 +63,8 @@ export default function QrScanner({ onClose, onScanSuccess }: QrScannerProps) {
             aspectRatio: 1.0,
           },
           async (decodedText) => {
-            if (scanCompleted) return; // 이미 스캔 완료된 경우 무시
-
-            console.log(decodedText);
+            if (hasScannedRef.current) return; // ✅ 중복 방지
+            console.log("✅ QR 스캔 성공:", decodedText);
 
             let addressToCheck = decodedText;
             if (decodedText.startsWith("ethereum:")) {
@@ -77,13 +76,13 @@ export default function QrScanner({ onClose, onScanSuccess }: QrScannerProps) {
               return;
             }
 
-            setScanCompleted(true); // 스캔 완료 상태로 설정
+            hasScannedRef.current = true; // ✅ 한 번만 처리
             setIsScanning(false);
             onScanSuccess(addressToCheck);
             await safelyStopScanner();
           },
           () => {
-            // QR 인식 실패는 무시
+            // QR 인식 실패 무시
           }
         );
       } catch (err) {

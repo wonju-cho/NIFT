@@ -14,6 +14,7 @@ interface GiftTabProps {
   calculateDday: (expiry: string) => number;
   giftCardTab: string;
   setGiftCardTab: (tab: string) => void;
+  onGifticonUsed: (serialNum: number) => void;
 }
 
 export function GiftTab({
@@ -27,6 +28,7 @@ export function GiftTab({
   calculateDday,
   giftCardTab,
   setGiftCardTab,
+  onGifticonUsed,
 }: GiftTabProps) {
   const availableTotalPage =
     Math.ceil(availableGiftCards.length / ITEMS_PER_PAGE) || 1;
@@ -55,6 +57,7 @@ export function GiftTab({
                 key={Number(card.serialNum)}
                 expiryDays={`D-${calculateDday(card.expiryDate)}`}
                 card={card}
+                onGifticonUsed={onGifticonUsed}
               />
             ))}
         </div>

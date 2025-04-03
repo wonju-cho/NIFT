@@ -250,6 +250,18 @@ export default function MyPage() {
     { icon: Settings, label: "설정", value: "settings" },
   ];
 
+  const handleGifticonUsed = (serialNum: number) => {
+    setAvailableGiftCards((prev) =>
+      prev.filter((item) => Number(item.serialNum) !== Number(serialNum))
+    );
+    const usedGift = availableGiftCards.find(
+      (item) => Number(item.serialNum) === Number(serialNum)
+    );
+    if (usedGift) {
+      setUsedGiftCards((prev) => [...prev, { ...usedGift, redeemed: true }]);
+    }
+  };  
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -316,6 +328,7 @@ export default function MyPage() {
                             calculateDday={calculateDday}
                             giftCardTab={giftCardTab}
                             setGiftCardTab={setGiftCardTab}
+                            onGifticonUsed={handleGifticonUsed}
                           />
                         </TabsContent>
 

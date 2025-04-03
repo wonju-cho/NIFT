@@ -10,9 +10,10 @@ import QrScanner from "../ui/QrScanner";
 interface GiftCardProps {
   expiryDays: string;
   card: UserNFT;
+  onGifticonUsed?: (serialNum: number) => void;
 }
 
-export function GiftCard({ expiryDays, card }: GiftCardProps) {
+export function GiftCard({ expiryDays, card, onGifticonUsed }: GiftCardProps) {
   const router = useRouter();
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
 
@@ -26,9 +27,10 @@ export function GiftCard({ expiryDays, card }: GiftCardProps) {
   };
 
   const handleUseNft = async (walletAddress: string) => {
-    const response = await useNft(card.serialNum, walletAddress);
+    const response = await useNft(Number(card.serialNum), walletAddress);
     if (response.success) {
       alert("사용이 완료되었습니다.");
+      onGifticonUsed?.(Number(card.serialNum));
     }
   };
 
