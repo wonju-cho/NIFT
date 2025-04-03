@@ -10,13 +10,14 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const sendKakaoTokenToBackend = async (accessToken: string): Promise<any> => {
   try {
-    const response = await fetch(`${BASE_URL}/auth/login`, { // ✅ 백엔드 URL 직접 입력
+    const response = await fetch(`${BASE_URL}/auth/login`, {
+      // ✅ 백엔드 URL 직접 입력
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ accessToken }),
-    });    
+    });
 
     if (!response.ok) {
       throw new Error("백엔드 로그인 요청 실패");
@@ -60,7 +61,7 @@ const KakaoCallback: React.FC = () => {
 
         localStorage.setItem("kakao_access_token", data.access_token);
 
-        window.dispatchEvent(new Event("storage"))
+        window.dispatchEvent(new Event("storage"));
 
         // 백엔드로 토큰 보내기
         const userInfo = await sendKakaoTokenToBackend(data.access_token);
@@ -70,7 +71,7 @@ const KakaoCallback: React.FC = () => {
         localStorage.setItem("access_token", userInfo.token);
 
         // 로그인 상태 변경을 위해 storage 이벤트 발생시키기
-        window.dispatchEvent(new Event("storage"))
+        window.dispatchEvent(new Event("storage"));
 
         router.push("/");
       } catch (error) {
@@ -83,9 +84,14 @@ const KakaoCallback: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <Image src="/loadingspinner.gif" alt="로딩 중..." width={64} height={64} />
+      <Image
+        src="/loadingspinner.gif"
+        alt="로딩 중..."
+        width={64}
+        height={64}
+      />
     </div>
-  )
+  );
 };
 
 export default KakaoCallback;

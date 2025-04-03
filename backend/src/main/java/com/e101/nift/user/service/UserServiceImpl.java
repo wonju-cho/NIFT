@@ -74,8 +74,9 @@ public class UserServiceImpl implements UserService{
 
     @Transactional(readOnly = true)
     @Override
-    public UserInfoDto getUserInfoByUser(User user) {
-
+    public UserInfoDto getUserInfoByUser(Long userId) {
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        log.info("getUserInfoByUser() {}", user);
         // ✅ 4. 모든 정보를 DTO에 담아 반환
         return UserInfoDto.builder()
                 .profileImage(user.getProfileImage())

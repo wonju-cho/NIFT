@@ -3,10 +3,6 @@ package com.e101.nift.brand.controller;
 import com.e101.nift.brand.entity.Brand;
 import com.e101.nift.brand.model.response.BrandDto;
 import com.e101.nift.brand.repository.BrandRepository;
-import com.e101.nift.category.entity.Category;
-import com.e101.nift.category.model.CategoryDto;
-import com.e101.nift.category.repository.CategoryRepository;
-import com.e101.nift.gifticon.service.GifticonService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +21,7 @@ public class BrandController {
 
     @Operation(summary = "브랜드 목록 가져오기", description = "브랜드 목록 가져오기")
     @GetMapping
-    public ResponseEntity<List<BrandDto>> getAllBrands() {
+    public ResponseEntity<List<BrandDto>> getAllCategories() {
         List<Brand> brands = brandRepository.findAll();
 
         List<BrandDto> result = brands.stream()

@@ -1,8 +1,7 @@
 import type React from "react"
 import "./globals.css"
 import type { Metadata } from "next"
-import { Noto_Sans} from "next/font/google";
-import { LoadingProvider } from "@/components/LoadingContext"
+import { Noto_Sans } from "next/font/google";
 
 const notoSans = Noto_Sans({
   subsets: ["latin"],
@@ -15,7 +14,7 @@ export const metadata: Metadata = {
   description: "안전하고 투명한 NFT 기반 기프티콘 중고거래 플랫폼",
   generator: 'v0.dev',
   icons: {
-    icon: "./favicon.io",
+    icon: "/frontend/favicon-nft.ico",
   },
 }
 
@@ -27,9 +26,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className={notoSans.variable}>
       <body className={notoSans.className}>
-        <LoadingProvider>
-          {children}
-        </LoadingProvider>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   )
@@ -38,3 +35,5 @@ export default function RootLayout({
 
 
 import './globals.css'
+import ClientLayout from "../components/ClientLayout";
+

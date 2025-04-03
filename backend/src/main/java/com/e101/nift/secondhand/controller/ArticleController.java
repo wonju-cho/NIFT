@@ -3,6 +3,7 @@ package com.e101.nift.secondhand.controller;
 import com.e101.nift.common.security.CustomUserDetails;
 import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
+import com.e101.nift.secondhand.model.dto.request.TxHashDTO;
 import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
 import com.e101.nift.secondhand.service.ArticleService;
@@ -15,13 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,20 +48,27 @@ public class ArticleController {
         try {
             User user = jwtTokenProvider.getUserFromRequest(request);
             userId = user.getUserId();
-        } catch (UsernameNotFoundException e){
+        } catch (UsernameNotFoundException e) {
             log.warn("유효하지 않은 토큰입니다: {}", e.getMessage());
         }
 
-        Pageable pageable = PageRequest.of(page-1, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
         Page<ArticleListDto> articles = articleService.getArticleList(sort, categories, pageable, userId, minPrice, maxPrice);
         return ResponseEntity.ok(articles);
+    }
+
+    @GetMapping("/max-price")
+    @Operation(summary = "최대 가격 조회", description = "판매 중인 중고 상품 중 가장 비싼 currentPrice를 반환합니다.")
+    public ResponseEntity<?> getMaxPrice() {
+        Float maxPrice = articleService.getMaxCurrentPrice();
+        return ResponseEntity.ok().body(Map.of("maxPrice", maxPrice));
     }
 
     @GetMapping("/{articleId}")
     @Operation(summary = "판매 게시글 상세조회", description = "판매중인 상품의 상세 정보를 조회합니다.")
     public ResponseEntity<ArticleDetailDto> getArticleById(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable("articleId") Long articleId){
+            @PathVariable("articleId") Long articleId) {
 
         Long userId = (userDetails != null) ? userDetails.getUserId() : null;
         ArticleDetailDto dto = articleService.getArticleDetail(articleId, userId);
@@ -71,15 +79,10 @@ public class ArticleController {
     @PostMapping
     @Operation(summary = "게시글 쓰기", description = "기프티콘 판매 게시글을 작성합니다.")
     public ResponseEntity<?> PostArticles(
-            HttpServletRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody PostArticleDto postArticleDto
     ) {
-        Long userId = jwtTokenProvider.getUserFromRequest(request).getUserId();
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
-        }
-
-        articleService.createArticle(postArticleDto, userId);
+        articleService.createArticle(postArticleDto, userDetails.getUserId());
         return ResponseEntity.status(201).build();
     }
 
@@ -87,17 +90,12 @@ public class ArticleController {
     @DeleteMapping("/{articleId}")
     @Operation(summary = "게시글 삭제", description = "기프티콘 판매 게시글을 삭제합니다.")
     public ResponseEntity<?> deleteArticles(
-            HttpServletRequest request,
-            @PathVariable Long articleId)
-        {
-        Long userId = jwtTokenProvider.getUserFromRequest(request).getUserId();
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 사용자");
-        }
-
-        articleService.deleteArticle(articleId);
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("articleId") Long articleId,
+            @RequestBody TxHashDTO txHashDTO
+    ) {
+        articleService.deleteArticle(articleId, txHashDTO);
         return ResponseEntity.status(201).build();
     }
-
 
 }

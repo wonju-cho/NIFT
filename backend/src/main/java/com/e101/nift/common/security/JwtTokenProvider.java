@@ -50,6 +50,16 @@ public class JwtTokenProvider {
         }
     }
 
+
+    public Long getUserIdFromToken(String token) {
+        return Long.parseLong(Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject());
+    }
+
     // ✅ JWT에서 사용자 user 추출
     public User getUserFromToken(String token){
         // 접두어 Bearer 제거

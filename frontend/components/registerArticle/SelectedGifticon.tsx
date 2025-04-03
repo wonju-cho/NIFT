@@ -1,6 +1,7 @@
+import { UserNFT } from "@/lib/api/web3";
 import Image from "next/image";
 
-export function GifticonDetailCard({ gifticon }: { gifticon: any }) {
+export function GifticonDetailCard({ gifticon }: { gifticon: UserNFT }) {
   if (!gifticon)
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground text-center">
@@ -24,7 +25,8 @@ export function GifticonDetailCard({ gifticon }: { gifticon: any }) {
           <div>브랜드: {gifticon.brand}</div>
           <div>카테고리: {gifticon.category}</div>
           <div>유효기간: {gifticon.expiryDate}</div>
-          <div>시리얼번호: {gifticon.serialNum + ""}</div>
+
+          <div>시리얼번호: {String(gifticon.serialNum)}</div>
         </div>
       </div>
     </div>

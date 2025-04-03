@@ -1,3 +1,5 @@
+"use client"; 
+
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Input } from "@/components/ui/input"
@@ -26,12 +28,9 @@ interface GiftRecipientFormProps {
 }
 
 export function GiftRecipientForm({
-  phone,
   message,
-  isAnonymous,
   setPhone,
   setMessage,
-  setAnonymous,
   selectedFriend,
   setSelectedFriend
 }: GiftRecipientFormProps) {

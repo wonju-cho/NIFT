@@ -1,46 +1,47 @@
 "use client";
 
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { getTokenIdBySerial } from "@/lib/api/web3"
+import { UserNFT } from "@/lib/api/web3";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { getTokenIdBySerial } from "@/lib/api/web3";
+import { useState } from "react";
+import QrScanner from "../ui/QrScanner";
 
 interface GiftCardProps {
-  title: string
-  brand: string
-  expiryDays?: string
-  imageUrl: string
-  usedDate?: string | null
-  serialNum: number
+  expiryDays: string;
+  card: UserNFT;
 }
 
-export function GiftCard({ title, brand, expiryDays, imageUrl, usedDate = null, serialNum }: GiftCardProps & {serialNum: number}) {
-  const router = useRouter()
+export function GiftCard({ expiryDays, card }: GiftCardProps) {
+  const router = useRouter();
 
   const handleGift = async (serialNum: number) => {
     try {
-      const tokenId = await getTokenIdBySerial(serialNum)
-      router.push(`/gift/${tokenId}/customize?type=gifticon`)
+      router.push(`/gift/${serialNum}/customize?type=gifticon`);
     } catch (error) {
-      console.error("gifticonId 조회 실패:", error)
-      alert("기프티콘 정보를 가져오지 못했습니다.")
+      console.error("gifticonId 조회 실패:", error);
+      alert("기프티콘 정보를 가져오지 못했습니다.");
     }
-  }
-  
-  
+  };
+
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false)
+
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-white transition-all hover:shadow-md">
       <div className="relative aspect-square overflow-hidden">
         <Image
-          src={imageUrl || "/placeholder.svg"}
-          alt={title}
+          src={card.image || "/placeholder.svg"}
+          alt={card.title}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         {expiryDays && (
-          <div className="absolute left-2 top-2 rounded bg-gray-700 px-2 py-1 text-xs text-white">{expiryDays}</div>
+          <div className="absolute left-2 top-2 rounded bg-gray-700 px-2 py-1 text-xs text-white">
+            {expiryDays}
+          </div>
         )}
-        {usedDate && (
+        {card.redeemed && (
           <>
             <div className="absolute inset-0 bg-black/30"></div>
             <div
@@ -51,30 +52,69 @@ export function GiftCard({ title, brand, expiryDays, imageUrl, usedDate = null, 
             </div>
           </>
         )}
+        {card.isPending && (
+          <>
+            <div className="absolute inset-0 bg-black/30"></div>
+            <div
+              className="absolute left-2 top-2 rounded px-2 py-1 text-xs text-white font-medium"
+              style={{ backgroundColor: "#dd5851" }}
+            >
+              선물 대기 중
+            </div>
+          </>
+        )}
+        {card.isSelling && (
+          <>
+            <div className="absolute inset-0 bg-black/30"></div>
+            <div
+              className="absolute left-2 top-2 rounded px-2 py-1 text-xs text-white font-medium"
+              style={{ backgroundColor: "#dd5851" }}
+            >
+              판매 대기 중
+            </div>
+          </>
+        )}
       </div>
       <div className="p-3">
-        <div className="text-xs text-gray-500">{brand}</div>
-        <h3 className="line-clamp-2 text-sm font-medium">{title}</h3>
-        {usedDate && (
+        <div className="text-xs text-gray-500">{card.brand}</div>
+        <h3 className="line-clamp-2 text-sm font-medium">{card.title}</h3>
+        {card.redeemedAt !== 0n && (
           <div className="mt-2 text-xs text-gray-500">
-            <div>사용일: {usedDate}</div>
+            <div>
+              사용일:
+              {new Date(Number(card.redeemedAt) * 1000).toLocaleString()}
+            </div>
           </div>
         )}
       </div>
-      {!usedDate && (
+      {!card.redeemed && !card.isPending && !card.isSelling && (
         <div className="grid grid-cols-2 gap-2 p-3 pt-0">
-          <button className="rounded border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary hover:text-white transition-colors">
+          <button
+            className="rounded border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary hover:text-white transition-colors"
+            onClick={() => setIsQrScannerOpen(true)}
+          >
             사용하기
           </button>
-          <button 
+
+          <button
             className="rounded border border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-700 hover:text-white transition-colors"
-            onClick={() => handleGift(serialNum)}
+            onClick={() => handleGift(Number(card.serialNum))}
           >
             선물하기
           </button>
         </div>
       )}
-    </div>
-  )
-}
 
+      {isQrScannerOpen && (
+        <QrScanner
+          onClose={() => setIsQrScannerOpen(false)}
+          onScanSuccess={(walletAddress) => {
+            console.log("✅ 인식된 지갑 주소:", walletAddress)
+            setIsQrScannerOpen(false)
+            // TODO: 여기서 API 호출로 gift 사용 처리
+          }}
+        />
+      )}
+    </div>
+  );
+}

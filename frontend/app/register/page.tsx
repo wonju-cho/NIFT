@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { getUserNFTsAsJson } from "@/lib/api/web3";
+import { getUserNFTsAsJson, UserNFT } from "@/lib/api/web3";
 import { RegisterPageLayout } from "@/components/registerArticle/RegisterPageLayout";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { listGifticonForSale } from "@/lib/api/web3";
 import { useLoading } from "@/components/LoadingContext";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { apiClient } from "@/lib/api/CustomAxios";
 
 async function getWalletAddress() {
   if (typeof window.ethereum !== "undefined") {
@@ -31,7 +31,7 @@ const convertIpfsUrl = (url: string) => {
 
 export default function RegisterPage() {
   const { isLoading, setIsLoading } = useLoading();
-  const [ownedGifticons, setOwnedGifticons] = useState<any[]>([]);
+  const [ownedGifticons, setOwnedGifticons] = useState<UserNFT[]>([]);
   const [selectedGifticon, setSelectedGifticon] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     const fetchWallets = async () => {
-      if (!accessToken) return;
+      if (!accessToken || accessToken == "loading") return;
 
       // DB 지갑 주소 불러오기
       try {
@@ -100,7 +100,7 @@ export default function RegisterPage() {
   }, [accessToken]);
 
   const selectedGifticonData = selectedGifticon
-    ? ownedGifticons.find((g) => g.serialNum === selectedGifticon)
+    ? ownedGifticons.find((g) => String(g.serialNum) === selectedGifticon)
     : null;
 
   const handleScroll = (direction: "left" | "right") => {
@@ -124,16 +124,6 @@ export default function RegisterPage() {
       return;
     }
 
-    const payload = {
-      title: data.title,
-      description: data.description,
-      currentPrice: data.price,
-      serialNum: Number(selectedGifticonData.serialNum),
-      expirationDate: `${selectedGifticonData.expiryDate}T23:59:59`,
-      gifticonId: Number(selectedGifticonData.id),
-      imageUrl: selectedGifticonData.image,
-    };
-
     setIsLoading(true);
     try {
       const token = localStorage.getItem("access_token");
@@ -142,18 +132,19 @@ export default function RegisterPage() {
         return;
       }
 
-      await listGifticonForSale(payload.serialNum, payload.currentPrice);
-
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const tx = await listGifticonForSale(
+        Number(selectedGifticonData.serialNum),
+        data.price
       );
+
+      const payload = {
+        title: data.title,
+        description: data.description,
+        txHash: tx!.hash,
+      };
+
+      console.log("🟢 등록 요청 데이터:", payload);
+      const response = await apiClient.post("/secondhand-articles", payload);
 
       alert("게시글이 성공적으로 등록되었습니다!");
       router.push("/articles");

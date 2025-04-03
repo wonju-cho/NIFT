@@ -22,6 +22,8 @@ export const WishList = ({
   endPage,
   totalPage,
 }: WishListProps) => {
+  const hasArticles = likedArticles.length > 0;
+
   return (
     <TabsContent value="favorites" className="mt-6">
       <div>
@@ -31,22 +33,20 @@ export const WishList = ({
         </p>
       </div>
 
-      {/* 찜한 상품 목록 표시 */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {likedArticles?.length > 0 ? (
-          likedArticles.map((article) => (
-            <Link
-              key={article.articleId}
-              href={`/product/${article.articleId}`}
-              passHref
-            >
-              <ArticleCard {...article} />
-            </Link>
-          ))
-        ) : (
-          <p className="text-center text-gray-500">찜한 상품이 없습니다.</p>
-        )}
-      </div>
+      {hasArticles ? (
+        <>
+          {/* 찜한 상품 목록 */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {likedArticles.map((article) => (
+              <Link
+                key={article.articleId}
+                href={`/product/${article.articleId}`}
+                passHref
+              >
+                <ArticleCard {...article} />
+              </Link>
+            ))}
+          </div>
 
       {/* 페이지네이션 */}
       <div className="mt-8 flex justify-center items-center gap-2">
@@ -58,24 +58,34 @@ export const WishList = ({
           ‹ 이전
         </Button>
 
-        {Array.from({ length: endPage - startPage }, (_, i) => startPage + i).map((pageNum) => (
-          <Button
-            key={pageNum}
-            variant={currentPage === pageNum ? "default" : "ghost"}
-            onClick={() => setCurrentPage(pageNum)}
-          >
-            {pageNum + 1}
-          </Button>
-        ))}
+            {Array.from({ length: endPage - startPage }, (_, i) => startPage + i).map(
+              (pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "ghost"}
+                  onClick={() => setCurrentPage(pageNum)}
+                >
+                  {pageNum + 1}
+                </Button>
+              )
+            )}
 
-        <Button
-          variant="ghost"
-          disabled={currentPage === totalPage - 1}
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPage - 1))}
-        >
-          다음 ›
-        </Button>
-      </div>
+            <Button
+              variant="ghost"
+              disabled={currentPage === totalPage - 1}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPage - 1))
+              }
+            >
+              다음 ›
+            </Button>
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-12 text-gray-500">
+          찜한 상품이 없습니다.
+        </div>
+      )}
     </TabsContent>
   );
 };

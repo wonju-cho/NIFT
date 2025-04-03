@@ -21,6 +21,7 @@ import { ArticlePurchaseDialog } from "@/components/articleDetail/ArticlePurchas
 import { ArticleSellerTab } from "@/components/articleDetail/ArticleSellerTab";
 import { ArticleSimilarList } from "@/components/articleDetail/ArticleSimilarList";
 import { DeleteArticleButton } from "@/components/articleDetail/DeleteArticleButton";
+import { postPurchaseHash, PurchaseParams } from "@/lib/api/purchase";
 
 type ArticleDetail = {
   articleId: number;
@@ -53,7 +54,9 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const [article, setArticle] = useState<ArticleDetail | null>(null);
+  const [article, setArticle] = useState<
+    (ArticleDetail & { walletAddress?: string }) | null
+  >(null); // article 상태에 walletAddress 추가
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [countLikes, setLikeCount] = useState<number>(0);
   const { isLoading, setIsLoading } = useLoading();
@@ -86,7 +89,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     };
 
     fetchArticle();
-  }, [id]);
+  }, []);
 
   const handleLikeToggle = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -112,7 +115,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     }
   };
 
-  //  유저 지갑 주소 확인 함수
+  // 유저 지갑 주소 확인 함수 (수정됨)
   async function checkWalletValidation(): Promise<
     | "ok"
     | "login"
@@ -125,16 +128,11 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     const token = localStorage.getItem("access_token");
     if (!token) return "login";
 
+    if (!article?.walletAddress) return "no-wallet";
+
+    if (!window.ethereum) return "no-metamask";
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const userData = await res.json();
-
-      if (!userData.walletAddress) return "no-wallet";
-
-      if (!window.ethereum) return "no-metamask";
-
       const accounts = await window.ethereum.request({
         method: "eth_accounts", // 연결 요청 없이 현재 연결 상태만 확인
       });
@@ -142,7 +140,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
       if (!accounts || accounts.length === 0) return "no-account";
 
       const metamaskAddress = accounts[0].toLowerCase();
-      const dbAddress = userData.walletAddress.toLowerCase();
+      const dbAddress = article.walletAddress.toLowerCase();
 
       if (metamaskAddress !== dbAddress) return "mismatch";
 
@@ -219,6 +217,11 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
 
       if (success) {
         setPurchaseStatus("success");
+        const param: PurchaseParams = {
+          articleId: Number(article?.articleId),
+          txHash: String(success.txHash),
+        };
+        await postPurchaseHash(param);
         const tokenInfo = await fetchTokenInfoBySerial(serialNumber);
         console.log("Token Info:", tokenInfo);
       } else {
@@ -246,6 +249,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   };
 
   if (!article) return <div className="p-10 text-center">로딩 중...</div>;
+  console.log(article);
 
   return (
     <div className="flex min-h-screen flex-col">

@@ -1,13 +1,18 @@
 package com.e101.nift.secondhand.service;
 
+import com.e101.nift.common.util.ConvertUtil;
 import com.e101.nift.gifticon.entity.Gifticon;
 import com.e101.nift.secondhand.entity.Article;
-import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
+import com.e101.nift.secondhand.exception.ArticleErrorCode;
+import com.e101.nift.secondhand.exception.ArticleException;
+import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
+import com.e101.nift.secondhand.model.dto.request.TxHashDTO;
+import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
-import com.e101.nift.secondhand.repository.LikeRepository;
+import com.e101.nift.secondhand.model.state.SaleStatus;
 import com.e101.nift.secondhand.repository.ArticleRepository;
-import com.e101.nift.gifticon.repository.GifticonRepository;
+import com.e101.nift.secondhand.repository.LikeRepository;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,20 +24,17 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.time.format.DateTimeFormatter;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService {
-
     private final ArticleRepository articleRepository;
     private final LikeRepository likeRepository;
-    private final GifticonRepository gifticonRepository;
     private final UserRepository userRepository;
+    private final TransactionService transactionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -46,6 +48,9 @@ public class ArticleServiceImpl implements ArticleService {
             default -> Sort.by(Sort.Direction.DESC, "createdAt").and(Sort.by("articleId"));
         };
 
+        // 판매 중인 상태만 조회 가능하게
+        SaleStatus targetState = SaleStatus.ON_SALE;
+
         // 정렬이 적용된 Pageable 생성
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortBy);
 
@@ -56,7 +61,7 @@ public class ArticleServiceImpl implements ArticleService {
             // 카테고리 필터가 적용된 경우
             if (minPrice != null || maxPrice != null) {
                 // 카테고리 + 가격 조건 모두 적용
-                articles = articleRepository.findByCategoryAndPriceRange(categories, minPrice, maxPrice, sortedPageable)
+                articles = articleRepository.findByCategoryAndPriceRange(categories, minPrice, maxPrice, targetState, sortedPageable)
                         .map(article -> {
                             boolean isLiked = (userId != null) &&
                                     likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
@@ -64,7 +69,7 @@ public class ArticleServiceImpl implements ArticleService {
                         });
             } else {
                 // 카테고리만 적용
-                articles = articleRepository.findByCategoryIds(categories, sortedPageable)
+                articles = articleRepository.findByCategoryIds(categories, targetState, sortedPageable)
                         .map(article -> {
                             boolean isLiked = (userId != null) &&
                                     likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
@@ -75,7 +80,7 @@ public class ArticleServiceImpl implements ArticleService {
             // 카테고리 필터가 없는 경우
             if (minPrice != null || maxPrice != null) {
                 // 가격 조건만 적용
-                articles = articleRepository.findByPriceRange(minPrice, maxPrice, sortedPageable)
+                articles = articleRepository.findByPriceRange(minPrice, maxPrice, targetState, sortedPageable)
                         .map(article -> {
                             boolean isLiked = (userId != null) &&
                                     likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);
@@ -92,6 +97,14 @@ public class ArticleServiceImpl implements ArticleService {
             }
         }
         return articles;
+    }
+
+    // 가격 필터링 최대 가격
+    @Override
+    @Transactional(readOnly = true)
+    public Float getMaxCurrentPrice() {
+        Float maxPrice = articleRepository.findMaxCurrentPrice();
+        return maxPrice != null ? maxPrice : 0f;
     }
 
     // 로그인 여부와 관계없이 전체 상품 반환
@@ -142,29 +155,54 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public void createArticle(PostArticleDto postArticleDto, Long userId) {
-        Gifticon gifticon = gifticonRepository.findById(postArticleDto.getGifticonId())
-                .orElseThrow(() -> new IllegalArgumentException("기프티콘이 존재하지 않습니다."));
+    public void createArticle(PostArticleDto postArticleDto, Long loginUser) {
+        GifticonNFT.ListedForSaleEventResponse listedForSaleEventResponse = transactionService.getListedForSaleEventByTxHash(postArticleDto.getTxHash()).getFirst();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        log.info("[ArticleService] listedForSaleEventResponse: {}", listedForSaleEventResponse);
 
-        Article article = new Article();
-        article.setTitle(postArticleDto.getTitle());
-        article.setDescription(postArticleDto.getDescription());
-        article.setUserId(userId);
-        article.setCurrentPrice(postArticleDto.getCurrentPrice());
-        article.setExpirationDate(LocalDateTime.parse(postArticleDto.getExpirationDate(), formatter));
-        article.setSerialNum(postArticleDto.getSerialNum());
-        article.setCountLikes(0);
-        article.setViewCnt(0);
-        article.setImageUrl(postArticleDto.getImageUrl());
-        article.setGifticon(gifticon);
+        Gifticon gifticon = transactionService.getGifticon(listedForSaleEventResponse.tokenId);
 
-        articleRepository.save(article);
+        Long userId = transactionService.getUserId(listedForSaleEventResponse.seller);
+
+        if(!userId.equals(loginUser)) {
+            log.info("[ArticleService] 트랜잭션 유저 정보: {} {}", userId, loginUser);
+            throw new ArticleException(ArticleErrorCode.USER_MISMATCH);
+        }
+
+        articleRepository.save(
+                Article.builder()
+                        .title(postArticleDto.getTitle())
+                        .description(postArticleDto.getDescription())
+                        .userId(userId)
+                        .countLikes(0)
+                        .createdAt(ConvertUtil.convertTimestampToLocalTime(listedForSaleEventResponse.transactionTime))
+                        .viewCnt(0)
+                        .imageUrl(ConvertUtil.convertIpfsUrl(listedForSaleEventResponse.metadataURI))
+                        .gifticon(gifticon)
+                        .serialNum(listedForSaleEventResponse.serialNumber.longValue())
+                        .expirationDate(ConvertUtil.convertTimestampToLocalTime(listedForSaleEventResponse.expirationDate))
+                        .currentPrice(listedForSaleEventResponse.price.floatValue())
+                        .txHash(postArticleDto.getTxHash())
+                        .state(SaleStatus.ON_SALE)
+                        .build()
+        );
     }
 
     @Override
-    public void deleteArticle(Long id) {
-        articleRepository.deleteById(id);
+    public void deleteArticle(Long articleId, TxHashDTO hashDTO) {
+        GifticonNFT.CancelledSaleEventResponse cancelledSaleEventResponse = transactionService.getCancelledSaleEventByTxHash(hashDTO.getTxHash()).getFirst();
+        log.info("[ArticleService] cancelledSaleEventResponse: {}", cancelledSaleEventResponse);
+
+        // TODO: 사용자 ID 와 transaction 주소 동일한지 비교로직 필요 (ABI 변경됨)
+
+        Article article = transactionService.getArticle(cancelledSaleEventResponse.serialNumber);
+
+        if(!articleId.equals(article.getArticleId())) {
+            log.warn("[ArticleService] 게시글 정보가 다릅니다: {}", article);
+            throw new ArticleException(ArticleErrorCode.ARTICLE_NOT_FOUND);
+        }
+
+        article.setState(SaleStatus.DELETED);
+        articleRepository.save(article);
     }
 }

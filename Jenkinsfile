@@ -26,72 +26,142 @@ pipeline {
 					def branch = env.BRANCH_NAME ? env.BRANCH_NAME : env.GIT_BRANCH
 					echo "🚀 Branch: ${branch}"
 
-					if (!params.ENV || params.ENV.trim() == '') {
-						env.ENV = (branch == 'develop') ? 'dev' : 'production'
-						echo "🔄 ENV auto-detected as: ${env.ENV}"
+					def selectedEnv = params.ENV?.trim()?.toLowerCase()
+
+					// null 이거나 공백이거나 잘못된 값일 경우 자동 분기
+					if (!selectedEnv || !(selectedEnv in ['dev', 'production'])) {
+						selectedEnv = (branch == 'develop') ? 'dev' : 'production'
+						echo "🔄 ENV auto-detected as: ${selectedEnv}"
 					} else {
-						env.ENV = params.ENV
-						echo "✅ ENV manually selected: ${env.ENV}"
+						echo "✅ ENV manually selected: ${selectedEnv}"
 					}
+
+					env.ENV = selectedEnv
 				}
 			}
 		}
 
-		stage('Check DB_CRED File') {
+		stage('Check ENV Credential Files') {
 			steps {
 				script {
-					withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
-                        sh '''
-                            if [ ! -f "$DB_CRED_FILE" ]; then
-                                echo "❌ DB_CRED_FILE 파일이 존재하지 않습니다."
-                                exit 1
-                            fi
-                            echo " DB_CRED_FILE 경로: $DB_CRED_FILE"
-                            ls -l $DB_CRED_FILE
-                        '''
+
+					def checkCredential = { filePath, name ->
+		                if (!fileExists(filePath)) {
+		                    error "❌ Credential ${name} (${filePath}) is missing."
+		                } else {
+		                    echo "✅ Credential ${name} found at ${filePath}"
+		                }
+	            	}
+
+					withCredentials([
+						file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE'),
+						file(credentialsId: 'SONAR_CRED', variable: 'SONAR_FILE')
+						]) {
+                        checkCredential(DB_CRED_FILE, "DB_CRED")
+                        checkCredential(SONAR_FILE, "SONAR_CRED")
 					}
 				}
 			}
 		}
 
-		stage('Parse and Write .env') {
-			steps {
-				withCredentials([file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')]) {
-					script {
-						echo "🔍 Reading DB_CRED_FILE"
+		stage('Generate .env files') {
+		    steps {
+		        withCredentials([
+		            file(credentialsId: 'DB_CRED', variable: 'DB_FILE')
+		        ]) {
+		            script {
+		                def db = readJSON file: DB_FILE
+		                def dbContent = db.collect { k, v -> "${k}=${v}" }.join('\n')
+		                writeFile file: '.env', text: dbContent
+		            }
+		        }
 
-						def json = readJSON file: "${DB_CRED_FILE}"
-
-						// .env 파일 작성
-						def envContent = json.collect { key, value -> "${key}=${value}" }.join('\n')
-						writeFile file: '.env', text: envContent
-
-						// 사용할 변수 저장
-						env.MYSQL_USER = json["MYSQL_USER"]
-						env.MYSQL_PASSWORD = json["MYSQL_PASSWORD"]
-						env.MYSQL_DATABASE = json["MYSQL_DATABASE"]
-					}
-				}
-			}
+		        withCredentials([
+		            file(credentialsId: 'SONAR_CRED', variable: 'SONAR_FILE')
+		        ]) {
+		            script {
+		                def sonar = readJSON file: SONAR_FILE
+		                def sonarContent = sonar.collect { k, v -> "${k}=${v}" }.join('\n')
+		                writeFile file: '.env.sonar', text: sonarContent
+		            }
+		        }
+		    }
 		}
 
-
-
-		stage('Reset containers') {
+		stage('Set the .env value per brancah')
+		{
 			steps {
 				script {
-					if (params.ENV == 'dev') {
-						sh 'docker-compose -f docker-compose-dev.yml --env-file .env down -v'
-					}
+					def db = readProperties file: '.env'
+
+					def isDev = (env.ENV == 'dev')
+
+					def mySQLDbName = isDev ? db.MYSQL_DEV_DATABASE : db.MYSQL_DATABASE
+					def mongoDbName = isDev ? 'nift_dev' : 'nift'
+
+					//덮어쓰기
+					db["MYSQL_DATABASE"] = mySQLDbName
+					db["MONGO_INITDB_DATABASE"] = mongoDbName
+
+					//Spring datasource URL DB명 치환
+					db["SPRING_DATASOURCE_URL"] = db["SPRING_DATASOURCE_URL"]
+					.replaceAll(/\/[^\/?]+\?/, "/${mySQLDbName}?")
+
+					//Spring mongo URI도 치환
+					db["SPRING_DATA_MONGODB_URI"] = db["SPRING_DATA_MONGODB_URI"]
+					.replaceAll(/\/[^\/?]+$/, "/${mongoDbName}")
+
+					//바꾼 값들을 반영한 .env 파일 생성
+					def dbContent = db.collect { k, v -> "${k}=${v}"}.join('\n')
+					writeFile file: '.env', text: dbContent
 				}
 			}
 		}
+
+		stage('Flyway Check and Migration') {
+		    steps {
+		        script {
+		            if (env.ENV == 'dev') {
+		                def props = readProperties file: '.env'
+		                def workspace = env.WORKSPACE.replaceFirst("^/var/jenkins_home", "/home/ubuntu/jenkins-data")
+		                def migrationPath = "${workspace}/backend/src/main/resources/db/migration"
+		                echo "Migration Path: ${migrationPath}"
+
+		                // 명령어를 한 줄로 구성하고 필요한 부분에만 변수 삽입
+		                def baseCmd = "docker run --rm --network shared_backend -v ${migrationPath}:/flyway/sql flyway/flyway -locations=filesystem:/flyway/sql -url=jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false -user=${props.MYSQL_USER} -password=${props.MYSQL_PASSWORD}"
+
+		                // info 명령어 실행
+		                def infoOutput = sh(
+		                    script: "${baseCmd} info -outputType=json",
+		                    returnStdout: true
+		                ).trim()
+
+		                // JSON 파싱 단계 추가
+		                def infoJson = readJSON text: infoOutput
+
+		                def hasOutdated = infoJson.migrations.any { it.state == 'OUTDATED' }
+
+		                if (hasOutdated) {
+		                    echo "⚠️ OUTDATED 상태 감지 → repair + migrate 실행"
+		                    sh "${baseCmd} repair"
+		                    sh "${baseCmd} migrate"
+		                } else {
+		                    echo "✅ 변경된 migration 없음 → migrate만 실행"
+		                    sh "${baseCmd} migrate"
+		                }
+		            } else {
+		                echo "👌 (master branch) Skipping Flyway Migration."
+		            }
+		        }
+		    }
+		}
+
 
 		stage('Run Docker Compose') {
 			steps {
 				script {
 					try {
-						def composeFile = (params.ENV == 'production') ? 'docker-compose-production.yml' : 'docker-compose-dev.yml'
+						def composeFile = (env.ENV == 'production') ? 'docker-compose-production.yml' : 'docker-compose-dev.yml'
 						sh "docker-compose -f ${composeFile} --env-file .env up -d --build"	
 						env.IMAGE_BUILD_SUCCESS = "true"
 					}
@@ -105,29 +175,6 @@ pipeline {
 			}
 		}
 
-		stage('Insert Dummy Data') {
-			steps {
-				script {
-
-					if(env.IMAGE_BUILD_SUCCESS == "true")
-					{
-						try {
-							def user = env.MYSQL_USER
-							def password = env.MYSQL_PASSWORD
-							def database = env.MYSQL_DATABASE
-
-							def command = "mysql -u${user} -p${password} ${database} < /docker-entrypoint-initdb./init.sql"
-							sh "docker exec mysql bash -c '${command}'"
-						} catch (Exception e) {
-							error("❌ 더미 데이터 삽입 실패: ${e.message}")
-						}
-					}
-					else {
-						echo "이미지 빌드 실패로 Dummay Data 스킵"
-					}
-				}
-			}
-		}
 	}
 
 	post {
@@ -135,36 +182,12 @@ pipeline {
 	        script {
 	            try {
 	                if (env.IMAGE_BUILD_SUCCESS == "true") {
-	                    def results = recordIssues(tools: [
-	                        java(),
-	                        esLint(pattern: 'reports/eslint-report.json'),
-	                        spotBugs(pattern: '**/spotbugsXml.xml'),
-	                    ])
-
-	                    def detailLines = []
-	                    int totalIssues = 0
-
-	                    results.each { result ->
-	                        def toolName = result.name ?: result.id ?: "Unknown"
-	                        def count = result.totalSize
-	                        totalIssues += count
-	                        detailLines << "- ${toolName}: ${count}개"
-	                    }
-
-	                    def issueEmoji = (totalIssues > 0) ? ":warning:" : ":white_check_mark:"
-	                    def issueStatusMsg = (totalIssues > 0) ? "총 ${totalIssues}개 경고 발생" : "경고 없음"
-	                    def analysisUrl = "${env.BUILD_URL}warnings-ng/"
-	                    def branchLabel = (env.BRANCH_NAME == 'master') ? "🚀 *[MASTER 분석 결과]*" : "🧪 *[DEVELOP QA 분석 결과]*"
 
 						def message = """
-						${issueEmoji} *Static Analysis Report*
-						${branchLabel}
+						*Static Analysis Report*
 						- Job: ${env.JOB_NAME}
 						- Build: #${env.BUILD_NUMBER}
-						- Result: ${issueStatusMsg}
 						- 툴별 결과:
-						${detailLines.collect { "  ${it}" }.join('\n')}
-						- [경고 리포트 보기](${analysisUrl})
 						""".stripIndent()
 
 	                    withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
@@ -185,7 +208,7 @@ pipeline {
 	                }
 	                
 	                 // .env 파일 삭제
-                	sh 'rm -f .env'
+                	sh 'rm -f .env.*'
 	            } catch (e) {
 	                echo "recordIssues() 중 오류 발생: ${e}"
 	            }
@@ -195,7 +218,7 @@ pipeline {
 
 		success {
 			script {
-				if (params.ENV == 'production') {
+				if (env.ENV == 'production') {
 					echo '✅ Build succeeded, tagging as stable...'
 					sh '''
 						docker tag backend backend:stable
@@ -209,7 +232,7 @@ pipeline {
 
 		failure {
 			script {
-				if (params.ENV == 'production') {
+				if (env.ENV == 'production') {
 					echo '❗ Build failed. Rolling back to stable image...'
 					sh '''
 						docker stop backend || true

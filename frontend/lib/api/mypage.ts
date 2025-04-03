@@ -8,6 +8,7 @@ export interface LikedArticle {
   imageUrl: string;
   countLikes: number;
   currentPrice: number;
+  state: string;
 }
 
 export const deleteUser = async () => {

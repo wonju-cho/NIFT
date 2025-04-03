@@ -2,11 +2,11 @@ const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0xFa128B0F8b6b75f51Ca408BAAc065B392eB3c792";
+  const contractAddress = "0x9dbB900AE8AcD55C2E689A710a1b375EfdBfC73d";
   const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
 
   const tokenId = 1;
-  const mintAmount = 4;
+  const mintAmount = 8;
 
   const ssfDecimals = 0;
   const price = ethers.parseUnits("10", ssfDecimals);
@@ -58,32 +58,33 @@ async function main() {
       const tx = await gifticonNFT
         .connect(deployer)
         .authorizedTransferBySerial(deployer.address, sellerAddress, serial);
-      await tx.wait();
+      const receipt = await tx.wait();
 
-      console.log(`🔄 전송 완료: Serial ${serial}`);
+      // console.log(`🔄 전송 완료: Serial ${serial} ${JSON.stringify(receipt)}`);
+      console.log(`🔄 전송 완료: Serial ${serial} ${receipt.blockNumber}`);
     } else {
       console.log(`⚠️ 소유자가 deployer가 아님. 전송 생략: Serial ${serial}`);
     }
   }
 
   // ✅ 자동 판매 등록
-  //   console.log("🎉 전송 완료! 이제 전부 자동 판매 등록 시작");
+  // console.log("🎉 전송 완료! 이제 전부 자동 판매 등록 시작");
 
-  //   const sellPrice = ethers.parseUnits("1", ssfDecimals);
+  // const sellPrice = ethers.parseUnits("2", ssfDecimals);
 
-  //   for (const serial of serials) {
-  //     console.log(`🚀 listForSale.js 실행 중 (Serial: ${serial})`);
-  //     try {
-  //       execSync(
-  //         `node scripts/listForSale.js ${serial} ${sellPrice.toString()}`,
-  //         {
-  //           stdio: "inherit",
-  //         }
-  //       );
-  //     } catch (error) {
-  //       console.error(`❌ listForSale.js 실행 중 오류 발생:`, error.message);
-  //     }
+  // for (const serial of serials) {
+  //   console.log(`🚀 listForSale.js 실행 중 (Serial: ${serial})`);
+  //   try {
+  //     execSync(
+  //       `node scripts/listForSale.js ${serial} ${sellPrice.toString()}`,
+  //       {
+  //         stdio: "inherit",
+  //       }
+  //     );
+  //   } catch (error) {
+  //     console.error(`❌ listForSale.js 실행 중 오류 발생:`, error.message);
   //   }
+  // }
 }
 
 main().catch((err) => {

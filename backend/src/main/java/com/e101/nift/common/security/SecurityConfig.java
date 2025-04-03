@@ -49,8 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/gifticons/**")
                         .permitAll()
                         // 관리자 페이지에 사용
-                        .requestMatchers("/api/admin/**").access("hasIpAddress('192.168.0.10')")
-                        .anyRequest().permitAll()                        //
+                        .requestMatchers("/api/admin/**").hasIpAddress("192.168.0.10")
                         .requestMatchers("/api/secondhand-articles/**")
                         .authenticated()
                         .requestMatchers("/", "/error", "/favicon.ico", "/*.png", "/*.gif", "/*.svg", "/*.jpg", "/*.html", "/*.css", "/*.js")
@@ -74,7 +73,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:3001"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

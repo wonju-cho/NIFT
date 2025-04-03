@@ -1,5 +1,6 @@
 package com.e101.nift.user.controller;
 
+import com.e101.nift.common.security.CustomUserDetails;
 import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.secondhand.model.dto.request.ArticleLikeDTO;
 import com.e101.nift.secondhand.model.dto.response.ArticleLikeDto;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -56,10 +58,9 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/me")
-    public ResponseEntity<UserInfoDto> getMyInfo(HttpServletRequest request) {
-        User user = jwtTokenProvider.getUserFromRequest(request);
-
-        UserInfoDto userResponse = userService.getUserInfoByUser(user);
+    public ResponseEntity<UserInfoDto> getMyInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        UserInfoDto userResponse = userService.getUserInfoByUser(userDetails.getUserId());
+        log.info("userInfo {}", userResponse);
         return ResponseEntity.ok(userResponse);
     }
 
@@ -81,10 +82,10 @@ public class UserController {
     })
     @GetMapping("/likes")
     public ResponseEntity<ArticleLikeDto> getLikedArticles(
-            HttpServletRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(name = "page", defaultValue = "0") int page) { // 기본값을 1로 변경
 
-        Long userId = jwtTokenProvider.getUserFromRequest(request).getUserId();
+        Long userId = userDetails.getUserId();
 
         // 좋아요한 상품 목록 조회 (페이지당 6개, 기본 페이지 1부터 시작)
         Pageable pageable = PageRequest.of(page, 6);
