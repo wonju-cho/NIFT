@@ -119,48 +119,38 @@ pipeline {
 		}
 
 		stage('Flyway Check and Migration') {
-			steps {
-				script {
-					if (env.ENV == 'dev') {
-						def props = readProperties file: '.env'
-						def migrationPath = "/home/ubuntu/jenkins-data/jobs/NIFT_MultiBranch/branches/develop/workspace/backend/src/main/resources/db/migration"
+		    steps {
+		        script {
+		            if (env.ENV == 'dev') {
+		                def props = readProperties file: '.env'
+		                def migrationPath = "${env.WORKSPACE}/backend/src/main/resources/db/migration"  // 가능하면 이렇게 상대 경로 써
 
-						def baseCmd = """
-                    	docker run --rm \
-	                        --network shared_backend \
-	                        -v ${migrationPath}:/flyway/sql \
-	                        flyway/flyway \
-	                        -locations=filesystem:/flyway/sql \
-	                        -url="jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false" \
-	                        -user=${props.MYSQL_USER} \
-	                        -password=${props.MYSQL_PASSWORD}
-                		"""
+		                def baseCmd = "docker run --rm --network shared_backend -v ${migrationPath}:/flyway/sql flyway/flyway -locations=filesystem:/flyway/sql -url=jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false -user=${props.MYSQL_USER} -password=${props.MYSQL_PASSWORD}"
 
-						echo "🔍 Checking Flyway migration status..."
-			            def infoOutput = sh(
-			                script: "${baseCmd} info -outputType=json",
-			                returnStdout: true
-			            )
+		                echo "🔍 Checking Flyway migration status..."
+		                def infoOutput = sh(
+		                    script: "${baseCmd} info -outputType=json",
+		                    returnStdout: true
+		                )
 
-						def infoJson = readJSON text: infoOutput
-			            def hasOutdated = infoJson.migrations.any { it.state == 'OUTDATED' }
+		                def infoJson = readJSON text: infoOutput
+		                def hasOutdated = infoJson.migrations.any { it.state == 'OUTDATED' }
 
-			            if (hasOutdated) {
-			                echo "⚠️ OUTDATED 상태 감지 → repair + migrate 실행"
-			                sh "${baseCmd} repair"
-			                sh "${baseCmd} migrate"
-			            } else {
-			                echo "✅ 변경된 migration 없음 → migrate만 실행"
-			                sh "${baseCmd} migrate"
-			            }
-
-
-					} else {
-						echo "👌 (master branch) Skipping Flyway Migration."
-					}
-				}
-			}
+		                if (hasOutdated) {
+		                    echo "⚠️ OUTDATED 상태 감지 → repair + migrate 실행"
+		                    sh "${baseCmd} repair"
+		                    sh "${baseCmd} migrate"
+		                } else {
+		                    echo "✅ 변경된 migration 없음 → migrate만 실행"
+		                    sh "${baseCmd} migrate"
+		                }
+		            } else {
+		                echo "👌 (master branch) Skipping Flyway Migration."
+		            }
+		        }
+		    }
 		}
+
 
 		stage('Run Docker Compose') {
 			steps {
