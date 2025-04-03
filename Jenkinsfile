@@ -114,52 +114,47 @@ pipeline {
 					//바꾼 값들을 반영한 .env 파일 생성
 					def dbContent = db.collect { k, v -> "${k}=${v}"}.join('\n')
 					writeFile file: '.env', text: dbContent
-
-					sh '''
-					echo "📄 ✅ 최종 .env 내용 확인:"
-					cat .env
-					'''
 				}
 			}
 		}
 
-		stage('Flyway Migration') {
+		stage('Flyway Check and Migration') {
 			steps {
 				script {
 					if (env.ENV == 'dev') {
 						def props = readProperties file: '.env'
 						def migrationPath = "/home/ubuntu/jenkins-data/jobs/NIFT_MultiBranch/branches/develop/workspace/backend/src/main/resources/db/migration"
 
-						sh """
-						echo "🧾 파일 목록:"
-						ls -al ${env.WORKSPACE}/backend/src/main/resources/db/migration
+						def baseCmd = """
+                    	docker run --rm \
+	                        --network shared_backend \
+	                        -v ${migrationPath}:/flyway/sql \
+	                        flyway/flyway \
+	                        -locations=filesystem:/flyway/sql \
+	                        -url="jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false" \
+	                        -user=${props.MYSQL_USER} \
+	                        -password=${props.MYSQL_PASSWORD}
+                		"""
 
-						echo "🧾 flyway 마운트 테스트:"
-						docker run --rm \
-						  -v ${env.WORKSPACE}/backend/src/main/resources/db/migration:/flyway/sql \
-						  ubuntu \
-						  bash -c "ls -al /flyway/sql"
-						"""
+						echo "🔍 Checking Flyway migration status..."
+			            def infoOutput = sh(
+			                script: "${baseCmd} info -outputType=json",
+			                returnStdout: true
+			            )
 
-						withEnv([
-							"MYSQL_USER=${props.MYSQL_USER}",
-							"MYSQL_PASSWORD=${props.MYSQL_PASSWORD}",
-							"MYSQL_DATABASE=${props.MYSQL_DATABASE}"
-						]) {
-							sh """
-							echo "😒 Running Flyway Migration..."
-							docker run --rm \
-							  --network shared_backend \
-							  -v ${migrationPath}:/flyway/sql \
-							  flyway/flyway \
-							  -locations=filesystem:/flyway/sql \
-							  -url="jdbc:mysql://mysql:3306/\$MYSQL_DATABASE?allowPublicKeyRetrieval=true&useSSL=false" \
-							  -user=\$MYSQL_USER \
-							  -password=\$MYSQL_PASSWORD \
-							  -X \
-							  migrate
-							"""
-						}
+						def infoJson = readJSON text: infoOutput
+			            def hasOutdated = infoJson.migrations.any { it.state == 'OUTDATED' }
+
+			            if (hasOutdated) {
+			                echo "⚠️ OUTDATED 상태 감지 → repair + migrate 실행"
+			                sh "${baseCmd} repair"
+			                sh "${baseCmd} migrate"
+			            } else {
+			                echo "✅ 변경된 migration 없음 → migrate만 실행"
+			                sh "${baseCmd} migrate"
+			            }
+
+
 					} else {
 						echo "👌 (master branch) Skipping Flyway Migration."
 					}
