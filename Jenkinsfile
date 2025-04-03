@@ -102,10 +102,6 @@ pipeline {
 					//바꾼 값들을 반영한 .env 파일 생성
 					def dbContent = db.collect { k, v -> "${k}=${v}"}.join('\n')
 					writeFile file: '.env', text: dbContent
-
-					sh 'cp .env ./frontend/.env'
-					sh 'cp .env ./admin/.env'
-
 				}
 			}
 		}
@@ -176,6 +172,7 @@ pipeline {
 				script {
 					try {
 						def composeFile = (env.ENV == 'production') ? 'docker-compose-production.yml' : 'docker-compose-dev.yml'
+						sh 'cp .env ./frontend/.env'
 						sh "docker-compose -f ${composeFile} --env-file .env up -d --build"	
 						env.IMAGE_BUILD_SUCCESS = "true"
 					}
