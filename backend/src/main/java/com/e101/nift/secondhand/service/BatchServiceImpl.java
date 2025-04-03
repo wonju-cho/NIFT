@@ -1,6 +1,8 @@
 package com.e101.nift.secondhand.service;
 
 import com.e101.nift.common.util.ConvertUtil;
+import com.e101.nift.gift.entity.GiftHistory;
+import com.e101.nift.gift.repository.GiftHistoryRepository;
 import com.e101.nift.secondhand.entity.Article;
 import com.e101.nift.secondhand.entity.SyncStatus;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
@@ -9,6 +11,8 @@ import com.e101.nift.secondhand.model.state.SyncType;
 import com.e101.nift.secondhand.repository.ArticleHistoryRepository;
 import com.e101.nift.secondhand.repository.ArticleRepository;
 import com.e101.nift.secondhand.repository.SyncStatusRepository;
+import com.e101.nift.user.entity.User;
+import com.e101.nift.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,7 +29,9 @@ public class BatchServiceImpl implements BatchService {
     private final TransactionService transactionService;
     private final ArticleHistoryRepository articleHistoryRepository;
     private final ArticleRepository articleRepository;
+    private final GiftHistoryRepository giftHistoryRepository;
     private final ContractService contractService;
+    private final UserService userService;
     private final SyncStatusRepository syncStatusRepository;
 
     @Scheduled(fixedDelay = 90000)
@@ -50,12 +56,44 @@ public class BatchServiceImpl implements BatchService {
             try {
                 handlePurchaseEvent(block);
                 handleListForSaleEvent(block);
+                handleGiftPendingEvent(block);
                 syncStatusRepository.updateByLastSyncedBlock(block.longValue(), LocalDateTime.now(), SyncType.REAL_TIME);
             } catch (Exception e) {
                 log.error("블록 처리 실패: {}", block, e);
                 // TODO: 실패 블록 기록 필요
             }
         }
+    }
+
+    private void handleGiftPendingEvent(BigInteger block) {
+        List<GifticonNFT.GiftPendingEventResponse> giftPendingEventResponseList = transactionService.getGiftPendingEventByBlockNumber(block);
+
+        giftPendingEventResponseList.parallelStream().forEach(response -> {
+            log.info("[BatchService] response: {}", response);
+            if(response == null) return;
+            try {
+                if(giftHistoryRepository.findGiftHistoriesByTxHash(response.log.getTransactionHash()).isEmpty()) {
+                    log.info("[BatchService] DB에 저장되지 않은 Hash 값: {}", response.log.getTransactionHash());
+
+                    User receiver = transactionService.getUserByKaKaoId(response.aliasName);
+
+                    giftHistoryRepository.save(
+                            GiftHistory.builder()
+                            .fromUserId(transactionService.getUser(response.sender))
+                            .toUserId(receiver.getUserId())
+                            .toUserKakaoId(receiver.getKakaoId())
+                            .gifticon(transactionService.getGifticon(response.tokenId))
+                            .mongoId("67eb5540252c9d3711faf55b") // default card ID
+                            .isReceived(false)
+                            .createdAt(ConvertUtil.convertTimestampToLocalTime(response.transactionTime))
+                            .txHash(response.log.getTransactionHash())
+                            .build()
+                    );
+                }
+            } catch (Exception e) {
+                log.error("[BatchService] Failed to process handleListForSaleEvent txHash: {}", response.log.getTransactionHash(), e);
+            }
+        });
     }
 
     private void handleListForSaleEvent(BigInteger block) {

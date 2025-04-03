@@ -16,7 +16,7 @@ public class UserInfoDto {
     private final String nickname;
 
     private final String walletAddress;
-
+    private final String kakaoId;
     @Builder.Default
     private final String message = "본인 정보를 조회했습니다.";
 }
