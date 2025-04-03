@@ -45,7 +45,8 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     mapping(uint256 => TokenInfo) private _tokenInfos;      // tokenId → 메타 정보
     mapping(address => uint256[]) private _ownedSerials;    // 특정 사용자가 소유하는 시리얼 넘버들
     mapping(address => bool) private _authorizedTransfers; // 안전한 전송을 위한 허용된 전송자
-    mapping(bytes32 => uint256[]) private _pendingGiftsByAlias;
+    mapping(bytes32 => mapping(uint256 => bool)) private _isPendingGift;
+    mapping(bytes32 => uint256[]) private _pendingGiftsByAlias; // aliasName -> pending serial numbers
 
     IERC20 public ssfToken; // 결제에 사용될 ERC20 토큰
 
@@ -152,7 +153,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         info.price = price;
         info.seller = msg.sender;
         uint256 tokenId = _serialToTokenId[serialNumber];
-        
+
         emit ListedForSale(tokenId, serialNumber, price, msg.sender, info.expirationDate, _tokenInfos[tokenId].metadataURI, block.timestamp);
     }
 
@@ -191,14 +192,17 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     }
 
     // 기프티콘 사용 처리
-    function redeem(uint256 serialNumber) public {
+    function redeem(uint256 serialNumber, address brandAdress) public {
         SerialInfo storage info = _serialInfos[serialNumber];
         require(info.redeemedAt == 0, "redeemedAt should not be set before");
         require(info.owner == msg.sender, "Not owner");
         require(!info.redeemed, "Already redeemed");
+        require(brandAdress != address(0), "Invalid brand address");
         require(!info.isPending, "Pending because it is send to someone");
         require(info.seller == address(0), "cannot use that is already list to sale");
         require(block.timestamp < info.expirationDate, "Expired");
+
+        _internalTransfer(msg.sender, brandAdress, serialNumber, TransferMode.Admin);
 
         info.redeemed = true;
         info.redeemedAt = block.timestamp;
@@ -232,20 +236,21 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     // 소유주가 받는이에게 선물을 보내 기프티콘 상태를 pending으로 변경
     function giftToFriend(uint256 serialNumber, address recipient) public nonReentrant {
         SerialInfo storage info = _serialInfos[serialNumber];
-        
+
         // 소유권 및 사용 가능 상태 확인
         require(!info.isPending, "Already in gift state");
         require(info.owner == msg.sender, "Not owner");
         require(!info.redeemed, "Already redeemed");
-        
+
         info.pendingDate = block.timestamp + 5 days;
         info.isPending = true;
         info.pendingRecipient = recipient;
 
         emit GiftPending(msg.sender, serialNumber, _serialToTokenId[serialNumber], "", recipient, block.timestamp);
     }
-    
-    // kakaoId로 선물하기
+
+    // kakaoId로 선물하기 
+    // TODO: 카드 info 저장되게 하자
     function giftToFriendByAlias(uint256 serialNumber, string calldata aliasName) public nonReentrant {
         SerialInfo storage info = _serialInfos[serialNumber];
         require(!info.isPending, "Already in gift state");
@@ -256,82 +261,32 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
 
         info.isPending = true;
         info.pendingDate = block.timestamp + 5 days;
-        info.pendingRecipient = address(0); // 실제 주소는 비워둠
+        info.pendingRecipient = address(0);
 
+        _isPendingGift[aliasHash][serialNumber] = true;
         _pendingGiftsByAlias[aliasHash].push(serialNumber);
 
         emit GiftPending(msg.sender, serialNumber, _serialToTokenId[serialNumber], aliasName, address(0), block.timestamp);
     }
 
     // 선물을 받은 사람이 지갑주소를 연결한 뒤, 받으려고 할때
-    function claimGiftByAlias(string calldata aliasName) public nonReentrant {
+    function claimGiftByAlias(string calldata aliasName, uint256 serialNumber) public nonReentrant {
         bytes32 aliasHash = keccak256(abi.encodePacked(aliasName));
-        uint256[] storage pendingSerials = _pendingGiftsByAlias[aliasHash];
-        require(pendingSerials.length > 0, "No pending gifts");
+        require(_isPendingGift[aliasHash][serialNumber], "No pending gift with this serial number for this alias");
 
-        for (uint256 i = 0; i < pendingSerials.length; i++) {
-            uint256 serialNumber = pendingSerials[i];
-            SerialInfo storage info = _serialInfos[serialNumber];
-
-            require(info.isPending, "Not in gift state");
-            require(!info.redeemed, "Already redeemed");
-            require(block.timestamp < info.pendingDate, "Gift expired");
-
-            address originalOwner = info.owner;
-
-            _internalTransfer(originalOwner, msg.sender, serialNumber, TransferMode.Gift);
-        }
-
-        delete _pendingGiftsByAlias[aliasHash]; // 받은 선물 목록 제거
-    }
-
-
-    // 받는이가 선물을 받아서 받는이 주소로 소유권 이전 및 pending 상태 초기화
-    function obtainGift(address from, uint256 serialNumber) public nonReentrant {
         SerialInfo storage info = _serialInfos[serialNumber];
-        
-        // 소유권 및 사용 가능 상태 확인
-        require(info.pendingRecipient == msg.sender, "Not the intended recipient");
-        require(info.owner == from, "Not owner");
         require(info.isPending, "Not in gift state");
         require(!info.redeemed, "Already redeemed");
-        
-        // pendingDate 가 유효한 날짜인지 확인 
-        require(block.timestamp < info.pendingDate, "Gift state is Expired");
-        
-        // 친구에게 선물 전달
-        _internalTransfer(from, msg.sender, serialNumber, TransferMode.Gift);
+        require(block.timestamp < info.pendingDate, "Gift expired");
 
-        info.isPending = false;
-        info.pendingDate = 0;
+        address originalOwner = info.owner;
 
-        emit Gifted(from, msg.sender, serialNumber, block.timestamp);
-    }
+        _internalTransfer(originalOwner, msg.sender, serialNumber, TransferMode.Gift);
 
+        _removePendingGiftByAlias(aliasHash, serialNumber);
+        _isPendingGift[aliasHash][serialNumber] = false;
 
-    function reclaimExpiredNFT(uint256 serialNumber) public nonReentrant {
-        SerialInfo storage info = _serialInfos[serialNumber];
-
-        require(!info.redeemed, "Already redeemed");
-        require(info.owner != info.originalOwner, "Already original owner");
-
-        address currentOwner = info.owner;
-        address originalOwner = info.originalOwner;
-        uint256 tokenId = _serialToTokenId[serialNumber];
-
-        _safeTransferFrom(currentOwner, originalOwner, tokenId, 1, abi.encode(serialNumber, uint256(TransferMode.Gift)));
-
-        info.owner = originalOwner;
-        info.seller = address(0);
-        info.price = 0;
-        info.isPending = false;
-        info.pendingDate = 0;
-        info.pendingRecipient = address(0);
-
-        _removeSerialFromOwner(currentOwner, serialNumber);
-        _addSerialToOwner(originalOwner, serialNumber);
-
-        emit SerialOwnershipTransferred(serialNumber, currentOwner, originalOwner, block.timestamp);
+        emit Gifted(originalOwner, msg.sender, serialNumber, block.timestamp);
     }
 
     // 🔍 조회 함수들
@@ -388,6 +343,12 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
             info.totalSupply,
             info.metadataURI
         );
+    }
+
+    // kakaoID 기반 _isPendingGift 목록 조회하기
+    function getPendingGiftsByKakaoId(string calldata kakaoId) public view returns (uint256[] memory) {
+        bytes32 aliasHash = keccak256(abi.encodePacked(kakaoId));
+        return _pendingGiftsByAlias[aliasHash];
     }
 
     // URI 변경 함수 (owner만 가능)
@@ -472,7 +433,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
         }
     }
 
-    // 소유자의 시리얼 넘버 기반 토큰 정보 추가 
+    // 소유자의 시리얼 넘버 기반 토큰 정보 추가
     function _addSerialToOwner(address to, uint256 serial) internal {
         _ownedSerials[to].push(serial);
     }
@@ -495,5 +456,17 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     function _generateNextSerial() internal returns (uint256) {
         _nextSerial += 1;
         return _nextSerial;
+    }
+
+    // 특정 alias에 대한 pending 선물 목록에서 serialNumber 제거
+    function _removePendingGiftByAlias(bytes32 aliasHash, uint256 serialNumber) internal {
+        uint256[] storage serialList = _pendingGiftsByAlias[aliasHash];
+        for (uint256 i = 0; i < serialList.length; i++) {
+            if (serialList[i] == serialNumber) {
+                serialList[i] = serialList[serialList.length - 1];
+                serialList.pop();
+                break;
+            }
+        }
     }
 }

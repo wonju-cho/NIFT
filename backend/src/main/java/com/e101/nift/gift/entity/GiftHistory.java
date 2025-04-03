@@ -21,6 +21,7 @@ public class GiftHistory {
 
     private LocalDateTime createdAt;
     private String mongoId;
+    private String txHash;
 
     @ManyToOne
     @JoinColumn(name = "from_user_id", nullable = false)
