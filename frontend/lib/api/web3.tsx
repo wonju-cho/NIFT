@@ -32,6 +32,7 @@ const NFT_ABI = [
   "function isApprovedForAll(address account, address operator) view returns (bool)",
   "function giftToFriend(uint256 serialNumber, address recipient)",
   "function giftToFriendByAlias(uint256 serialNumber, string calldata aliasName)",
+  "function claimGiftByAlias(string calldata aliasName, uint256 serialNumber)",
   "function getPendingGiftsByKakaoId(string) view returns (uint256[])",
 
   "function listForSale(uint256 serialNumber, uint256 price)",
@@ -148,19 +149,19 @@ export const fetchMetadata = async (
 export interface UserNFT {
   brand: string;
   category: string;
-  expirationDate: BigInt;
+  expirationDate: bigint;
   id: number;
   image: string;
   isPending: boolean;
   isSelling: boolean;
-  pendingDate: BigInt;
+  pendingDate: bigint;
   pendingRecipient: string;
   expiryDate: string;
   price: number;
   redeemed: false;
-  redeemedAt: BigInt;
+  redeemedAt: bigint;
   seller: string;
-  serialNum: BigInt;
+  serialNum: bigint;
   title: string;
   tokenId: number;
 }
@@ -681,7 +682,7 @@ export async function getSerialInfo(
   return response;
 }
 
-export async function getNFTDetailInfo(serial: BigInt): Promise<any> {
+export async function getNFTDetailInfo(serial: bigint): Promise<any> {
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
@@ -792,7 +793,7 @@ export async function getGift(kakaoId: string): Promise<UserNFT[]> {
     const signer = await provider.getSigner();
     const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
 
-    const serials: BigInt[] = await contract.getPendingGiftsByKakaoId(kakaoId);
+    const serials: bigint[] = await contract.getPendingGiftsByKakaoId(kakaoId);
     const data: UserNFT[] = await Promise.all(
       serials.map(async (num) => {
         const nft = await getNFTDetailInfo(num);
@@ -823,5 +824,62 @@ export async function getGift(kakaoId: string): Promise<UserNFT[]> {
   } catch (error) {
     console.error("❌ 선물 받은 목록 조회 실패:", error);
     return [];
+  }
+}
+
+export interface RecieveResponse {
+  success: boolean;
+  txHash?: string;
+  serialNum?: bigint;
+}
+
+export async function receiveNFT(
+  serialNum: bigint,
+  kakaoId: string
+): Promise<RecieveResponse> {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const fail: RecieveResponse = { success: false };
+  if (!provider) return fail;
+
+  if (!kakaoId || kakaoId.trim().length === 0) {
+    alert("❌ 카카오 ID가 유효하지 않습니다.");
+    return fail;
+  }
+
+  // ✅ 3. serialNum 유효성 확인
+  if (!serialNum || serialNum <= 0n) {
+    alert("❌ 시리얼 넘버가 유효하지 않습니다.");
+    return fail;
+  }
+
+  try {
+    const signer = await provider.getSigner();
+
+    if (!NFT_CONTRACT_ADDRESS || !SSF_CONTRACT_ADDRESS) {
+      console.error("❌ 컨트랙트 주소가 설정되지 않았습니다.");
+      return fail;
+    }
+
+    const nftContract = new ethers.Contract(
+      NFT_CONTRACT_ADDRESS,
+      NFT_ABI,
+      signer
+    );
+
+    console.log("🚀 NFT 선물 받기 트랜잭션 실행 시작...");
+    const tx = await nftContract.claimGiftByAlias(kakaoId, serialNum);
+    console.log("⏳ 트랜잭션 전송됨. 대기 중...");
+    const receipt = await tx.wait();
+    console.log("✅ NFT 선물 받기 완료");
+    console.log("✅ Success:", receipt);
+
+    return {
+      success: true,
+      txHash: tx.hash,
+      serialNum: serialNum,
+    };
+  } catch (error) {
+    console.error("❌ NFT 선물 실패:", error);
+    return fail;
   }
 }
