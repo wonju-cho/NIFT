@@ -50,6 +50,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
+        PORT: 3001
         BUILD_MODE: production
     restart: always
     container_name: frontend_admin
@@ -60,6 +61,6 @@ services:
     depends_on:
       - backend
     ports:
-      - "3001:3000"
+      - "3001:3001"
     networks:
       - backend-tier
