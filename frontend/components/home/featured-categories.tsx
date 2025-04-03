@@ -6,57 +6,51 @@ const categories = [
   {
     name: "커피/음료",
     icon: <Coffee className="h-6 w-6" />,
-    href: "/articles/coffee",
+    href: "/articles?category=1",
     color: "bg-amber-100 text-amber-700",
   },
   {
     name: "베이커리/디저트",
     icon: <Cake className="h-6 w-6" />,
-    href: "/articles/vouchers",
+    href: "/articles?category=2",
     color: "bg-blue-100 text-blue-700",
   },
   {
     name: "아이스크림/빙수",
     icon: <IceCream className="h-6 w-6" />,
-    href: "/articles/delivery",
+    href: "/articles?category=3",
     color: "bg-green-100 text-green-700",
   },
   {
     name: "치킨",
     icon: <Drumstick className="h-6 w-6" />,
-    href: "/articles/convenience",
+    href: "/articles?category=4",
     color: "bg-indigo-100 text-indigo-700",
   },
   {
     name: "피자/버거",
     icon: <Pizza className="h-6 w-6" />,
-    href: "/articles/food",
+    href: "/articles?category=5",
     color: "bg-red-100 text-red-700",
   },
   {
     name: "편의점/마트",
     icon: <ShoppingBag className="h-6 w-6" />,
-    href: "/articles/beauty",
+    href: "/articles?category=6",
     color: "bg-pink-100 text-pink-700",
   },
   {
     name: "상품권/금액권",
     icon: <Gift className="h-6 w-6" />,
-    href: "/articles/gas",
+    href: "/articles?category=7",
     color: "bg-yellow-100 text-yellow-700",
   },
   {
     name: "영화/도서",
     icon: <Film className="h-6 w-6" />,
-    href: "/articles/culture",
+    href: "/articles?category=8",
     color: "bg-purple-100 text-purple-700",
   },
-  // {
-  //   name: "외식",
-  //   icon: <Utensils className="h-6 w-6" />,
-  //   href: "/articles/dining",
-  //   color: "bg-orange-100 text-orange-700",
-  // },
 ]
 
 export function FeaturedCategories() {

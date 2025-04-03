@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import { LayoutGrid, Coffee, Cake, IceCream, Drumstick, Pizza, ShoppingBag, Gift, Film } from "lucide-react"
 
 const navigation = [
   { name: "홈", href: "/" },
@@ -17,16 +18,15 @@ const navigation = [
 ]
 
 const categories = [
-  { name: "전체상품보기", href: "/articles" },
-  { name: "커피/음료", href: "/articles/coffee" },
-  { name: "베이커리/디저트", href: "/articles/" },
-  { name: "아이스크림/빙수", href: "/articles/delivery" },
-  { name: "치킨", href: "/articles/convenience" },
-  { name: "피자/버거", href: "/articles/food" },
-  { name: "편의점/마트", href: "/articles/beauty" },
-  { name: "상품권/금액권", href: "/articles/gas" },
-  { name: "영화/도서", href: "/articles/culture" },
-  { name: "이벤트", href: "/articles/events", highlight: true },
+  { name: "전체 상품", href: "/articles" },
+  { name: "커피/음료", href: "/articles?category=1" },
+  { name: "베이커리/디저트", href: "/articles?category=2" },
+  { name: "아이스크림/빙수", href: "/articles?category=3" },
+  { name: "치킨", href: "/articles?category=4" },
+  { name: "피자/버거", href: "/articles?category=5" },
+  { name: "편의점/마트", href: "/articles?category=6" },
+  { name: "상품권/금액권", href: "/articles?category=7" },
+  { name: "영화/도서", href: "/articles?category=8" }
 ]
 
 export function Header() {
@@ -211,7 +211,6 @@ export function Header() {
                     className={cn(
                       "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
                       pathname === category.href ? "bg-primary/10 text-primary" : "hover:bg-gray-100",
-                      category.highlight && "text-primary font-medium",
                     )}
                     >
                       {category.name}
@@ -223,84 +222,94 @@ export function Header() {
           </SheetContent>
         </Sheet>
       </div>
+
       {/* 전체화면 전체상품보기 드롭다운 */}
       <div className="hidden md:block border-t">
         <div className="container relative" ref={dropdownRef}>
-          <div className="flex h-12 items-center">
+          <div className="flex h-12 items-center relative">
             <button
               onClick={toggleDropdown}
               className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary"
             >
               {isDropdownOpen ? <X size={18} /> : <Menu size={18} />}
-              전체상품 보기
+              카테고리
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute top-full left-30 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50">
-                <div className="py-1">
+              <div
+                className="absolute top-full left-0 mt-1 w-64 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+              >
+                <div className="py-2">
                   <Link
                     href="/articles"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
                     onClick={() => setIsDropdownOpen(false)}
                   >
-                    전체상품 보기
+                    <div className="flex items-center justify-center w-8 h-8 mr-3 text-gray-500">
+                      <LayoutGrid className="h-6 w-6" />
+                    </div>
+                    <span>전체 상품</span>
                   </Link>
-                  <Link
-                    href="/articles/cafe"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    카페/음료
-                  </Link>
-                  <Link
-                    href="/products/bakery"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    베이커리/디저트
-                  </Link>
-                  <Link
-                    href="/products/icecream"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    아이스크림/빙수
-                  </Link>
-                  <Link
-                    href="/products/chicken"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    치킨
-                  </Link>
-                  <Link
-                    href="/products/burger"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    버거/피자
-                  </Link>
-                  <Link
-                    href="/products/convenience"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    편의점/마트
-                  </Link>
-                  <Link
-                    href="/products/vouchers"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    상품권/금액권
-                  </Link>
-                  <Link
-                    href="/products/movie"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    영화/도서
-                  </Link>
+                  {[
+                    {
+                      name: "커피/음료",
+                      icon: <Coffee className="h-6 w-6" />,
+                      href: "/articles?category=1&minPrice=0&maxPrice=9&sort=newest&page=1",
+                      color: "bg-amber-100 text-amber-700",
+                    },
+                    {
+                      name: "베이커리/디저트",
+                      icon: <Cake className="h-6 w-6" />,
+                      href: "/articles?category=2&minPrice=0&maxPrice=9&sort=newest&page=1",
+                      color: "bg-blue-100 text-blue-700",
+                    },
+                    {
+                      name: "아이스크림/빙수",
+                      icon: <IceCream className="h-6 w-6" />,
+                      href: "/articles?category=3&minPrice=0&maxPrice=9&sort=newest&page=1",
+                      color: "bg-green-100 text-green-700",
+                    },
+                    {
+                      name: "치킨",
+                      icon: <Drumstick className="h-6 w-6" />,
+                      href: "/articles?category=4&minPrice=0&maxPrice=9&sort=newest&page=1",
+                      color: "bg-indigo-100 text-indigo-700",
+                    },
+                    {
+                      name: "피자/버거",
+                      icon: <Pizza className="h-6 w-6" />,
+                      href: "/articles?category=5&minPrice=0&maxPrice=9&sort=newest&page=1",
+                      color: "bg-red-100 text-red-700",
+                    },
+                    {
+                      name: "편의점/마트",
+                      icon: <ShoppingBag className="h-6 w-6" />,
+                      href: "/articles?category=6&minPrice=0&maxPrice=9&sort=newest&page=1",
+                      color: "bg-pink-100 text-pink-700",
+                    },
+                    {
+                      name: "상품권/금액권",
+                      icon: <Gift className="h-6 w-6" />,
+                      href: "/articles?category=7&minPrice=0&maxPrice=9&sort=newest&page=1",
+                      color: "bg-yellow-100 text-yellow-700",
+                    },
+                    {
+                      name: "영화/도서",
+                      icon: <Film className="h-6 w-6" />,
+                      href: "/articles?category=8&minPrice=0&maxPrice=9&sort=newest&page=1",
+                      color: "bg-purple-100 text-purple-700",
+                    },
+                  ].map((category) => (
+                    <Link
+                      key={category.name}
+                      href={category.href}
+                      className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <div className="flex items-center justify-center w-8 h-8 mr-3 text-gray-500">{category.icon}</div>
+                      <span>{category.name}</span>
+                    </Link>
+                  ))}
                 </div>
               </div>
             )}

@@ -127,28 +127,50 @@ pipeline {
 		                def migrationPath = "${workspace}/backend/src/main/resources/db/migration"
 		                echo "Migration Path: ${migrationPath}"
 
-		                // 명령어를 한 줄로 구성하고 필요한 부분에만 변수 삽입
-		                def baseCmd = "docker run --rm --network shared_backend -v ${migrationPath}:/flyway/sql flyway/flyway -locations=filesystem:/flyway/sql -url=jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false -user=${props.MYSQL_USER} -password=${props.MYSQL_PASSWORD}"
+		                def baseCmd = """
+		                    docker run --rm \\
+		                      --network shared_backend \\
+		                      -v ${migrationPath}:/flyway/sql \\
+		                      flyway/flyway \\
+		                      -locations=filesystem:/flyway/sql \\
+		                      -url='jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false' \\
+		                      -user=${props.MYSQL_USER} \\
+		                      -password=${props.MYSQL_PASSWORD}
+		                """.stripIndent().trim()
 
-		                // info 명령어 실행
+		                // 초기 info 시도
 		                def infoOutput = sh(
-		                    script: "${baseCmd} info -outputType=json",
+		                    script: "${baseCmd} info -outputType=json 2>&1 || true",
 		                    returnStdout: true
 		                ).trim()
 
-		                // JSON 파싱 단계 추가
-		                def infoJson = readJSON text: infoOutput
-
-		                def hasOutdated = infoJson.migrations.any { it.state == 'OUTDATED' }
-
-		                if (hasOutdated) {
-		                    echo "⚠️ OUTDATED 상태 감지 → repair + migrate 실행"
-		                    sh "${baseCmd} repair"
-		                    sh "${baseCmd} migrate"
-		                } else {
-		                    echo "✅ 변경된 migration 없음 → migrate만 실행"
-		                    sh "${baseCmd} migrate"
+		                def infoJson
+		                try {
+		                    infoJson = readJSON text: infoOutput
+		                } catch (e) {
+		                    if (infoOutput.contains("Detected failed migration") || infoOutput.contains("Validate failed")) {
+		                        echo "🛠️ Validate 실패 감지 → repair 시도"
+		                        sh "${baseCmd} repair"
+		                        infoOutput = sh(script: "${baseCmd} info -outputType=json", returnStdout: true).trim()
+		                        infoJson = readJSON text: infoOutput
+		                    } else {
+		                        error "❌ Flyway info 실패: repair로도 복구할 수 없는 문제\n${infoOutput}"
+		                    }
 		                }
+
+		                // 상태 확인
+		                echo "📦 Flyway info 상태:\n${infoOutput}"
+
+						def needsRepair = infoJson?.migrations?.any {
+							it.state.toLowerCase() in ['failed', 'missing_success', 'outdated', 'ignored']
+						} ?: false
+
+		                if (needsRepair) {
+		                    echo "⚠️ Flyway 상태 이상 감지 → repair + migrate 실행"
+		                    sh "${baseCmd} repair"
+		                }
+
+		                sh "${baseCmd} migrate"
 		            } else {
 		                echo "👌 (master branch) Skipping Flyway Migration."
 		            }
