@@ -108,7 +108,7 @@ export function PopularArticles() {
       <div className="container">
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">인기 상품</h2>
-          <Link href="/articles" className="flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+          <Link href="/articles?sort=likes&page=1" className="flex items-center gap-1 text-sm font-medium text-primary hover:underline">
             더 보기{" "}
             <svg
               xmlns="http://www.w3.org/2000/svg"

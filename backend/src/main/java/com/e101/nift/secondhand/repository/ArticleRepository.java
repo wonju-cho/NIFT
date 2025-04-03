@@ -32,8 +32,8 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
             "WHERE (:minPrice IS NULL OR p.currentPrice >= :minPrice) " +
             "AND (:maxPrice IS NULL OR p.currentPrice <= :maxPrice) " +
             "AND p.state = :state")
-    Page<Article> findByPriceRange(@Param("minPrice") Integer minPrice,
-                                   @Param("maxPrice") Integer maxPrice,
+    Page<Article> findByPriceRange(@Param("minPrice") Float minPrice,
+                                   @Param("maxPrice") Float maxPrice,
                                    @Param("state") SaleStatus state,
                                    Pageable pageable);
 
@@ -44,8 +44,8 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
             "AND (:maxPrice IS NULL OR p.currentPrice <= :maxPrice) " +
             "AND p.state = :state")
     Page<Article> findByCategoryAndPriceRange(@Param("categories") List<Long> categories,
-                                              @Param("minPrice") Integer minPrice,
-                                              @Param("maxPrice") Integer maxPrice,
+                                              @Param("minPrice") Float minPrice,
+                                              @Param("maxPrice") Float maxPrice,
                                               @Param("state") SaleStatus state,
                                               Pageable pageable);
 
