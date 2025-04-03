@@ -1,7 +1,11 @@
 "use client";
 
+<<<<<<< Updated upstream
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+=======
+import { useEffect, useState, useRef, useCallback } from "react";
+>>>>>>> Stashed changes
 import PageHeader from "@/components/page-header";
 
 import SearchControls from "./components/SearchControls";
@@ -32,10 +36,47 @@ export default function ProductSearchPage() {
 
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
+<<<<<<< Updated upstream
   const openMintModal = (product: any) => {
     setSelectedProduct(product);
     setMintModalOpen(true);
   };
+=======
+  useEffect(() => {
+    const loadInitialData = async () => {
+      const [brandData, categoryData] = await Promise.all([
+        fetchBrands(),
+        fetchCategories(),
+      ]);
+      setBrands(brandData.map((b: any) => ({ label: b.brandName, value: String(b.brandId) })));
+      setCategories(categoryData.map((c: any) => ({ label: c.categoryName, value: String(c.categoryId) })));
+    };
+    loadInitialData();
+  }, []);
+
+  const loadProducts = useCallback(async (reset = false) => {
+    if (!hasNext && !reset) return;
+    setIsLoading(true);
+  
+    const nextPage = reset ? 0 : page;
+    const result = await fetchGifticons({
+      term: searchTerm,
+      brandId: selectedBrandId === "all" ? "" : selectedBrandId,
+      categoryId: selectedCategoryId === "all" ? "" : selectedCategoryId,
+      page: nextPage,
+    });
+  
+    if (reset) {
+      setProducts(result.content);
+    } else {
+      setProducts((prev) => [...prev, ...result.content]);
+    }
+  
+    setHasNext(!result.last);
+    setPage(nextPage + 1);
+    setIsLoading(false);
+  }, [hasNext, page, searchTerm, selectedBrandId, selectedCategoryId]);
+>>>>>>> Stashed changes
 
   const handleMint = (id: string, quantity: number) => {
     console.log("민팅 시작:", { id, quantity });
@@ -52,9 +93,26 @@ export default function ProductSearchPage() {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/gifticons?${params.toString()}`
     );
+<<<<<<< Updated upstream
     const data = await res.json();
     setFilteredProducts(data);
     setHasSearched(true);
+=======
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) observer.unobserve(observerRef.current);
+    };
+  }, [observerRef, hasNext, isLoading, loadProducts]);
+
+  const handleSearch = () => {
+    setPage(0);
+    setHasNext(true);
+    loadProducts(true);
+>>>>>>> Stashed changes
   };
 
   // 필터 초기화
