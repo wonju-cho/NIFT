@@ -123,17 +123,27 @@ pipeline {
 		        script {
 		            if (env.ENV == 'dev') {
 		                def props = readProperties file: '.env'
-		                def migrationPath = "${env.WORKSPACE}/backend/src/main/resources/db/migration"  // 가능하면 이렇게 상대 경로 써
+		                def migrationPath = "/home/ubuntu/jenkins-data/jobs/NIFT_MultiBranch/branches/develop/workspace/backend/src/main/resources/db/migration"
+		                echo "현재 워크 스페이스: ${env.WORKSPACE}"
 
-		                def baseCmd = "docker run --rm --network shared_backend -v ${migrationPath}:/flyway/sql flyway/flyway -locations=filesystem:/flyway/sql -url=jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false -user=${props.MYSQL_USER} -password=${props.MYSQL_PASSWORD}"
+		                def baseCmd = """
+						docker run --rm \
+						  --network shared_backend \
+						  -v ${migrationPath}:/flyway/sql \
+						  flyway/flyway \
+						  -locations=filesystem:/flyway/sql \
+						  -url=jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false \
+						  -user=${props.MYSQL_USER} \
+						  -password=${props.MYSQL_PASSWORD}
+						""".trim()
 
-		                echo "🔍 Checking Flyway migration status..."
-		                def infoOutput = sh(
-		                    script: "${baseCmd} info -outputType=json",
-		                    returnStdout: true
-		                )
+						def infoOutput = sh(
+						  script: """
+						    ${baseCmd} info -outputType=json
+						  """,
+						  returnStdout: true
+						)
 
-		                def infoJson = readJSON text: infoOutput
 		                def hasOutdated = infoJson.migrations.any { it.state == 'OUTDATED' }
 
 		                if (hasOutdated) {
