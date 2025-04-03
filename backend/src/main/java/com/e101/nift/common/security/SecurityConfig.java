@@ -48,6 +48,9 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/gifticons/**")
                         .permitAll()
+                        // 관리자 페이지에 사용
+                        .requestMatchers("/api/admin/**").access("hasIpAddress('192.168.0.10')")
+                        .anyRequest().permitAll()                        //
                         .requestMatchers("/api/secondhand-articles/**")
                         .authenticated()
                         .requestMatchers("/", "/error", "/favicon.ico", "/*.png", "/*.gif", "/*.svg", "/*.jpg", "/*.html", "/*.css", "/*.js")
