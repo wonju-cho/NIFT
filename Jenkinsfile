@@ -123,26 +123,21 @@ pipeline {
 		        script {
 		            if (env.ENV == 'dev') {
 		                def props = readProperties file: '.env'
-		                def migrationPath = "/home/ubuntu/jenkins-data/jobs/NIFT_MultiBranch/branches/develop/workspace/backend/src/main/resources/db/migration"
-		                echo "현재 워크 스페이스: ${env.WORKSPACE}"
+		                def workspace = env.WORKSPACE.replaceFirst("^/var/jenkins_home", "/home/ubuntu/jenkins-data")
+		                def migrationPath = "${workspace}/backend/src/main/resources/db/migration"
+		                echo "Migration Path: ${migrationPath}"
 
-		                def baseCmd = """
-						docker run --rm \
-						  --network shared_backend \
-						  -v ${migrationPath}:/flyway/sql \
-						  flyway/flyway \
-						  -locations=filesystem:/flyway/sql \
-						  -url=jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false \
-						  -user=${props.MYSQL_USER} \
-						  -password=${props.MYSQL_PASSWORD}
-						""".trim()
+		                // 명령어를 한 줄로 구성하고 필요한 부분에만 변수 삽입
+		                def baseCmd = "docker run --rm --network shared_backend -v ${migrationPath}:/flyway/sql flyway/flyway -locations=filesystem:/flyway/sql -url=jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false -user=${props.MYSQL_USER} -password=${props.MYSQL_PASSWORD}"
 
-						def infoOutput = sh(
-						  script: """
-						    ${baseCmd} info -outputType=json
-						  """,
-						  returnStdout: true
-						)
+		                // info 명령어 실행
+		                def infoOutput = sh(
+		                    script: "${baseCmd} info -outputType=json",
+		                    returnStdout: true
+		                ).trim()
+
+		                // JSON 파싱 단계 추가
+		                def infoJson = readJSON text: infoOutput
 
 		                def hasOutdated = infoJson.migrations.any { it.state == 'OUTDATED' }
 
