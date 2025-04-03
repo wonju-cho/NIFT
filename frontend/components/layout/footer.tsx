@@ -10,7 +10,7 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-2">
               <div className="relative h-8 w-8 overflow-hidden">
                 <Image
-                  src="/placeholder.svg?height=32&width=32"
+                  src="/1.png?height=32&width=32"
                   alt="NIFT Logo"
                   width={32}
                   height={32}

@@ -18,16 +18,15 @@ const navigation = [
 ]
 
 const categories = [
-  { name: "전체상품보기", href: "/articles" },
-  { name: "커피/음료", href: "/articles/coffee" },
-  { name: "베이커리/디저트", href: "/articles/" },
-  { name: "아이스크림/빙수", href: "/articles/delivery" },
-  { name: "치킨", href: "/articles/convenience" },
-  { name: "피자/버거", href: "/articles/food" },
-  { name: "편의점/마트", href: "/articles/beauty" },
-  { name: "상품권/금액권", href: "/articles/gas" },
-  { name: "영화/도서", href: "/articles/culture" },
-  { name: "이벤트", href: "/articles/events", highlight: true },
+  { name: "전체 상품", href: "/articles" },
+  { name: "커피/음료", href: "/articles?category=1" },
+  { name: "베이커리/디저트", href: "/articles?category=2" },
+  { name: "아이스크림/빙수", href: "/articles?category=3" },
+  { name: "치킨", href: "/articles?category=4" },
+  { name: "피자/버거", href: "/articles?category=5" },
+  { name: "편의점/마트", href: "/articles?category=6" },
+  { name: "상품권/금액권", href: "/articles?category=7" },
+  { name: "영화/도서", href: "/articles?category=8" }
 ]
 
 export function Header() {
@@ -212,7 +211,6 @@ export function Header() {
                     className={cn(
                       "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
                       pathname === category.href ? "bg-primary/10 text-primary" : "hover:bg-gray-100",
-                      category.highlight && "text-primary font-medium",
                     )}
                     >
                       {category.name}
@@ -224,6 +222,7 @@ export function Header() {
           </SheetContent>
         </Sheet>
       </div>
+
       {/* 전체화면 전체상품보기 드롭다운 */}
       <div className="hidden md:block border-t">
         <div className="container relative" ref={dropdownRef}>
