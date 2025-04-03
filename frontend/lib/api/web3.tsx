@@ -756,7 +756,7 @@ export interface UseNftResponse {
 }
 
 export async function useNft(
-  serialNum: BigInt,
+  serialNum: number,
   brandAddr: string
 ): Promise<UseNftResponse> {
   const fail: UseNftResponse = { success: false };
