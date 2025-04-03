@@ -172,7 +172,7 @@ pipeline {
 				script {
 					try {
 						def composeFile = (env.ENV == 'production') ? 'docker-compose-production.yml' : 'docker-compose-dev.yml'
-						sh 'cp .env ./frontend/'
+						sh 'cp .env ./frontend'
 						sh "docker-compose -f ${composeFile} --env-file .env up -d --build"	
 						env.IMAGE_BUILD_SUCCESS = "true"
 					}
