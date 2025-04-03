@@ -26,6 +26,7 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService userDetailsService;
+    private final AdminIpProperties adminIpProperties; // 추가
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -34,7 +35,7 @@ public class SecurityConfig {
 
     @Bean
     public AdminIpFilter adminIpFilter() {
-        return new AdminIpFilter();
+        return new AdminIpFilter(adminIpProperties);
     }
 
 
