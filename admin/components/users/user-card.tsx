@@ -1,7 +1,7 @@
 import NextImage from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Wallet, User, Calendar } from "lucide-react"
+import { Wallet, User } from "lucide-react"
 import type { User as UserType } from "@/lib/users"
 
 interface UserCardProps {

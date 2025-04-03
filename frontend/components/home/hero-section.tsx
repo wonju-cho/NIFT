@@ -10,8 +10,8 @@ const slides = [
   {
     id: 1,
     title: "NFT 기프티콘 중고거래",
-    description: "안전하고 빠른 거래로 디지털 자산을 관리하세요",
-    image: "/placeholder.svg?height=600&width=1200",
+    description: "안 쓰는 기프티콘, NFT로 거래해요",
+    image: "/slide1.png?height=600&width=1200",
     cta: {
       text: "지금 시작하기",
       link: "/register",
@@ -20,11 +20,11 @@ const slides = [
   },
   {
     id: 2,
-    title: "내 주변 기프티콘 찾기",
-    description: "위치 기반으로 가까운 기프티콘을 찾아보세요",
-    image: "/placeholder.svg?height=600&width=1200",
+    title: "기프티콘 선물하기",
+    description: "카톡으로 손쉽게 선물하세요!",
+    image: "/slide2.png?height=600&width=1200",
     cta: {
-      text: "주변 상품 보기",
+      text: "지금 선물하기",
       link: "/articles/nearby",
     },
     color: "bg-gradient-to-r from-blue-500/80 to-blue-600",
@@ -32,8 +32,8 @@ const slides = [
   {
     id: 3,
     title: "안전한 블록체인 기술",
-    description: "투명하고 안전한 거래를 보장합니다",
-    image: "/placeholder.svg?height=600&width=1200",
+    description: "소유권과 사용여부까지 확인되는 NFT 거래",
+    image: "/slide3.png?height=600&width=1200",
     cta: {
       text: "자세히 알아보기",
       link: "/about",

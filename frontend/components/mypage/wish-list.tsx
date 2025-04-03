@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -15,13 +16,27 @@ interface WishListProps {
 }
 
 export const WishList = ({
-  likedArticles,
+  likedArticles: initialLikedArticles,
   currentPage,
   setCurrentPage,
   startPage,
   endPage,
   totalPage,
 }: WishListProps) => {
+  const [likedArticles, setLikedArticles] = useState<ArticleCardProps[]>([]);
+
+  // 처음 렌더링 시 likedArticles 상태 초기화
+  useEffect(() => {
+    setLikedArticles(initialLikedArticles);
+  }, [initialLikedArticles]);
+
+  // 찜 해제 시 호출되는 함수
+  const handleRemoveFromLiked = (articleId: number) => {
+    setLikedArticles((prev) =>
+      prev.filter((article) => article.articleId !== articleId)
+    );
+  };
+
   const hasArticles = likedArticles.length > 0;
 
   return (
@@ -38,25 +53,23 @@ export const WishList = ({
           {/* 찜한 상품 목록 */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {likedArticles.map((article) => (
-              <Link
+              <ArticleCard
                 key={article.articleId}
-                href={`/product/${article.articleId}`}
-                passHref
-              >
-                <ArticleCard {...article} />
-              </Link>
+                {...article}
+                onUnlike={handleRemoveFromLiked}
+              />
             ))}
           </div>
 
-      {/* 페이지네이션 */}
-      <div className="mt-8 flex justify-center items-center gap-2">
-        <Button
-          variant="ghost"
-          disabled={currentPage === 0}
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-        >
-          ‹ 이전
-        </Button>
+          {/* 페이지네이션 */}
+          <div className="mt-8 flex justify-center items-center gap-2">
+            <Button
+              variant="ghost"
+              disabled={currentPage === 0}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            >
+              ‹ 이전
+            </Button>
 
             {Array.from({ length: endPage - startPage }, (_, i) => startPage + i).map(
               (pageNum) => (

@@ -27,6 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException {
         try {
+            log.info("요청 경로: {}", request.getRequestURI());
+
             String path = request.getRequestURI();
 
             if (path.startsWith("/api/admin/")) {
@@ -52,6 +54,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     log.error("userDetails is not CustomUserDetails. Authentication not set.");
                 }
             }
+
+            log.info("[JwtAuthenticationFilter] 필터 통과 후 다음 필터/서블릿으로 전달됨");
             filterChain.doFilter(request, response);
 
         } catch (UsernameNotFoundException | IllegalArgumentException e) {
