@@ -50,7 +50,7 @@ export default function ProductSearchPage() {
     if (selectedBrand !== "all") params.append("brand", selectedBrand);
 
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/gifticons?${params.toString()}`
+      `${process.env.NEXT_PUBLIC_API_URL}/gifticons?${params.toString()}`
     );
     const data = await res.json();
     setFilteredProducts(data);
@@ -73,9 +73,7 @@ export default function ProductSearchPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/gifticons`
-        );
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/gifticons`);
         const data = await res.json();
         setProducts(data);
         setFilteredProducts(data);

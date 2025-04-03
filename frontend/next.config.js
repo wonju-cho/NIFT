@@ -10,9 +10,10 @@ const nextConfig = {
       { protocol: "http", hostname: "t1.kakaocdn.net" },
       { protocol: "https", hostname: "k.kakaocdn.net" },
       { protocol: "https", hostname: "sitem.ssgcdn.com" },
-      { protocol: "https", hostname: "static.megamart.com" }, 
+      { protocol: "https", hostname: "static.megamart.com" },
       { protocol: "https", hostname: "ipfs.io" },
       { protocol: "https", hostname: "p.kakaocdn.net" },
+      { protocol: "https", hostname: "example.com" },
     ],
   },
   webpack: (config) => {

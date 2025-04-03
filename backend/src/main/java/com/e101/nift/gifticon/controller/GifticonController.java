@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/gifticons")
@@ -18,5 +20,13 @@ public class GifticonController {
     public ResponseEntity<GifticonDetailDto> getGifticonById(@PathVariable("id") Long id){
         GifticonDetailDto dto = gifticonService.getGifticonDetail(id);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<GifticonDetailDto>> getAllGifticons(){
+
+        List<GifticonDetailDto> list = gifticonService.getAllGifticons();
+        return ResponseEntity.ok(list);
+
     }
 }

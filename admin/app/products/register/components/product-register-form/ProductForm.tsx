@@ -43,11 +43,9 @@ export default function ProductForm() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const brandRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/brands`
-      );
+      const brandRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/brands`);
       const categoryRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/categories`
+        `${process.env.NEXT_PUBLIC_API_URL}/categories`
       );
       const brandsData = await brandRes.json();
       const categoriesData = await categoryRes.json();
@@ -135,10 +133,10 @@ export default function ProductForm() {
 
       const metadataCid = await uploadMetadataToPinata(metadata);
       const metadataUrl = `ipfs://${metadataCid}`;
-      `${process.env.NEXT_PUBLIC_API_URL}/api/brands`;
+      `${process.env.NEXT_PUBLIC_API_URL}/brands`;
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/gifticons`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/gifticons`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
