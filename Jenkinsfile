@@ -161,9 +161,9 @@ pipeline {
 		                // 상태 확인
 		                echo "📦 Flyway info 상태:\n${infoOutput}"
 
-		                def needsRepair = infoJson?.migrations?.any {
-		                    it.state in ['FAILED', 'MISSING_SUCCESS', 'OUTDATED', 'IGNORED']
-		                } ?: false
+						def needsRepair = infoJson?.migrations?.any {
+							it.state.toLowerCase() in ['failed', 'missing_success', 'outdated', 'ignored']
+						} ?: false
 
 		                if (needsRepair) {
 		                    echo "⚠️ Flyway 상태 이상 감지 → repair + migrate 실행"
