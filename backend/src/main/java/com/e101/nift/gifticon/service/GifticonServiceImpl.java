@@ -52,7 +52,7 @@ public class GifticonServiceImpl implements GifticonService {
         gifticon.setPrice(gifticonDto.getPrice());
         gifticon.setGifticonTitle(gifticonDto.getGifticonTitle());
         gifticon.setBrand(brandRepository.findBrandByBrandId(gifticonDto.getBrandId()));
-        gifticon.setCategory(categoryRepository.findCategoryByCategoryId(gifticonDto.getBrandId()));
+        gifticon.setCategory(categoryRepository.findCategoryByCategoryId(gifticonDto.getCategoryId()));
 
         gifticonRepository.save(gifticon);
     }

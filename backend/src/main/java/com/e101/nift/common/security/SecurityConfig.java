@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,6 +26,7 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService userDetailsService;
+    private final AdminIpProperties adminIpProperties; // 추가
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -32,37 +34,33 @@ public class SecurityConfig {
     }
 
     @Bean
+    public AdminIpFilter adminIpFilter() {
+        return new AdminIpFilter(adminIpProperties);
+    }
+
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // CORS 설정 추가
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(form -> form.disable())
                 .httpBasic(AbstractHttpConfigurer::disable)
+                .addFilterBefore(adminIpFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**")
-                        .permitAll()
-                        .requestMatchers("/api/auth/**")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/secondhand-articles/**")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/gifticons/**")
-                        .permitAll()
-                        // 관리자 페이지에 사용
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/secondhand-articles/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/brands/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/gifticons/**").permitAll()
-                        //
-                        .requestMatchers("/api/secondhand-articles/**")
-                        .authenticated()
-                        .requestMatchers("/", "/error", "/favicon.ico", "/*.png", "/*.gif", "/*.svg", "/*.jpg", "/*.html", "/*.css", "/*.js")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
-                .addFilterBefore(
-                        jwtAuthenticationFilter(),
-                        UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling((exceptions) -> exceptions
+                        .requestMatchers("/api/gifticons/**").permitAll()
+                        .requestMatchers("/api/admin/**").permitAll() // 이미 필터에서 걸었기 때문에 여기선 permitAll
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json;charset=UTF-8");
