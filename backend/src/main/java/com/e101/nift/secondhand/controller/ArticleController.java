@@ -43,6 +43,7 @@ public class ArticleController {
             @RequestParam(name = "maxPrice", required = false) Integer maxPrice,     // 최대 가격
             HttpServletRequest request
     ) {
+        log.info("[ArticleController] 진입");
         Long userId = null;
 
         try {

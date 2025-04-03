@@ -52,6 +52,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     log.error("userDetails is not CustomUserDetails. Authentication not set.");
                 }
             }
+
+            log.info("[JwtAuthenticationFilter] 필터 통과 후 다음 필터/서블릿으로 전달됨");
             filterChain.doFilter(request, response);
 
         } catch (UsernameNotFoundException | IllegalArgumentException e) {
