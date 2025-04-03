@@ -96,6 +96,8 @@ public class ArticleServiceImpl implements ArticleService {
                         });
             }
         }
+
+        log.info("[ArticleService] getArticleList {}", articles);
         return articles;
     }
 

@@ -27,6 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException {
         try {
+            log.info("요청 경로: {}", request.getRequestURI());
+
             String path = request.getRequestURI();
 
             if (path.startsWith("/api/admin/")) {
