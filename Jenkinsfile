@@ -127,8 +127,18 @@ pipeline {
 		                def migrationPath = "${workspace}/backend/src/main/resources/db/migration"
 		                echo "Migration Path: ${migrationPath}"
 
-		                // 명령어를 한 줄로 구성하고 필요한 부분에만 변수 삽입
-		                def baseCmd = "docker run --rm --network shared_backend -v ${migrationPath}:/flyway/sql flyway/flyway -locations=filesystem:/flyway/sql -url=jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false -user=${props.MYSQL_USER} -password=${props.MYSQL_PASSWORD}"
+		                
+		                def baseCmd = """
+	                    docker run --rm \\
+	                      --network shared_backend \\
+	                      -v ${migrationPath}:/flyway/sql \\
+	                      flyway/flyway \\
+	                      -locations=filesystem:/flyway/sql \\
+	                      -url='jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false' \\
+	                      -user=${props.MYSQL_USER} \\
+	                      -password=${props.MYSQL_PASSWORD}
+	                    """.stripIndent().trim()
+
 
 		                // info 명령어 실행
 		                def infoOutput = sh(
@@ -144,11 +154,9 @@ pipeline {
 		                if (hasOutdated) {
 		                    echo "⚠️ OUTDATED 상태 감지 → repair + migrate 실행"
 		                    sh "${baseCmd} repair"
-		                    sh "${baseCmd} migrate"
-		                } else {
-		                    echo "✅ 변경된 migration 없음 → migrate만 실행"
-		                    sh "${baseCmd} migrate"
 		                }
+		                sh "${baseCmd} migrate"
+		                
 		            } else {
 		                echo "👌 (master branch) Skipping Flyway Migration."
 		            }
