@@ -140,23 +140,36 @@ pipeline {
 	                    """.stripIndent().trim()
 
 
-		                // info 명령어 실행
-		                def infoOutput = sh(
-		                    script: "${baseCmd} info -outputType=json",
-		                    returnStdout: true
-		                ).trim()
+		               def infoOutput = sh(
+						    script: "${baseCmd} info -outputType=json 2>&1 || true",
+						    returnStdout: true
+						).trim()
 
-		                // JSON 파싱 단계 추가
-		                def infoJson = readJSON text: infoOutput
+						try {
+						    infoJson = readJSON text: infoOutput
+						} catch (e) {
+						    if (infoOutput.contains("Detected failed migration") || infoOutput.contains("Validate failed")) {
+						        echo "🛠️ Validate 실패 감지 → repair 시도"
+						        sh "${baseCmd} repair"
+						        infoOutput = sh(script: "${baseCmd} info -outputType=json", returnStdout: true).trim()
+						        infoJson = readJSON text: infoOutput
+						    } else {
+						        error "❌ Flyway info 실패: repair로도 복구할 수 없는 문제\n${infoOutput}"
+						    }
+						}
 
-		                def hasOutdated = infoJson.migrations.any { it.state == 'OUTDATED' }
 
-		                if (hasOutdated) {
-		                    echo "⚠️ OUTDATED 상태 감지 → repair + migrate 실행"
-		                    sh "${baseCmd} repair"
-		                }
-		                sh "${baseCmd} migrate"
-		                
+						def needsRepair = infoJson.migrations.any {
+						    it.state in ['FAILED', 'MISSING_SUCCESS', 'OUTDATED', 'IGNORED']
+						}
+
+						if (needsRepair) {
+						    echo "⚠️ Flyway 상태 이상 감지 → repair + migrate 실행"
+						    sh "${baseCmd} repair"
+						}
+
+						sh "${baseCmd} migrate"
+
 		            } else {
 		                echo "👌 (master branch) Skipping Flyway Migration."
 		            }
