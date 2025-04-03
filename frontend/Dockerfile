@@ -16,6 +16,9 @@ RUN npm ci
 # 전체 프로젝트 복사
 COPY . .
 
+# 🧪 빌드시 사용할 환경변수 복사
+COPY .env .env
+
 # NODE_ENV에 따라 build 분기
 RUN if [ "$BUILD_MODE" = "development" ]; then \
     npm run build --verbose; \
