@@ -1,9 +1,7 @@
 import NextImage from "next/image"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Wallet, User, Calendar } from "lucide-react"
-import Link from "next/link"
+import { Wallet, User } from "lucide-react"
 import type { User as UserType } from "@/lib/users"
 
 interface UserCardProps {
@@ -28,12 +26,13 @@ export default function UserCard({ user }: UserCardProps) {
   return (
     <Card className="overflow-hidden transition-shadow hover:shadow-md">
       <div className="relative h-48 bg-gray-100">
-        <NextImage
-          src={user.profileImage || "/placeholder.svg?height=200&width=200"}
-          alt={user.nickName}
-          fill
-          className="object-cover"
-        />
+      <NextImage
+        src={user.profileImage || "/placeholder.svg?height=200&width=200"}
+        alt={user.nickName}
+        fill
+        sizes="(max-width: 768px) 100vw, 33vw"
+        className="object-cover"
+      />
       </div>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">

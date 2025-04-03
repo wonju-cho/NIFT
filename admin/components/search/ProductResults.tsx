@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Download, Package } from "lucide-react";
+import { Package } from "lucide-react";
 import ProductGrid from "./ProductGrid";
 import ProductTable from "./ProductTable";
 import Link from "next/link";

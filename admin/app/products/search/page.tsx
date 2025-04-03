@@ -5,7 +5,6 @@ import PageHeader from "@/components/page-header";
 import SearchControls from "@/components/search/SearchControls";
 import FilterPanel from "@/components/search/FilterPanel";
 import ProductResults from "@/components/search/ProductResults";
-import MintingModal from "@/components/modals/MintingModal";
 import {
   fetchBrands,
   fetchCategories,
