@@ -1,27 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ethers } from "ethers";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { UserCard } from "@/components/mypage/user-card";
-import { UserSidebar } from "@/components/mypage/user-sidebar";
-import { GiftTab } from "@/components/mypage/gift-tab";
-import { TransactionsTab } from "@/components/mypage/transactions-tab";
-import { SettingsTab } from "@/components/mypage/settings-tab";
-import { WishList } from "@/components/mypage/wish-list";
-import { EmptyState } from "@/components/mypage/empty-state";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { getSSFBalance, getUserNFTsAsJson } from "@/lib/api/web3";
-import {
-  updateUserNickname,
-  updateWallet,
-  fetchLikedArticles,
-} from "@/lib/api/mypage";
-import type { ArticleCardProps } from "@/components/article/article-card";
-import { Gift, Clock, Package, Heart, Settings } from "lucide-react";
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { ethers } from "ethers"
+import { Header } from "@/components/layout/header"
+import { Footer } from "@/components/layout/footer"
+import { UserCard } from "@/components/mypage/user-card"
+import { UserSidebar } from "@/components/mypage/user-sidebar"
+import { GiftTab } from "@/components/mypage/gift-tab"
+import { TransactionsTab } from "@/components/mypage/transactions-tab"
+import { SettingsTab } from "@/components/mypage/settings-tab"
+import { WishList } from "@/components/mypage/wish-list"
+import { EmptyState } from "@/components/mypage/empty-state"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Card, CardContent } from "@/components/ui/card"
+import { getSSFBalance, getUserNFTsAsJson } from "@/lib/api/web3"
+import { updateUserNickname, updateWallet, fetchLikedArticles } from "@/lib/api/mypage"
+import type { ArticleCardProps } from "@/components/article/article-card"
+import { Gift, Clock, Package, Heart, Settings } from "lucide-react"
+import { GiftMemories } from "@/components/mypage/gift-memories"
+
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const ITEMS_PER_PAGE = 6;
@@ -321,9 +319,7 @@ export default function MyPage() {
                               소중한 사람들과 주고받은 NIFT 카드를 확인해보세요.
                             </p>
                           </div>
-                          <div className="text-center py-12 text-gray-500">
-                            아직 선물 추억이 없습니다.
-                          </div>
+                          <GiftMemories />
                         </TabsContent>
 
                         <TabsContent value="favorites">
