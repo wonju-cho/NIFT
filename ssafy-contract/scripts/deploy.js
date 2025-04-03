@@ -13,22 +13,22 @@ async function main() {
   console.log("GifticonNFT deployed to:", contractAddress);
 
   // Save the contract address to a JSON file
-  const contractsDir = path.join(__dirname, "../../admin/lib/contracts");
-  if (!fs.existsSync(contractsDir)) {
-    fs.mkdirSync(contractsDir, { recursive: true });
-  }
-  const contractData = {
-    address: contractAddress,
-    abi: require("../artifacts/contracts/GifticonNFT.sol/GifticonNFT.json").abi,
-  };
-  fs.writeFileSync(
-    path.join(contractsDir, "GifticonNFT.json"),
-    JSON.stringify(contractData, null, 2)
-  );
+  // const contractsDir = path.join(__dirname, "../../admin/lib/contracts");
+  // if (!fs.existsSync(contractsDir)) {
+  //   fs.mkdirSync(contractsDir, { recursive: true });
+  // }
+  // const contractData = {
+  //   address: contractAddress,
+  //   abi: require("../artifacts/contracts/GifticonNFT.sol/GifticonNFT.json").abi,
+  // };
+  // fs.writeFileSync(
+  //   path.join(contractsDir, "GifticonNFT.json"),
+  //   JSON.stringify(contractData, null, 2)
+  // );
 
-  console.log(
-    "Contract address and ABI saved to admin/lib/contracts/GifticonNFT.json"
-  );
+  // console.log(
+  //   "Contract address and ABI saved to admin/lib/contracts/GifticonNFT.json"
+  // );
 }
 
 main()

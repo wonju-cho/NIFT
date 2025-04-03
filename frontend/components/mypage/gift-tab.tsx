@@ -11,7 +11,7 @@ interface GiftTabProps {
   setAvailableCurrentPage: (page: number) => void;
   usedCurrentPage: number;
   setUsedCurrentPage: (page: number) => void;
-  calculateDday: (expiry: number) => number;
+  calculateDday: (expiry: string) => number;
   giftCardTab: string;
   setGiftCardTab: (tab: string) => void;
 }
@@ -53,7 +53,7 @@ export function GiftTab({
             .map((card: UserNFT) => (
               <GiftCard
                 key={Number(card.serialNum)}
-                expiryDays={`D-${calculateDday(Number(card.expirationDate))}`}
+                expiryDays={`D-${calculateDday(card.expiryDate)}`}
                 card={card}
               />
             ))}
@@ -82,7 +82,7 @@ export function GiftTab({
             .map((card: UserNFT) => (
               <GiftCard
                 key={Number(card.serialNum)}
-                expiryDays={`D-${calculateDday(Number(card.expirationDate))}`}
+                expiryDays={`D-${calculateDday(card.expiryDate)}`}
                 card={card}
               />
             ))}

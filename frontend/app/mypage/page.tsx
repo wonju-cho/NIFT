@@ -56,9 +56,9 @@ export default function MyPage() {
   const [activeTab, setActiveTab] = useState("gifticons");
   const [giftCardTab, setGiftCardTab] = useState("available");
 
-  const calculateDday = (expiry: number): number => {
+  const calculateDday = (expiry: string): number => {
     const today = new Date();
-    const date = new Date(expiry * 1000);
+    const date = new Date(expiry);
     // console.log(date);
 
     return Math.ceil(
@@ -211,7 +211,7 @@ export default function MyPage() {
         const used: any[] = [];
 
         for (const nft of nfts) {
-          const expiry = new Date(String(nft.expirationDate));
+          const expiry = new Date(Number(nft.expirationDate) * 1000);
           if (nft.redeemed || expiry.getTime() < now.getTime()) used.push(nft);
           else available.push(nft);
         }

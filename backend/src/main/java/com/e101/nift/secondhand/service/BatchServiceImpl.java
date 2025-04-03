@@ -37,7 +37,7 @@ public class BatchServiceImpl implements BatchService {
                     SyncStatus newSyncStatus = new SyncStatus();
                     newSyncStatus.setSyncType(SyncType.REAL_TIME);
                     BigInteger latestBlock = transactionService.getLatestBlockNumber();
-                    newSyncStatus.setLastSyncedBlock(latestBlock.longValue());
+                    newSyncStatus.setLastSyncedBlock(latestBlock.longValue() - 10);
                     return syncStatusRepository.save(newSyncStatus);
                 });
 

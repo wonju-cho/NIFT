@@ -35,6 +35,7 @@ const NFT_ABI = [
   "function listForSale(uint256 serialNumber, uint256 price)",
   "function getSerialsByOwner(address owner) view returns (uint256[])",
   "function cancelSale(uint256 serialNumber)",
+  "function redeem(uint256 serialNumber, address brandAdress)",
 ];
 
 // const ETH_ABI = [
@@ -229,6 +230,7 @@ export async function getUserNFTsAsJson(userAddress: string): Promise<any[]> {
             Number(price) > 0 &&
             seller !== "0x0000000000000000000000000000000000000000",
           expiryDate: expiryDateFormatted, // ✅ 꼭 필요!
+          expirationDate: expirationDate,
           redeemed: redeemed,
           redeemedAt: redeemedAt,
           isPending: isPending,
@@ -676,4 +678,40 @@ export async function getSerialInfo(
   console.log(response);
 
   return response;
+}
+
+export interface UseNftResponse {
+  success: boolean;
+  txHash?: string;
+}
+
+export async function useNft(
+  serialNum: BigInt,
+  brandAddr: string
+): Promise<UseNftResponse> {
+  const fail: UseNftResponse = { success: false };
+
+  if (!window.ethereum) {
+    console.error("Metamask not found");
+    return fail;
+  }
+
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
+
+    const tx = await contract.redeem(serialNum, brandAddr);
+    const receipt = await tx.wait();
+
+    console.log("✅ 사용 완료! ", receipt);
+
+    return {
+      success: true,
+      txHash: tx.hash,
+    };
+  } catch (error) {
+    console.error("❌ 사용 실패:", error);
+    return fail;
+  }
 }
