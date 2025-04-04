@@ -63,8 +63,8 @@ const fetchArticles = async ({
     }
 
     // Add price range parameters
-    params.append("minPrice", priceRange[0].toString())
-    params.append("maxPrice", priceRange[1].toString())
+    params.append("min-price", priceRange[0].toString())
+    params.append("max-price", priceRange[1].toString())
 
     if (sort) params.append("sort", sort)
     params.append("page", page.toString())
@@ -257,8 +257,8 @@ export function ArticleListing() {
         }
 
         // 가격 범위 파라미터 처리
-        const minPrice = params.get("minPrice")
-        const maxPrice = params.get("maxPrice")
+        const minPrice = params.get("min-price")
+        const maxPrice = params.get("max-price")
         if (minPrice && maxPrice) {
           setPriceRange([Number(minPrice), Number(maxPrice)])
         }
@@ -285,8 +285,8 @@ export function ArticleListing() {
   
   useEffect(() => {
     const categoryParam = searchParams.getAll("category")
-    const minPrice = searchParams.get("minPrice")
-    const maxPrice = searchParams.get("maxPrice")
+    const minPrice = searchParams.get("min-price")
+    const maxPrice = searchParams.get("max-price")
     const sort = searchParams.get("sort")
     const pageParam = searchParams.get("page")
   
@@ -309,8 +309,8 @@ export function ArticleListing() {
     debounce((value: number[]) => {
       // 먼저 URL 업데이트 (사용자에게 즉시 피드백 제공)
       const params = new URLSearchParams(window.location.search)
-      params.set("minPrice", value[0].toString())
-      params.set("maxPrice", value[1].toString())
+      params.set("min-price", value[0].toString())
+      params.set("max-price", value[1].toString())
       params.set("page", "1")
       updateUrlWithoutRefresh(params)
 
