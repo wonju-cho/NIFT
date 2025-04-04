@@ -15,12 +15,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Upload } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { uploadImageToPinata, uploadMetadataToPinata } from "@/lib/utils";
 
 export default function ProductForm() {
   const router = useRouter();
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -102,11 +100,6 @@ export default function ProductForm() {
         !formData.brand ||
         !formData.gifticonId
       ) {
-        toast({
-          title: "입력 오류",
-          description: "필수 항목을 입력해주세요.",
-          variant: "destructive",
-        });
         return;
       }
 
