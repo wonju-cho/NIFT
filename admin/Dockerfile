@@ -31,4 +31,4 @@ RUN if [ "$BUILD_MODE" = "development" ]; then \
   fi
 
 # 컨테이너 실행 시 Next.js 실행
-CMD ["npm", "run", "start"]
+CMD ["npm", "next", "start", "-H", "0,0,0,0"]
