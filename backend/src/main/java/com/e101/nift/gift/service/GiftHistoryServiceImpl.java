@@ -2,6 +2,7 @@ package com.e101.nift.gift.service;
 
 import com.e101.nift.common.util.ConvertUtil;
 import com.e101.nift.gift.entity.GiftHistory;
+import com.e101.nift.gift.model.dto.request.ReceivedGiftDto;
 import com.e101.nift.gift.model.dto.request.SendGiftDto;
 import com.e101.nift.gift.model.dto.response.SendGiftHistoryDto;
 import com.e101.nift.gift.repository.GiftHistoryRepository;
@@ -78,7 +79,7 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
                 .orElseThrow(() -> new GiftHistoryException(GiftHistoryErrorCode.UNPROCESSABLE_TRANSACTION));
         log.info("[GiftHistoryService] 선물하고자 하는 gifticon이 존재합니다: {}", gifticon);
 
-        if ("article".equals(request.getType())){
+        if ("article".equals(request.getType())) {
             giftFromArticle(senderId, request, giftPendingEventResponse);
             log.info("[GiftHistoryService] 구매 완료");
         }
@@ -91,11 +92,34 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
                 .gifticon(gifticon)
                 .mongoId(request.getMongoId())
                 .isReceived(false)
+                .serialNum(giftPendingEventResponse.serialNumber.longValue())
                 .createdAt(ConvertUtil.convertTimestampToLocalTime(giftPendingEventResponse.transactionTime))
                 .txHash(request.getTxHashGift())
                 .build();
         giftHistoryRepository.save(giftHistory);
         log.info("[GiftHistoryService] giftHistory 저장 완료");
+    }
+
+    @Override
+    public void receivedGiftHistory(Long receiverId, ReceivedGiftDto receivedGiftDto) {
+        GifticonNFT.GiftedEventResponse giftedEventResponse = transactionService.getGiftedEventByTxHash(receivedGiftDto.getTxHash()).getFirst();
+        log.info("[GiftHistoryService] giftedEventResponse: {}", giftedEventResponse);
+
+        User receiver = userRepository.findByWalletAddress(giftedEventResponse.recipient)
+                .orElseThrow(() -> new GiftHistoryException(GiftHistoryErrorCode.CANNOT_FIND_BY_ADDRESS));
+        log.info("[GiftHistoryService] senderId가 일치합니다: {}", receiver.getUserId());
+
+        if (!receiver.getUserId().equals(receiverId)) {
+            throw new GiftHistoryException(GiftHistoryErrorCode.UNPROCESSABLE_TRANSACTION);
+        }
+        log.info("[GiftHistoryService] 로그인한 사용자와 sender가 일치합니다: {}", receiverId);
+
+        GiftHistory giftHistory = giftHistoryRepository.findBySerialNum(giftedEventResponse.serialNumber.longValue())
+                .orElseThrow(() -> new GiftHistoryException(GiftHistoryErrorCode.UNPROCESSABLE_TRANSACTION));
+        log.info("[GiftHistoryService] 선물 받은 기록이 있습니다: {}", giftHistory);
+
+        giftHistory.setReceived(true);
+        giftHistoryRepository.save(giftHistory);
     }
 
     private void giftFromArticle(Long senderId, SendGiftDto request, GifticonNFT.GiftPendingEventResponse giftPendingEventResponse) {
