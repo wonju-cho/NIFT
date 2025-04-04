@@ -31,6 +31,7 @@ services:
       dockerfile: Dockerfile
       args:
         BUILD_MODE: production
+    image: frontend
     restart: always
     container_name: frontend
     environment:
@@ -52,6 +53,7 @@ services:
       args:
         PORT: 3001
         BUILD_MODE: production
+    image: admin-frontend
     restart: always
     container_name: frontend_admin
     environment:

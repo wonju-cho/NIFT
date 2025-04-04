@@ -43,29 +43,25 @@ export function GifticonCarousel({
         {gifticons.map((gifticon) => (
           <div
             key={Number(gifticon.serialNum)}
-            className={`cursor-pointer rounded-lg border p-4 w-[200px] flex-shrink-0 transition-all
-              ${
-                selected === gifticon.serialNum
-                  ? "border-primary bg-primary/5"
-                  : ""
-              }
-              ${
-                gifticon.isSelling || gifticon.isPending
-                  ? "opacity-40 pointer-events-none"
-                  : "hover:border-gray-400"
-              }
-            `}
+            className={`cursor-pointer rounded-lg border w-[200px] h-[300px] flex flex-col justify-between p-4 flex-shrink-0 transition-all
+    ${selected === gifticon.serialNum ? "border-primary bg-primary/5" : ""}
+    ${
+      gifticon.isSelling || gifticon.isPending
+        ? "opacity-40 pointer-events-none"
+        : "hover:border-gray-400"
+    }
+  `}
             onClick={() => {
-              if (gifticon.isSelling) return; // 판매중이면 클릭 막기
+              if (gifticon.isSelling) return;
               onSelect(String(gifticon.serialNum));
             }}
           >
-            <div className="relative">
+            {/* 이미지 + 상태 */}
+            <div className="relative h-[200px]">
               <Image
                 src={gifticon.image}
                 alt={gifticon.title}
-                width={200}
-                height={200}
+                fill
                 className="object-cover rounded-md"
               />
               {gifticon.isSelling && (
@@ -88,8 +84,10 @@ export function GifticonCarousel({
                 </div>
               )}
             </div>
+
+            {/* 텍스트 정보 (항상 아래쪽에 고정) */}
             <div className="mt-2">
-              <h3 className="text-sm font-medium">{gifticon.title}</h3>
+              <h3 className="text-sm font-medium truncate">{gifticon.title}</h3>
               <p className="text-xs text-muted-foreground">
                 유효기간: {gifticon.expiryDate}
               </p>
