@@ -104,7 +104,7 @@ export function PopularArticles() {
   }, [])
 
   return (
-    <section className="py-12 bg-red-50">
+    <section className="py-12">
       <div className="container">
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">인기 상품</h2>

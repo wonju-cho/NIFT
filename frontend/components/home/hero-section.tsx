@@ -14,7 +14,7 @@ const slides = [
     image: "/slide1.png?height=600&width=1200",
     cta: {
       text: "지금 시작하기",
-      link: "/register",
+      link: "/signin",
     },
     color: "bg-gradient-to-r from-primary/80 to-primary",
   },
@@ -25,7 +25,7 @@ const slides = [
     image: "/slide2.png?height=600&width=1200",
     cta: {
       text: "지금 선물하기",
-      link: "/articles/nearby",
+      link: "/signin",
     },
     color: "bg-gradient-to-r from-blue-500/80 to-blue-600",
   },
@@ -35,8 +35,8 @@ const slides = [
     description: "소유권과 사용여부까지 확인되는 NFT 거래",
     image: "/slide3.png?height=600&width=1200",
     cta: {
-      text: "자세히 알아보기",
-      link: "/about",
+      text: "지금 알아보기",
+      link: "/signin",
     },
     color: "bg-gradient-to-r from-purple-500/80 to-purple-600",
   },
@@ -72,7 +72,7 @@ export function HeroSection() {
             )}
           >
             <div className={cn("absolute inset-0 z-0", slide.color)} />
-            <div className="absolute inset-0 z-0 opacity-20">
+            <div className="absolute inset-0 z-0 opacity-50">
               <Image
                 src={slide.image || "/placeholder.svg"}
                 alt={slide.title}
@@ -86,7 +86,19 @@ export function HeroSection() {
                 {slide.title}
               </h1>
               <p className="max-w-md text-base md:text-lg lg:text-xl opacity-90">{slide.description}</p>
-              <Button size="lg" className="mt-2 bg-white text-primary hover:bg-white/90" asChild>
+              <Button
+                size="lg"
+                className="mt-2 bg-white hover:bg-white/90"
+                style={{
+                  color:
+                    slide.id === 1
+                      ? "#E86040"
+                      : slide.id === 2
+                      ? "#1556C7"
+                      : "#9A3CC2",
+                }}
+                asChild
+              >
                 <Link href={slide.cta.link}>{slide.cta.text}</Link>
               </Button>
             </div>
