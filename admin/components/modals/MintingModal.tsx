@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { mintNFT } from "@/lib/mintNFT";
-import { toast } from "react-hot-toast";
 
 export default function MintingModal({ open, setOpen, product }: any) {
   const [quantity, setQuantity] = useState(1);
