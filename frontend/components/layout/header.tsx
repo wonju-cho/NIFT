@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { Search, Heart, Bell, Menu, MapPin, LogOut, X } from "lucide-react"
+import { Search, Bell, Menu, LogOut, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -75,6 +75,7 @@ export function Header() {
   // Add logout handler function before the return statement
   const handleLogout = () => {
     localStorage.removeItem("access_token")
+    localStorage.removeItem("kakao_access_token")
     setIsAuthenticated(false)
     window.location.reload()
   }

@@ -22,7 +22,7 @@ const ProductDetails = ({
   <div>
     <h2 className="text-2xl font-bold mb-2">{name}</h2>
     <div className="flex items-center text-2xl font-bold text-blue-600 mb-4">
-      ₩ {price.toLocaleString()}
+     🪙 {price.toLocaleString()}
     </div>
 
     <div className="space-y-4">
