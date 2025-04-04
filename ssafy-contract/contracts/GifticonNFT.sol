@@ -61,7 +61,7 @@ contract GifticonNFT is ERC1155, Ownable, ERC1155Holder, ReentrancyGuard {
     event GiftPending(address indexed sender, uint256 indexed serialNumber, uint256 tokenId, string aliasName, address indexed recipient, uint256 transactionTime);
 
     // 🏗️ 생성자
-    constructor(address _ssfToken) ERC1155("ipfs://bafkreidpioogd7mj4t5sovbw2nkn3tavw3zrq4qmqwvkxptm52scasxfl4") Ownable() {
+    constructor(address _ssfToken) ERC1155("ipfs://bafkreig6fxmhvpretfa4dviorm2ejbiu75h6gdinnpxinjcci4uk2gkn5q") Ownable() {
         ssfToken = IERC20(_ssfToken);
         _authorizedTransfers[msg.sender] = true;       // 배포자
         _authorizedTransfers[address(this)] = true;    // 컨트랙트 자기 자신
