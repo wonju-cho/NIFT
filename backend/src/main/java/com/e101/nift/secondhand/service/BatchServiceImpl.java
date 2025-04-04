@@ -68,7 +68,7 @@ public class BatchServiceImpl implements BatchService {
     }
 
     private void handleGiftedEvent(BigInteger block) {
-        List<GifticonNFT.GiftPendingEventResponse> giftPendingEventResponseList = transactionService.getGiftPendingEventByBlockNumber(block);
+        List<GifticonNFT.GiftedEventResponse> giftPendingEventResponseList = transactionService.getGiftedEventByBlockNumber(block);
 
         giftPendingEventResponseList.parallelStream().forEach(response -> {
             log.info("[BatchService] response: {}", response);
@@ -82,8 +82,10 @@ public class BatchServiceImpl implements BatchService {
                     return;
                 }
 
+                User receiver = transactionService.getUser(response.recipient);
+
                 GiftHistory giftHistory = optionalGiftHistory
-                        .filter(gift -> Long.valueOf(response.aliasName).equals(gift.getToUserKakaoId()))
+                        .filter(gift -> receiver.getKakaoId().equals(gift.getToUserKakaoId()))
                         .orElseThrow(() -> new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION));
 
                 if (giftHistory.isReceived()) return;
