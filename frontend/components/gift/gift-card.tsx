@@ -3,9 +3,10 @@
 import { useNft, UserNFT } from "@/lib/api/web3";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getTokenIdBySerial } from "@/lib/api/web3";
 import { useState, useCallback } from "react";
 import QrScanner from "../ui/QrScanner";
+import { apiClient } from "@/lib/api/CustomAxios";
+import { useLoading } from "../LoadingContext";
 
 interface GiftCardProps {
   expiryDays: string;
@@ -16,6 +17,7 @@ interface GiftCardProps {
 export function GiftCard({ expiryDays, card, onGifticonUsed }: GiftCardProps) {
   const router = useRouter();
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
+  const { isLoading, setIsLoading } = useLoading();
 
   const handleGift = async (serialNum: number) => {
     try {
@@ -27,11 +29,14 @@ export function GiftCard({ expiryDays, card, onGifticonUsed }: GiftCardProps) {
   };
 
   const handleUseNft = async (walletAddress: string) => {
+    setIsLoading(true);
     const response = await useNft(Number(card.serialNum), walletAddress);
     if (response.success) {
       alert("사용이 완료되었습니다.");
+      await apiClient.post(`/users/gifticons/${response.txHash}`);
       onGifticonUsed?.(Number(card.serialNum));
     }
+    setIsLoading(false);
   };
 
   const onScanSuccessHandler = useCallback(

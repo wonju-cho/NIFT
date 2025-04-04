@@ -14,6 +14,11 @@ public interface TransactionService {
     List<GifticonNFT.ListedForSaleEventResponse> getListedForSaleEventByTxHash(String txHash);
     List<GifticonNFT.CancelledSaleEventResponse> getCancelledSaleEventByTxHash(String txHash);
     List<GifticonNFT.GiftPendingEventResponse> getGiftPendingEventByTxHash(String txHash);
+<<<<<<< Updated upstream
+=======
+    List<GifticonNFT.GiftedEventResponse> getGiftedEventByTxHash(String txHash);
+    List<GifticonNFT.RedeemedEventResponse> getRedeemedEventByTxHash(String txHash);
+>>>>>>> Stashed changes
     List<BigInteger> getBlockNumbersFrom(BigInteger startBlock);
     List<GifticonNFT.NFTPurchasedEventResponse> getPurchaseEventsByBlockNumber(BigInteger blockNumber);
     List<GifticonNFT.ListedForSaleEventResponse> getListedForSaleEventsByBlockNumber(BigInteger blockNumber);

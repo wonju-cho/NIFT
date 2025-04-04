@@ -106,6 +106,20 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    public List<GifticonNFT.RedeemedEventResponse> getRedeemedEventByTxHash(String txHash) {
+        TransactionReceipt receipt = getSuccessfulTransactionReceipt(txHash);
+
+        List<GifticonNFT.RedeemedEventResponse> events = GifticonNFT.getRedeemedEvents(receipt);
+        log.info("[TransactionService] getRedeemedEvents : {}", events);
+        if (events.isEmpty()) {
+            log.error("[TransactionService] No redeem events found for transaction: {}", txHash);
+            throw new ArticleException(ArticleErrorCode.TRANSACTION_EXCEPTION);
+        }
+
+        return events;
+    }
+
+    @Override
     public List<BigInteger> getBlockNumbersFrom(BigInteger startBlock) {
         try {
             List<BigInteger> blockNumbers = new ArrayList<>();
