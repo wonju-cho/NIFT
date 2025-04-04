@@ -5,11 +5,9 @@ import PageHeader from "@/components/page-header";
 import SearchControls from "@/components/search/SearchControls";
 import FilterPanel from "@/components/search/FilterPanel";
 import ProductResults from "@/components/search/ProductResults";
-import {
-  fetchBrands,
-  fetchCategories,
-  fetchGifticons,
-} from "@/lib/gifticons";
+import MintingModal from "@/components/modals/MintingModal"; // 모달 import
+
+import { fetchBrands, fetchCategories, fetchGifticons } from "@/lib/gifticons";
 
 export default function ProductSearchPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -21,11 +19,23 @@ export default function ProductSearchPage() {
   const [selectedBrandId, setSelectedBrandId] = useState("all");
 
   const [brands, setBrands] = useState<{ label: string; value: string }[]>([]);
-  const [categories, setCategories] = useState<{ label: string; value: string }[]>([]);
+  const [categories, setCategories] = useState<
+    { label: string; value: string }[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
 
+  // 상태 추가
+  const [mintModalOpen, setMintModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+
   const observerRef = useRef<HTMLDivElement>(null);
+
+  const openMintModal = (product: any) => {
+    console.log("✅ 민팅 모달 오픈:", product);
+    setSelectedProduct(product);
+    setMintModalOpen(true);
+  };
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -33,8 +43,18 @@ export default function ProductSearchPage() {
         fetchBrands(),
         fetchCategories(),
       ]);
-      setBrands(brandData.map((b: any) => ({ label: b.brandName, value: String(b.brandId) })));
-      setCategories(categoryData.map((c: any) => ({ label: c.categoryName, value: String(c.categoryId) })));
+      setBrands(
+        brandData.map((b: any) => ({
+          label: b.brandName,
+          value: String(b.brandId),
+        }))
+      );
+      setCategories(
+        categoryData.map((c: any) => ({
+          label: c.categoryName,
+          value: String(c.categoryId),
+        }))
+      );
     };
     loadInitialData();
   }, []);
@@ -90,7 +110,10 @@ export default function ProductSearchPage() {
 
   return (
     <div>
-      <PageHeader title="상품 검색" description="등록된 NFT 기프티콘 상품을 검색합니다." />
+      <PageHeader
+        title="상품 검색"
+        description="등록된 NFT 기프티콘 상품을 검색합니다."
+      />
 
       <SearchControls
         searchTerm={searchTerm}
@@ -118,12 +141,23 @@ export default function ProductSearchPage() {
         brands={brands}
       />
 
-      <ProductResults products={products} viewMode={viewMode} hasSearched={true} openMintModal={() => {}} />
+      <ProductResults
+        products={products}
+        viewMode={viewMode}
+        hasSearched={true}
+        openMintModal={openMintModal}
+      />
 
       {isLoading && (
         <div className="text-center text-gray-400 py-6">로딩 중...</div>
       )}
       <div ref={observerRef} className="h-1" />
+
+      <MintingModal
+        open={mintModalOpen}
+        setOpen={setMintModalOpen}
+        product={selectedProduct}
+      />
     </div>
   );
 }
