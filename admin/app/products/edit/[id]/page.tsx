@@ -19,7 +19,10 @@ export default function ProductEdit({ params }: { params: { id: string } }) {
       </div>
 
       <div>
-        <PageHeader title="상품 수정" description="NFT 기프티콘 상품 정보를 수정합니다." />
+        <PageHeader
+          title="상품 수정"
+          description="NFT 기프티콘 상품 정보를 수정합니다."
+        />
       </div>
 
       <Card>
