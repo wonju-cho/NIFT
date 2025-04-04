@@ -39,10 +39,11 @@ public class ArticleController {
             @RequestParam(name = "category", required = false) List<Long> categories,  // 카테고리 필터링
             @RequestParam(name = "page", defaultValue = "1") int page,  // 기본 페이지 번호
             @RequestParam(name = "size", defaultValue = "10") int size,  // 페이지 크기
-            @RequestParam(name = "minPrice", required = false) Integer minPrice,    // 최소 가격
-            @RequestParam(name = "maxPrice", required = false) Integer maxPrice,     // 최대 가격
+            @RequestParam(name = "min-price", required = false) Float minPrice,    // 최소 가격
+            @RequestParam(name = "max-price", required = false) Float maxPrice,     // 최대 가격
             HttpServletRequest request
     ) {
+        log.info("[ArticleController] 진입 {} {} {} {} {} {}", sort, categories, page, size, maxPrice, minPrice);
         Long userId = null;
 
         try {

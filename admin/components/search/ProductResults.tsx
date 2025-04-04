@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Download, Package } from "lucide-react";
+import { Package } from "lucide-react";
 import ProductGrid from "./ProductGrid";
 import ProductTable from "./ProductTable";
 import Link from "next/link";
@@ -66,15 +66,6 @@ export default function ProductResults({
             ? `검색 결과: ${totalCount}개`
             : `전체 상품: ${totalCount}개`}
         </h2>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            엑셀 다운로드
-          </Button>
-          {totalCount > 0 && (
-            <div className="text-sm text-gray-500">최신순으로 정렬됨</div>
-          )}
-        </div>
       </div>
 
       {/* 결과 렌더링 */}

@@ -1,8 +1,7 @@
-// 리팩토링된 구조
-// components/product-register-form/ProductForm.tsx
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -116,7 +115,8 @@ export default function ProductForm() {
       if (!file) throw new Error("이미지 파일이 없습니다.");
 
       const imageCid = await uploadImageToPinata(file);
-      const imageUrl = `ipfs://${imageCid}`;
+      const imageUrl = `https://ipfs.io/ipfs/${imageCid}`;
+
 
       const metadata = {
         name: formData.name,
@@ -290,11 +290,14 @@ export default function ProductForm() {
               <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center text-gray-500">
                 {imagePreview ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={imagePreview || "/placeholder.svg"}
-                    alt="미리보기"
-                    className="w-full h-full object-cover rounded-md"
-                  />
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={imagePreview || "/placeholder.svg"}
+                      alt="미리보기"
+                      fill
+                      className="object-cover rounded-md"
+                    />
+                  </div>
                 ) : (
                   <Upload className="w-8 h-8" />
                 )}

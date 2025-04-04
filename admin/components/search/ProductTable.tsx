@@ -27,7 +27,7 @@ export default function ProductTable({
             <TableHead>브랜드</TableHead>
             <TableHead>카테고리</TableHead>
             <TableHead className="text-right">금액</TableHead>
-            <TableHead>주문일시</TableHead>
+            <TableHead>등록일시</TableHead>
             <TableHead className="text-center">관리</TableHead>
           </TableRow>
         </TableHeader>
@@ -41,7 +41,7 @@ export default function ProductTable({
               <TableCell>{product.brandName ?? "브랜드 없음"}</TableCell>
               <TableCell>{product.categoryName ?? "기타"}</TableCell>
               <TableCell className="text-right">
-                ₩{Math.floor(product.price).toLocaleString()}
+                ₩ {Math.floor(product.price).toLocaleString()}
               </TableCell>
               <TableCell>
                 <div className="flex items-center">

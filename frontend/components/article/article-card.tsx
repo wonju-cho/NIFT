@@ -20,6 +20,7 @@ export interface ArticleCardProps {
   isLiked?: boolean;
   className?: string;
   state?: string;
+  onUnlike?: (articleId: number) => void;
 }
 
 export function ArticleCard({
@@ -33,6 +34,7 @@ export function ArticleCard({
   isLiked: initialIsLiked,
   className,
   state,
+  onUnlike,
 }: ArticleCardProps) {
   const isSold = state === "SOLD";
 
@@ -48,12 +50,15 @@ export function ArticleCard({
   const handleLikeToggle = async (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
-    event.preventDefault(); // 링크 이동 방지
-    setIsLiked((prev) => !prev); // UI 즉시 변경
-
+    event.preventDefault();
+    const nextLiked = !isLiked;
+    setIsLiked(nextLiked);
+  
     const success = await ArticleService.toggleLike(articleId, isLiked);
     if (!success) {
       setIsLiked((prev) => !prev);
+    } else if (!nextLiked && onUnlike) {
+      onUnlike(articleId);
     }
   };
 

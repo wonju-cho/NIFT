@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p $PORT",
     "lint": "next lint"
   },
   "dependencies": {
@@ -52,7 +52,7 @@
     "react-hook-form": "^7.54.2",
     "react-resizable-panels": "^2.1.7",
     "recharts": "^2.15.1",
-    "sonner": "^2.0.1",
+    "sonner": "^2.0.3",
     "tailwind-merge": "^1.13.2",
     "utf-8-validate": "^6.0.5",
     "uuid": "^11.1.0",
