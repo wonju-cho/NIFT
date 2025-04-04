@@ -11,6 +11,7 @@ const nextConfig = {
       { protocol: "http", hostname: "img1.kakaocdn.net" },
       { protocol: "http", hostname: "t1.kakaocdn.net" },
       { protocol: "https", hostname: "k.kakaocdn.net" },
+      { protocol: "http", hostname: "k.kakaocdn.net" },
       { protocol: "https", hostname: "sitem.ssgcdn.com" },
       { protocol: "https", hostname: "static.megamart.com" },
       { protocol: "https", hostname: "ipfs.io" },
