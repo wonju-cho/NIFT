@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArticleService } from "@/lib/api/ArticleService";
 import { useState } from "react";
-import { ArticlePrice } from "@/components/articleDetail/ArticlePrice";
 import { ArticlePriceCard } from "./article-card-price";
 
 export interface ArticleCardProps {
@@ -29,7 +28,6 @@ export function ArticleCard({
   brandName,
   currentPrice,
   originalPrice,
-  discountRate,
   imageUrl,
   isLiked: initialIsLiked,
   className,
@@ -37,23 +35,23 @@ export function ArticleCard({
   onUnlike,
 }: ArticleCardProps) {
   const isSold = state === "SOLD";
-
-  // const formattedCurrentPrice = new Intl.NumberFormat("ko-KR").format(currentPrice)
-  // const formattedOriginalPrice = new Intl.NumberFormat("ko-KR").format(originalPrice)
-
   const [isLiked, setIsLiked] = useState(initialIsLiked ?? false);
-
-  // 이미지 URL 처리 - 외부 URL이면 placeholder 사용
   const imageSrc = imageUrl || "/placeholder.svg?height=400&width=400";
 
-  // 좋아요 관리
+  // 실제 텍스트 자르기
+  const getShortTitle = (title: string, maxLength: number) => {
+    return title.length > maxLength
+      ? title.slice(0, maxLength - 3) + "..."
+      : title;
+  };
+
   const handleLikeToggle = async (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
     event.preventDefault();
     const nextLiked = !isLiked;
     setIsLiked(nextLiked);
-  
+
     const success = await ArticleService.toggleLike(articleId, isLiked);
     if (!success) {
       setIsLiked((prev) => !prev);
@@ -65,12 +63,11 @@ export function ArticleCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-lg border bg-white transition-all hover:shadow-md",
+        "group relative flex flex-col h-full overflow-hidden rounded-lg border bg-white transition-all hover:shadow-md",
         isSold && "opacity-60",
         className
       )}
     >
-      {/* 좋아요 버튼 - SOLD여도 보이게 하려면 조건 제거 */}
       <Button
         variant="ghost"
         size="icon"
@@ -80,7 +77,10 @@ export function ArticleCard({
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className={cn("h-4 w-4", isLiked ? "fill-red-500 text-red-500" : "text-gray-500")}
+          className={cn(
+            "h-4 w-4",
+            isLiked ? "fill-red-500 text-red-500" : "text-gray-500"
+          )}
           fill={isLiked ? "currentColor" : "none"}
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -94,8 +94,11 @@ export function ArticleCard({
         </svg>
       </Button>
 
-      <Link href={`/article/${articleId}`} className="block">
-        <div className="relative aspect-square overflow-hidden">
+      <Link
+        href={`/article/${articleId}`}
+        className="block flex flex-col h-full"
+      >
+        <div className="relative w-full aspect-[1/1] overflow-hidden">
           <Image
             src={imageSrc}
             alt={title}
@@ -103,8 +106,6 @@ export function ArticleCard({
             className="object-cover transition-transform group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-
-          {/* SOLD 오버레이 */}
           {isSold && (
             <div className="absolute inset-0 z-20 bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-lg">
               <span className="text-white text-lg font-bold">판매 완료</span>
@@ -112,9 +113,15 @@ export function ArticleCard({
           )}
         </div>
 
-        <div className="p-3">
-          <div className="mb-1 text-xs text-gray-500">{brandName}</div>
-          <h3 className="line-clamp-2 text-sm font-medium">{title}</h3>
+        <div className="p-3 flex flex-col justify-between flex-grow">
+          <div>
+            <div className="mb-1 text-xs text-gray-500 truncate max-w-full">
+              {brandName}
+            </div>
+            <h3 className="text-sm font-medium truncate max-w-full">
+              {title.length > 10 ? title.slice(0, 10) + "..." : title}
+            </h3>
+          </div>
           <div className="mt-2">
             <ArticlePriceCard
               currentPrice={currentPrice}
