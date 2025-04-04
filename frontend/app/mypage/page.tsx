@@ -350,7 +350,11 @@ export default function MyPage() {
                               소중한 사람들과 주고받은 NIFT 카드를 확인해보세요.
                             </p>
                           </div>
-                          <GiftMemories user={user} />
+                          <GiftMemories
+                            user={user}
+                            availableGiftCards={availableGiftCards}
+                            setAvailableGiftCards={setAvailableGiftCards}
+                          />
                         </TabsContent>
 
                         <TabsContent value="favorites">
