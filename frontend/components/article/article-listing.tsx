@@ -780,33 +780,45 @@ export function ArticleListing() {
           {" "}
           {/* Renamed container class for clarity */}
           {filteredArticles.length > 0 ? (
-            isMobile ? (
-              <ArticleList
-                articles={filteredArticles.map((article) => ({
-                  ...article,
-                  isLiked: article.liked,
-                }))}
-                className="mb-8 border rounded-md overflow-hidden" // Add some basic list styling
-                // Add onUnlike handler if needed based on ArticleListProps
-              />
-            ) : (
-              <ArticleWrappingGrid // Use the new wrapping grid component
-                articles={filteredArticles.map((article) => ({
-                  ...article,
-                  isLiked: article.liked, // Ensure isLiked is passed correctly
-                  // Map other necessary props from filteredArticles to ArticleCardProps if needed
-                  articleId: article.articleId,
-                  title: article.title,
-                  brandName: article.brandName,
-                  currentPrice: article.priceInfo.currentPrice,
-                  originalPrice: article.priceInfo.originalPrice,
-                  discountRate: article.discountRate,
-                  imageUrl: article.imageUrl,
-                  state: article.state,
-                }))}
-                className="mb-8"
-              />
-            )
+            <>
+              {console.log("ArticleListing articles:", filteredArticles)}
+              {isMobile ? (
+                <ArticleList
+                  articles={filteredArticles.map((article) => ({
+                    ...article,
+                    isLiked: article.liked, // Ensure isLiked is passed correctly
+                    // Map other necessary props from filteredArticles to ArticleCardProps if needed
+                    articleId: article.articleId,
+                    title: article.title,
+                    brandName: article.brandName,
+                    currentPrice: article.priceInfo.currentPrice,
+                    originalPrice: article.priceInfo.originalPrice,
+                    discountRate: article.discountRate,
+                    imageUrl: article.imageUrl,
+                    state: article.state,
+                  }))}
+                  className="mb-8 border rounded-md overflow-hidden" // Add some basic list styling
+                  // Add onUnlike handler if needed based on ArticleListProps
+                />
+              ) : (
+                <ArticleWrappingGrid // Use the new wrapping grid component
+                  articles={filteredArticles.map((article) => ({
+                    ...article,
+                    isLiked: article.liked, // Ensure isLiked is passed correctly
+                    // Map other necessary props from filteredArticles to ArticleCardProps if needed
+                    articleId: article.articleId,
+                    title: article.title,
+                    brandName: article.brandName,
+                    currentPrice: article.priceInfo.currentPrice,
+                    originalPrice: article.priceInfo.originalPrice,
+                    discountRate: article.discountRate,
+                    imageUrl: article.imageUrl,
+                    state: article.state,
+                  }))}
+                  className="mb-8"
+                />
+              )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="mb-4 rounded-full bg-gray-100 p-6">
