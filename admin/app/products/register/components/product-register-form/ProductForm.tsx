@@ -117,7 +117,6 @@ export default function ProductForm() {
       const imageCid = await uploadImageToPinata(file);
       const imageUrl = `https://ipfs.io/ipfs/${imageCid}`;
 
-
       const metadata = {
         name: formData.name,
         description: formData.description,
@@ -166,18 +165,12 @@ export default function ProductForm() {
 
       if (!res.ok) throw new Error("DB 저장 실패");
 
-      toast({
-        title: "상품 등록 완료",
-        description: "NFT 기프티콘이 등록되었습니다.",
-      });
+      alert("🎉 상품이 성공적으로 등록되었습니다!");
+
       router.push("/");
     } catch (error) {
       console.error("등록 오류:", error);
-      toast({
-        title: "등록 실패",
-        description: "오류가 발생했습니다.",
-        variant: "destructive",
-      });
+      alert("상품 등록에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }

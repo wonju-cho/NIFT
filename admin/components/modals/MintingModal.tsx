@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { mintNFT } from "@/lib/mintNFT";
+import { toast } from "react-hot-toast";
 
 export default function MintingModal({ open, setOpen, product }: any) {
   const [quantity, setQuantity] = useState(1);
@@ -41,8 +42,10 @@ export default function MintingModal({ open, setOpen, product }: any) {
       });
 
       console.log("✅ 민팅 성공:", txHash);
+      alert("🎉 상품 발급에 성공했습니다!");
     } catch (err) {
       console.error("❌ 민팅 실패:", err);
+      alert("❌ 민팅 실패");
     } finally {
       setMinting(false);
       setOpen(false);
