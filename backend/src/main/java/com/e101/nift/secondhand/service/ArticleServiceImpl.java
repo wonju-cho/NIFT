@@ -87,8 +87,8 @@ public class ArticleServiceImpl implements ArticleService {
                             return ArticleListDto.from(article, isLiked);
                         });
             } else {
-                // 아무 필터도 없는 경우 전체 조회
-                articles = articleRepository.findAll(sortedPageable)
+                // 아무 필터도 없는 경우 전체 조회 (ON_SALE 상태만 필터링)
+                articles = articleRepository.findByState(targetState, sortedPageable)
                         .map(article -> {
                             boolean isLiked = (userId != null) &&
                                     likeRepository.existsByArticle_ArticleIdAndUser_UserId(article.getArticleId(), userId);

@@ -305,6 +305,7 @@ export function GiftMemories({
   };
 
   return (
+    // 리팩토링 핵심만 반영한 예시
     <div className="space-y-6">
       {gifts.map((gift) => (
         <button
@@ -319,11 +320,11 @@ export function GiftMemories({
       ))}
       {memories.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
             {currentItems.map((gift) => (
               <div
                 key={gift.id}
-                className="group relative overflow-hidden rounded-lg border bg-white transition-all hover:shadow-md"
+                className="group relative overflow-hidden rounded-xl border bg-white shadow-sm hover:shadow-md transition"
               >
                 <Dialog>
                   <DialogTrigger asChild>
@@ -343,7 +344,7 @@ export function GiftMemories({
                           showFlipHint={false}
                         />
                       </div>
-                      <div className="p-3">
+                      <div className="p-4">
                         <div className="flex justify-between items-center">
                           <div className="text-sm font-medium">
                             from. {gift.senderNickname}
@@ -355,7 +356,7 @@ export function GiftMemories({
                       </div>
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent className="sm:max-w-md p-6">
                     {selectedGift && (
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold">
@@ -404,19 +405,17 @@ export function GiftMemories({
                             </div>
                           )
                         ) : (
-                          // 수락된 선물 상세 보기 (기존 코드 유지)
                           <>
-                            <div className="w-full aspect-[4/3] relative overflow-hidden rounded-lg border">
+                            <div className="w-full aspect-[4/3] relative rounded-lg overflow-hidden">
                               <GiftMemoryCard
                                 cardData={selectedGift.cardData}
                                 isAccepted={true}
-                                className="rounded-none border-none"
                                 isDetailView={true}
                                 showFlipHint={true}
                               />
                             </div>
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                              <div className="flex items-start gap-3">
+                            <div className="bg-gray-50 p-5 rounded-lg space-y-3">
+                              <div className="flex gap-4 items-start">
                                 <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
                                   <Image
                                     src={
@@ -445,7 +444,7 @@ export function GiftMemories({
                           </>
                         )}
 
-                        <div className="text-sm text-gray-500 mt-2">
+                        <div className="text-sm text-gray-500 text-left space-y-1 pt-4">
                           <p>보낸 사람: {selectedGift.senderName}</p>
                           <p>보낸 날짜: {formatDate(selectedGift.sentDate)}</p>
                           {selectedGift.isAccepted &&
@@ -464,7 +463,6 @@ export function GiftMemories({
             ))}
           </div>
 
-          {/* 페이지네이션 */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-6">
               <Button
@@ -475,7 +473,7 @@ export function GiftMemories({
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm">
+              <span className="text-sm font-medium">
                 {currentPage + 1} / {totalPages}
               </span>
               <Button
@@ -491,9 +489,7 @@ export function GiftMemories({
         </>
       ) : (
         <div className="text-center py-12 text-gray-500">
-          <div className="flex justify-center mb-4">
-            <Package className="h-12 w-12 text-gray-300" />
-          </div>
+          <Package className="mx-auto h-12 w-12 text-gray-300 mb-4" />
           <p>아직 선물 추억이 없습니다.</p>
         </div>
       )}
