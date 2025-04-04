@@ -13,7 +13,14 @@ import { useGiftCardMobile } from "@/hooks/use-giftcard-mobile";
 import type { GiftMemory } from "@/types/gift-memory";
 // 상단에 GiftUnboxAnimation 컴포넌트 import 추가
 import { GiftUnboxAnimation } from "@/components/gift/gift-animation/gift-unbox-animation";
-import { getGift, receiveNFT, UserNFT } from "@/lib/api/web3";
+import {
+  getGift,
+  getNFTDetailInfo,
+  getSerialInfo,
+  getUserNFTsAsJson,
+  receiveNFT,
+  UserNFT,
+} from "@/lib/api/web3";
 import { User } from "@/app/mypage/page";
 
 // 샘플 데이터
@@ -206,9 +213,15 @@ const sampleGiftMemories: GiftMemory[] = [
 
 interface GiftMemoriesProps {
   user: User;
+  availableGiftCards: any[];
+  setAvailableGiftCards: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
-export function GiftMemories({ user }: GiftMemoriesProps) {
+export function GiftMemories({
+  user,
+  availableGiftCards,
+  setAvailableGiftCards,
+}: GiftMemoriesProps) {
   const [gifts, setGifts] = useState<UserNFT[]>([]);
   const [memories, setMemories] = useState<GiftMemory[]>(sampleGiftMemories);
   const [currentPage, setCurrentPage] = useState(0);
@@ -284,6 +297,9 @@ export function GiftMemories({ user }: GiftMemoriesProps) {
     const response = await receiveNFT(gift.serialNum, user.kakaoId);
     if (response.success) {
       setGifts(gifts.filter((g) => g.serialNum !== gift.serialNum));
+      const newInfo = await getNFTDetailInfo(gift.serialNum);
+      const updatedUsedGiftCards = [...availableGiftCards, newInfo];
+      setAvailableGiftCards(updatedUsedGiftCards);
       alert("선물 받기가 완료 되었습니다");
     }
   };
