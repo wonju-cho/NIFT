@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { GetGifticonResponse } from "./CreateGiftHistory";
 import axios from "axios";
 import exp from "constants";
+import { apiClient } from "./CustomAxios";
 
 // ✅ 환경 변수에서 컨트랙트 주소 가져오기
 export const SSF_CONTRACT_ADDRESS =
