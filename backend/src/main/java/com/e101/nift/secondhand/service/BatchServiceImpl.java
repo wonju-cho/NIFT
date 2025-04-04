@@ -118,6 +118,7 @@ public class BatchServiceImpl implements BatchService {
                                     .gifticon(transactionService.getGifticon(response.tokenId))
                                     .mongoId("67eb5540252c9d3711faf55b") // default card ID
                                     .isReceived(false)
+                                    .serialNum(response.serialNumber.longValue())
                                     .createdAt(ConvertUtil.convertTimestampToLocalTime(response.transactionTime))
                                     .txHash(response.log.getTransactionHash())
                                     .build()
