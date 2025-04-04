@@ -4,7 +4,8 @@ import Image from "next/image";
 export function GifticonDetailCard({ gifticon }: { gifticon: UserNFT }) {
   if (!gifticon)
     return (
-      <div className="flex items-center justify-center h-full text-muted-foreground text-center">
+      <div className="bg-gray-100 border border-gray-300 p-6 rounded-lg flex items-center justify-center text-muted-foreground text-center
+  w-full max-w-xs sm:max-w-sm md:max-w-md h-64 sm:h-72 md:h-96">
         기프티콘을 선택하세요
       </div>
     );
