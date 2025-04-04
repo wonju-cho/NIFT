@@ -12,7 +12,6 @@ import com.e101.nift.secondhand.exception.GiftHistoryErrorCode;
 import com.e101.nift.secondhand.exception.GiftHistoryException;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.dto.response.ScrollDto;
-import com.e101.nift.secondhand.repository.ArticleRepository;
 import com.e101.nift.secondhand.service.ContractService;
 import com.e101.nift.secondhand.service.TransactionService;
 import com.e101.nift.user.entity.User;
@@ -34,7 +33,6 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
     private final GiftHistoryRepository giftHistoryRepository;
     private final GifticonRepository gifticonRepository;
     private final UserRepository userRepository;
-    private final ArticleRepository articleRepository;
     private final ContractService contractService;
     private final TransactionService transactionService;
 
@@ -94,6 +92,7 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
                 .mongoId(request.getMongoId())
                 .isReceived(false)
                 .createdAt(ConvertUtil.convertTimestampToLocalTime(giftPendingEventResponse.transactionTime))
+                .txHash(request.getTxHashGift())
                 .build();
         giftHistoryRepository.save(giftHistory);
         log.info("[GiftHistoryService] giftHistory 저장 완료");

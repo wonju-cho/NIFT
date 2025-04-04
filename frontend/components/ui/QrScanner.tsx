@@ -13,6 +13,7 @@ interface QrScannerProps {
 export default function QrScanner({ onClose, onScanSuccess }: QrScannerProps) {
   const scannerContainerRef = useRef<HTMLDivElement>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const hasScannedRef = useRef(false); // ✅ 중복 방지용 ref
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
 
@@ -37,7 +38,7 @@ export default function QrScanner({ onClose, onScanSuccess }: QrScannerProps) {
 
   const handleClose = async () => {
     await safelyStopScanner();
-    onClose(); // 상위 상태 업데이트
+    onClose();
   };
 
   useEffect(() => {
@@ -47,6 +48,7 @@ export default function QrScanner({ onClose, onScanSuccess }: QrScannerProps) {
 
       container.innerHTML = "";
       scannerRef.current = new Html5Qrcode(container.id);
+      hasScannedRef.current = false; // ✅ 스캐너 시작 시 초기화
 
       try {
         setIsScanning(true);
@@ -61,17 +63,26 @@ export default function QrScanner({ onClose, onScanSuccess }: QrScannerProps) {
             aspectRatio: 1.0,
           },
           async (decodedText) => {
-            if (!isAddress(decodedText)) {
+            if (hasScannedRef.current) return; // ✅ 중복 방지
+            console.log("✅ QR 스캔 성공:", decodedText);
+
+            let addressToCheck = decodedText;
+            if (decodedText.startsWith("ethereum:")) {
+              addressToCheck = decodedText.substring("ethereum:".length);
+            }
+
+            if (!isAddress(addressToCheck)) {
               alert("유효하지 않은 지갑 주소입니다.");
               return;
             }
 
-            setIsScanning(false); // ✅ 스캔 완료 시 상태 변경
-            onScanSuccess(decodedText);
+            hasScannedRef.current = true; // ✅ 한 번만 처리
+            setIsScanning(false);
+            onScanSuccess(addressToCheck);
             await safelyStopScanner();
           },
           () => {
-            // QR 인식 실패는 무시
+            // QR 인식 실패 무시
           }
         );
       } catch (err) {
@@ -99,7 +110,9 @@ export default function QrScanner({ onClose, onScanSuccess }: QrScannerProps) {
         </button>
 
         {error ? (
-          <div className="mb-4 rounded-md bg-red-50 p-4 text-center text-red-600">{error}</div>
+          <div className="mb-4 rounded-md bg-red-50 p-4 text-center text-red-600">
+            {error}
+          </div>
         ) : (
           <div className="mb-4 text-center text-lg font-semibold text-white">
             사용처의 지갑 주소를 스캔하세요

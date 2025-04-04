@@ -8,6 +8,7 @@ import com.e101.nift.secondhand.exception.ArticleException;
 import com.e101.nift.secondhand.model.contract.GifticonNFT;
 import com.e101.nift.secondhand.model.state.SaleStatus;
 import com.e101.nift.secondhand.repository.ArticleRepository;
+import com.e101.nift.user.entity.User;
 import com.e101.nift.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -159,6 +160,26 @@ public class TransactionServiceImpl implements TransactionService {
         return events;
     }
 
+    @Override
+    public List<GifticonNFT.GiftPendingEventResponse> getGiftPendingEventByBlockNumber(BigInteger blockNumber) {
+        List<org.web3j.protocol.core.methods.response.Log> logs = getResponseLogs(blockNumber);
+
+        List<GifticonNFT.GiftPendingEventResponse> events = new ArrayList<>();
+
+        for (org.web3j.protocol.core.methods.response.Log logg : logs) {
+            log.info("로그 내용: address={}, topics={}, data={}", logg.getAddress(), logg.getTopics(), logg.getData());
+
+            try {
+                GifticonNFT.GiftPendingEventResponse event = GifticonNFT.getGiftPendingEventFromLog(logg);
+                events.add(event);
+            } catch (NullPointerException e) {
+                log.error("이 로그는 ListedForSale 이벤트가 아닙니다 (NPE 캐치됨)");
+            }
+        }
+
+        return events;
+    }
+
     private Optional<TransactionReceipt> getTransactionReceipt(String txHash) {
         try {
             EthGetTransactionReceipt receiptResponse = web3j.ethGetTransactionReceipt(txHash).send();
@@ -213,9 +234,27 @@ public class TransactionServiceImpl implements TransactionService {
         Long id =  userRepository.findByWalletAddress(userAddress)
                 .orElseThrow(() -> new ArticleException(ArticleErrorCode.CANNOT_FIND_BY_ADDRESS))
                 .getUserId();
-        log.info("[TransactionService] getArticle: {}", id);
+        log.info("[TransactionService] getUserId: {}", id);
         return id;
     }
+
+    @Override
+    public User getUser(String userAddress) {
+        User user =  userRepository.findByWalletAddress(userAddress)
+                .orElseThrow(() -> new ArticleException(ArticleErrorCode.CANNOT_FIND_BY_ADDRESS));
+        log.info("[TransactionService] getUser: {}", user);
+        return user;
+    }
+
+    @Override
+    public User getUserByKaKaoId(String kakaoId) {
+        User user =  userRepository.findByKakaoId(Long.valueOf(kakaoId))
+                .orElseThrow(() -> new ArticleException(ArticleErrorCode.CANNOT_FIND_BY_ADDRESS));
+        log.info("[TransactionService] getUserByKaKaoId: {}", user);
+        return user;
+
+    }
+
 
     @Override
     public Article getArticle(BigInteger serialNumber) {

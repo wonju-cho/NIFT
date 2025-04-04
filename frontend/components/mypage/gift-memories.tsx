@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -13,6 +13,8 @@ import { useGiftCardMobile } from "@/hooks/use-giftcard-mobile";
 import type { GiftMemory } from "@/types/gift-memory";
 // 상단에 GiftUnboxAnimation 컴포넌트 import 추가
 import { GiftUnboxAnimation } from "@/components/gift/gift-animation/gift-unbox-animation";
+import { getGift, receiveNFT, UserNFT } from "@/lib/api/web3";
+import { User } from "@/app/mypage/page";
 
 // 샘플 데이터
 const sampleGiftMemories: GiftMemory[] = [
@@ -202,7 +204,12 @@ const sampleGiftMemories: GiftMemory[] = [
   },
 ];
 
-export function GiftMemories() {
+interface GiftMemoriesProps {
+  user: User;
+}
+
+export function GiftMemories({ user }: GiftMemoriesProps) {
+  const [gifts, setGifts] = useState<UserNFT[]>([]);
   const [memories, setMemories] = useState<GiftMemory[]>(sampleGiftMemories);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedGift, setSelectedGift] = useState<GiftMemory | null>(null);
@@ -211,6 +218,15 @@ export function GiftMemories() {
   const isGiftCardMobile = useGiftCardMobile();
   const itemsPerPage = 4; // 페이지당 아이템 수 감소
   const totalPages = Math.ceil(memories.length / itemsPerPage);
+
+  async function fetchGifts() {
+    const result = await getGift(user.kakaoId);
+    setGifts(result);
+  }
+
+  useEffect(() => {
+    fetchGifts();
+  }, [user.kakaoId]);
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(0, prev - 1));
@@ -264,9 +280,28 @@ export function GiftMemories() {
     (currentPage + 1) * itemsPerPage
   );
 
+  const handleReceive = async (gift: UserNFT) => {
+    const response = await receiveNFT(gift.serialNum, user.kakaoId);
+    if (response.success) {
+      setGifts(gifts.filter((g) => g.serialNum !== gift.serialNum));
+      alert("선물 받기가 완료 되었습니다");
+    }
+  };
+
   return (
     // 리팩토링 핵심만 반영한 예시
     <div className="space-y-6">
+      {gifts.map((gift) => (
+        <button
+          className="p-10"
+          key={String(gift.serialNum)}
+          onClick={() => {
+            handleReceive(gift);
+          }}
+        >
+          임시
+        </button>
+      ))}
       {memories.length > 0 ? (
         <>
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
@@ -284,7 +319,7 @@ export function GiftMemories() {
                       <div
                         className={cn(
                           "relative overflow-hidden",
-                          isGiftCardMobile ? "aspect-[4/3]" : "h-[250px]"
+                          isGiftCardMobile ? "aspect-[4/3]" : "h-[250px]" // 카드 높이 증가
                         )}
                       >
                         <GiftMemoryCard
@@ -295,7 +330,7 @@ export function GiftMemories() {
                       </div>
                       <div className="p-4">
                         <div className="flex justify-between items-center">
-                          <div className="text-sm font-semibold">
+                          <div className="text-sm font-medium">
                             from. {gift.senderNickname}
                           </div>
                           <div className="text-xs text-gray-500">
@@ -307,8 +342,8 @@ export function GiftMemories() {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md p-6">
                     {selectedGift && (
-                      <div className="space-y-5 text-center">
-                        <h3 className="text-lg font-bold">
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">
                           {selectedGift.isAccepted
                             ? "선물 카드"
                             : "새로운 선물이 도착했습니다!"}
@@ -316,26 +351,33 @@ export function GiftMemories() {
 
                         {selectedGift && !selectedGift.isAccepted ? (
                           isUnboxing ? (
-                            <div className="w-full aspect-[4/3] relative rounded-lg overflow-hidden">
+                            // 언박싱 애니메이션
+                            <div className="w-full aspect-[4/3] relative overflow-hidden rounded-lg">
                               <GiftUnboxAnimation
                                 gift={selectedGift}
                                 onComplete={handleUnboxComplete}
                               />
                             </div>
                           ) : (
-                            <div className="py-8">
-                              <Image
-                                src="/placeholder.svg?height=120&width=120&text=🎁"
-                                alt="Gift box"
-                                width={120}
-                                height={120}
-                                className="mx-auto mb-4 object-contain"
-                              />
-                              <p className="mb-4 text-sm">
-                                <span className="font-semibold">
+                            // 미수락 선물 상세 보기
+                            <div className="text-center py-8">
+                              <div className="flex justify-center mb-4">
+                                <Image
+                                  src="/placeholder.svg?height=120&width=120&text=🎁"
+                                  alt="Gift box"
+                                  width={120}
+                                  height={120}
+                                  className="object-contain"
+                                />
+                              </div>
+                              <p className="mb-4">
+                                <span className="font-medium">
                                   {selectedGift.senderNickname}
                                 </span>
                                 님이 보낸 선물이 도착했습니다.
+                                <br />
+                                선물을 수락하면 카드와 기프티콘을 확인할 수
+                                있습니다.
                               </p>
                               <Button
                                 onClick={() =>
@@ -369,8 +411,8 @@ export function GiftMemories() {
                                     className="object-cover"
                                   />
                                 </div>
-                                <div className="text-left">
-                                  <h4 className="font-semibold">
+                                <div>
+                                  <h4 className="font-medium">
                                     {selectedGift.giftItem?.title}
                                   </h4>
                                   <p className="text-sm text-gray-500">
@@ -406,7 +448,7 @@ export function GiftMemories() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-3 mt-8">
+            <div className="flex justify-center items-center gap-2 mt-6">
               <Button
                 variant="outline"
                 size="icon"

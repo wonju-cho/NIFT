@@ -54,11 +54,9 @@ pipeline {
 	            	}
 
 					withCredentials([
-						file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE'),
-						file(credentialsId: 'SONAR_CRED', variable: 'SONAR_FILE')
+						file(credentialsId: 'DB_CRED', variable: 'DB_CRED_FILE')
 						]) {
                         checkCredential(DB_CRED_FILE, "DB_CRED")
-                        checkCredential(SONAR_FILE, "SONAR_CRED")
 					}
 				}
 			}
@@ -73,16 +71,6 @@ pipeline {
 		                def db = readJSON file: DB_FILE
 		                def dbContent = db.collect { k, v -> "${k}=${v}" }.join('\n')
 		                writeFile file: '.env', text: dbContent
-		            }
-		        }
-
-		        withCredentials([
-		            file(credentialsId: 'SONAR_CRED', variable: 'SONAR_FILE')
-		        ]) {
-		            script {
-		                def sonar = readJSON file: SONAR_FILE
-		                def sonarContent = sonar.collect { k, v -> "${k}=${v}" }.join('\n')
-		                writeFile file: '.env.sonar', text: sonarContent
 		            }
 		        }
 		    }
@@ -184,6 +172,7 @@ pipeline {
 				script {
 					try {
 						def composeFile = (env.ENV == 'production') ? 'docker-compose-production.yml' : 'docker-compose-dev.yml'
+						sh 'cp .env ./frontend'
 						sh "docker-compose -f ${composeFile} --env-file .env up -d --build"	
 						env.IMAGE_BUILD_SUCCESS = "true"
 					}

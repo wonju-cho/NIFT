@@ -17,6 +17,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -82,6 +83,7 @@ public class UserServiceImpl implements UserService{
                 .profileImage(user.getProfileImage())
                 .nickname(user.getNickName())
                 .walletAddress(user.getWalletAddress())
+                .kakaoId(user.getKakaoId().toString())
                 .message("본인 정보를 조회했습니다.")
                 .build();
     }
@@ -91,6 +93,11 @@ public class UserServiceImpl implements UserService{
     public Optional<Long> findUserIdByAddress(String address) {
         return userRepository.findByWalletAddress(address)
                 .flatMap(user -> Optional.ofNullable(user.getUserId()));
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
 

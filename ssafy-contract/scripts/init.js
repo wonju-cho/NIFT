@@ -2,8 +2,8 @@ const { ethers } = require("hardhat");
 const { execSync } = require("child_process");
 
 async function main() {
-  const contractAddress = "0x00c68d5a9F5944501ee6ef29C870760daCB7F26e";
-  const sellerAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F";
+  const contractAddress = "0x1a5f7ffb9B0f88E004bc16e03FD93484668cdb46";
+  const sellerAddress = "0xc3c0Da7063617cA28e93A1cf0D53531c46A00AFd";
 
   const tokenId = 1;
   const mintAmount = 8;
@@ -68,10 +68,9 @@ async function main() {
   }
 
   // ✅ 자동 판매 등록
-  // console.log("🎉 전송 완료! 이제 전부 자동 판매 등록 시작");
+  console.log("🎉 전송 완료! 이제 전부 자동 판매 등록 시작");
 
   // const sellPrice = ethers.parseUnits("2", ssfDecimals);
-
   // for (const serial of serials) {
   //   console.log(`🚀 listForSale.js 실행 중 (Serial: ${serial})`);
   //   try {

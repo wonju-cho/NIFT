@@ -1,25 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { ethers } from "ethers"
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
-import { UserCard } from "@/components/mypage/user-card"
-import { UserSidebar } from "@/components/mypage/user-sidebar"
-import { GiftTab } from "@/components/mypage/gift-tab"
-import { TransactionsTab } from "@/components/mypage/transactions-tab"
-import { SettingsTab } from "@/components/mypage/settings-tab"
-import { WishList } from "@/components/mypage/wish-list"
-import { EmptyState } from "@/components/mypage/empty-state"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
-import { getSSFBalance, getUserNFTsAsJson } from "@/lib/api/web3"
-import { updateUserNickname, updateWallet, fetchLikedArticles } from "@/lib/api/mypage"
-import type { ArticleCardProps } from "@/components/article/article-card"
-import { Gift, Clock, Package, Heart, Settings } from "lucide-react"
-import { GiftMemories } from "@/components/mypage/gift-memories"
-
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ethers } from "ethers";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
+import { UserCard } from "@/components/mypage/user-card";
+import { UserSidebar } from "@/components/mypage/user-sidebar";
+import { GiftTab } from "@/components/mypage/gift-tab";
+import { TransactionsTab } from "@/components/mypage/transactions-tab";
+import { SettingsTab } from "@/components/mypage/settings-tab";
+import { WishList } from "@/components/mypage/wish-list";
+import { EmptyState } from "@/components/mypage/empty-state";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  getGift,
+  getSSFBalance,
+  getUserNFTsAsJson,
+  UserNFT,
+} from "@/lib/api/web3";
+import {
+  updateUserNickname,
+  updateWallet,
+  fetchLikedArticles,
+} from "@/lib/api/mypage";
+import type { ArticleCardProps } from "@/components/article/article-card";
+import { Gift, Clock, Package, Heart, Settings } from "lucide-react";
+import { GiftMemories } from "@/components/mypage/gift-memories";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const ITEMS_PER_PAGE = 6;
@@ -32,6 +40,14 @@ const getKakaoToken = () =>
     ? localStorage.getItem("kakao_access_token")
     : null;
 
+export interface User {
+  profileImage: string;
+  nickname: string;
+  walletAddress: string;
+  balance: number;
+  kakaoId: string;
+}
+
 export default function MyPage() {
   const router = useRouter();
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -40,6 +56,7 @@ export default function MyPage() {
     nickname: "",
     walletAddress: "",
     balance: 0,
+    kakaoId: "",
   });
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [nickname, setNickname] = useState("");
@@ -56,9 +73,9 @@ export default function MyPage() {
   const [activeTab, setActiveTab] = useState("gifticons");
   const [giftCardTab, setGiftCardTab] = useState("available");
 
-  const calculateDday = (expiry: number): number => {
+  const calculateDday = (expiry: string): number => {
     const today = new Date();
-    const date = new Date(expiry * 1000);
+    const date = new Date(expiry);
     // console.log(date);
 
     return Math.ceil(
@@ -153,6 +170,7 @@ export default function MyPage() {
           nickname: data.nickname,
           walletAddress: data.walletAddress,
           balance: data.balance || 0,
+          kakaoId: data.kakaoId,
         });
         setNickname(data.nickname);
         setWalletAddress(data.walletAddress || null);
@@ -211,7 +229,7 @@ export default function MyPage() {
         const used: any[] = [];
 
         for (const nft of nfts) {
-          const expiry = new Date(String(nft.expirationDate));
+          const expiry = new Date(Number(nft.expirationDate) * 1000);
           if (nft.redeemed || expiry.getTime() < now.getTime()) used.push(nft);
           else available.push(nft);
         }
@@ -236,6 +254,18 @@ export default function MyPage() {
     { icon: Heart, label: "찜한 상품", value: "favorites" },
     { icon: Settings, label: "설정", value: "settings" },
   ];
+
+  const handleGifticonUsed = (serialNum: number) => {
+    setAvailableGiftCards((prev) =>
+      prev.filter((item) => Number(item.serialNum) !== Number(serialNum))
+    );
+    const usedGift = availableGiftCards.find(
+      (item) => Number(item.serialNum) === Number(serialNum)
+    );
+    if (usedGift) {
+      setUsedGiftCards((prev) => [...prev, { ...usedGift, redeemed: true }]);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -303,6 +333,7 @@ export default function MyPage() {
                             calculateDday={calculateDday}
                             giftCardTab={giftCardTab}
                             setGiftCardTab={setGiftCardTab}
+                            onGifticonUsed={handleGifticonUsed}
                           />
                         </TabsContent>
 
@@ -319,7 +350,7 @@ export default function MyPage() {
                               소중한 사람들과 주고받은 NIFT 카드를 확인해보세요.
                             </p>
                           </div>
-                          <GiftMemories />
+                          <GiftMemories user={user} />
                         </TabsContent>
 
                         <TabsContent value="favorites">

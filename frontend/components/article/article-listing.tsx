@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { CategoryNavigation } from "@/components/article/category-navigation"
 import { useLoading } from "@/components/LoadingContext"
 
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 // 간단한 debounce 유틸리티 함수 구현

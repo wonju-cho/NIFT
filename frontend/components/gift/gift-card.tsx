@@ -1,19 +1,21 @@
 "use client";
 
-import { UserNFT } from "@/lib/api/web3";
+import { useNft, UserNFT } from "@/lib/api/web3";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getTokenIdBySerial } from "@/lib/api/web3";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import QrScanner from "../ui/QrScanner";
 
 interface GiftCardProps {
   expiryDays: string;
   card: UserNFT;
+  onGifticonUsed?: (serialNum: number) => void;
 }
 
-export function GiftCard({ expiryDays, card }: GiftCardProps) {
+export function GiftCard({ expiryDays, card, onGifticonUsed }: GiftCardProps) {
   const router = useRouter();
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
 
   const handleGift = async (serialNum: number) => {
     try {
@@ -24,7 +26,23 @@ export function GiftCard({ expiryDays, card }: GiftCardProps) {
     }
   };
 
-  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false)
+  const handleUseNft = async (walletAddress: string) => {
+    const response = await useNft(Number(card.serialNum), walletAddress);
+    if (response.success) {
+      alert("사용이 완료되었습니다.");
+      onGifticonUsed?.(Number(card.serialNum));
+    }
+  };
+
+  const onScanSuccessHandler = useCallback(
+    (walletAddress: string) => {
+      // 파라미터 타입 명시
+      console.log("✅ 인식된 지갑 주소:", walletAddress);
+      setIsQrScannerOpen(false);
+      handleUseNft(walletAddress);
+    },
+    [handleUseNft, setIsQrScannerOpen]
+  );
 
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-white transition-all hover:shadow-md">
@@ -108,11 +126,7 @@ export function GiftCard({ expiryDays, card }: GiftCardProps) {
       {isQrScannerOpen && (
         <QrScanner
           onClose={() => setIsQrScannerOpen(false)}
-          onScanSuccess={(walletAddress) => {
-            console.log("✅ 인식된 지갑 주소:", walletAddress)
-            setIsQrScannerOpen(false)
-            // TODO: 여기서 API 호출로 gift 사용 처리
-          }}
+          onScanSuccess={onScanSuccessHandler}
         />
       )}
     </div>
