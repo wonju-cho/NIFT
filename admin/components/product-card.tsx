@@ -56,7 +56,7 @@ export default function ProductCard({
             {name}
           </h3>
         </Link>
-        <p className="text-sm text-gray-500 mt-1">₩ {price.toLocaleString()}</p>
+        <p className="text-sm text-gray-500 mt-1">SSF {price.toLocaleString()}</p>
       </CardContent>
       <CardFooter className="flex justify-end p-4 pt-0">
         <Link href={`/products/edit/${id}`}>
