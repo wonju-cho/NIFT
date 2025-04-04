@@ -236,7 +236,6 @@ export default function UserManagement() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12 text-center">번호</TableHead>
-                <TableHead>사용자 ID</TableHead>
                 <TableHead>닉네임</TableHead>
                 <TableHead className="text-center">나이</TableHead>
                 <TableHead className="text-center">성별</TableHead>
@@ -247,7 +246,6 @@ export default function UserManagement() {
             <TableBody>
               {filteredUsers.map((user, index) => (
                 <TableRow key={user.userId}>
-                  <TableCell className="text-center">{index + 1}</TableCell>
                   <TableCell>{user.userId}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -268,9 +266,10 @@ export default function UserManagement() {
                     {user.gender === "male" ? "남성" : user.gender === "female" ? "여성" : "기타"}
                   </TableCell>
                   <TableCell className="font-mono text-xs flex items-center gap-1">
-                    <span title={user.walletAddress}>
-                      {user.walletAddress.substring(0, 8)}...{user.walletAddress.substring(user.walletAddress.length - 6)}
-                    </span>
+                  <span title={user.walletAddress}>
+                    {user.walletAddress?.substring(0, 8)}...
+                    {user.walletAddress?.substring(user.walletAddress.length - 4) || '주소 없음'}
+                  </span>
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(user.walletAddress)
@@ -283,14 +282,17 @@ export default function UserManagement() {
                     </button>
                   </TableCell>
                   <TableCell className="text-center">
-                    <Badge
-                      variant={
-                        user.role === 0 ? "default" : user.role === 1 ? "secondary" : "destructive"
-                      }
-                      className={user.role === 0 ? "bg-green-500" : ""}
-                    >
-                      {user.role === 0 ? "사용자" : user.role === 1 ? "사업장" : "정지"}
-                    </Badge>
+                  <Badge
+                    variant={
+                      user.role === 0 ? "default" : user.role === 1 ? "secondary" : "destructive"
+                    }
+                    className={`
+                      ${user.role === 0 ? "bg-green-500" : ""}
+                      text-white
+                    `}
+                  >
+                    {user.role === 0 ? "사용자" : user.role === 1 ? "사업장" : "정지"}
+                  </Badge>
                   </TableCell>
                 </TableRow>
               ))}
