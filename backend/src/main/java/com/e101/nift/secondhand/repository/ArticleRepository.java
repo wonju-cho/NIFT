@@ -27,6 +27,9 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                                     @Param("state") SaleStatus state,
                                     Pageable pageable);
 
+    // 상태 기반 전체 필터링
+    Page<Article> findByState(SaleStatus state, Pageable pageable);
+
     // 가격 범위 필터링
     @Query("SELECT p FROM Article p " +
             "WHERE (:minPrice IS NULL OR p.currentPrice >= :minPrice) " +
