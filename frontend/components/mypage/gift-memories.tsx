@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -13,7 +13,8 @@ import { useGiftCardMobile } from "@/hooks/use-giftcard-mobile";
 import type { GiftMemory } from "@/types/gift-memory";
 // 상단에 GiftUnboxAnimation 컴포넌트 import 추가
 import { GiftUnboxAnimation } from "@/components/gift/gift-animation/gift-unbox-animation";
-import { UserNFT } from "@/lib/api/web3";
+import { getGift, receiveNFT, UserNFT } from "@/lib/api/web3";
+import { User } from "@/app/mypage/page";
 
 // 샘플 데이터
 const sampleGiftMemories: GiftMemory[] = [
@@ -204,10 +205,11 @@ const sampleGiftMemories: GiftMemory[] = [
 ];
 
 interface GiftMemoriesProps {
-  giftData: UserNFT[];
+  user: User;
 }
 
-export function GiftMemories({ giftData }: GiftMemoriesProps) {
+export function GiftMemories({ user }: GiftMemoriesProps) {
+  const [gifts, setGifts] = useState<UserNFT[]>([]);
   const [memories, setMemories] = useState<GiftMemory[]>(sampleGiftMemories);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedGift, setSelectedGift] = useState<GiftMemory | null>(null);
@@ -216,6 +218,15 @@ export function GiftMemories({ giftData }: GiftMemoriesProps) {
   const isGiftCardMobile = useGiftCardMobile();
   const itemsPerPage = 4; // 페이지당 아이템 수 감소
   const totalPages = Math.ceil(memories.length / itemsPerPage);
+
+  async function fetchGifts() {
+    const result = await getGift(user.kakaoId);
+    setGifts(result);
+  }
+
+  useEffect(() => {
+    fetchGifts();
+  }, [user.kakaoId]);
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(0, prev - 1));
@@ -269,8 +280,27 @@ export function GiftMemories({ giftData }: GiftMemoriesProps) {
     (currentPage + 1) * itemsPerPage
   );
 
+  const handleReceive = async (gift: UserNFT) => {
+    const response = await receiveNFT(gift.serialNum, user.kakaoId);
+    if (response.success) {
+      setGifts(gifts.filter((g) => g.serialNum !== gift.serialNum));
+      alert("선물 받기가 완료 되었습니다");
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {gifts.map((gift) => (
+        <button
+          className="p-10"
+          key={String(gift.serialNum)}
+          onClick={() => {
+            handleReceive(gift);
+          }}
+        >
+          임시
+        </button>
+      ))}
       {memories.length > 0 ? (
         <>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

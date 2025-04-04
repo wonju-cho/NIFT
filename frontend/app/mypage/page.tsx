@@ -40,6 +40,14 @@ const getKakaoToken = () =>
     ? localStorage.getItem("kakao_access_token")
     : null;
 
+export interface User {
+  profileImage: string;
+  nickname: string;
+  walletAddress: string;
+  balance: number;
+  kakaoId: string;
+}
+
 export default function MyPage() {
   const router = useRouter();
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -56,7 +64,6 @@ export default function MyPage() {
   const [copied, setCopied] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [likedArticles, setLikedArticles] = useState<ArticleCardProps[]>([]);
-  const [gift, setGift] = useState<UserNFT[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPage, setTotalPage] = useState(1);
   const [availableGiftCards, setAvailableGiftCards] = useState<any[]>([]);
@@ -217,8 +224,6 @@ export default function MyPage() {
       if (!user.walletAddress) return;
       try {
         const nfts = await getUserNFTsAsJson(user.walletAddress);
-        const gifts = await getGift(user.kakaoId);
-        setGift(gifts);
         const now = new Date();
         const available: any[] = [];
         const used: any[] = [];
@@ -260,7 +265,7 @@ export default function MyPage() {
     if (usedGift) {
       setUsedGiftCards((prev) => [...prev, { ...usedGift, redeemed: true }]);
     }
-  };  
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -345,7 +350,7 @@ export default function MyPage() {
                               소중한 사람들과 주고받은 NIFT 카드를 확인해보세요.
                             </p>
                           </div>
-                          <GiftMemories giftData={gift} />
+                          <GiftMemories user={user} />
                         </TabsContent>
 
                         <TabsContent value="favorites">
