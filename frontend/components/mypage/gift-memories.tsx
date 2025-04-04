@@ -22,6 +22,7 @@ import {
   UserNFT,
 } from "@/lib/api/web3";
 import { User } from "@/app/mypage/page";
+import { apiClient } from "@/lib/api/CustomAxios";
 
 // 샘플 데이터
 const sampleGiftMemories: GiftMemory[] = [
@@ -301,6 +302,10 @@ export function GiftMemories({
       const updatedUsedGiftCards = [...availableGiftCards, newInfo];
       setAvailableGiftCards(updatedUsedGiftCards);
       alert("선물 받기가 완료 되었습니다");
+      const data = {
+        txHash: response.txHash,
+      };
+      await apiClient.post("/gift-histories/received", data);
     }
   };
 
