@@ -2,9 +2,12 @@ package com.e101.nift.gift.service;
 
 import com.e101.nift.gift.model.dto.request.ReceivedGiftDto;
 import com.e101.nift.gift.model.dto.request.SendGiftDto;
+import com.e101.nift.gift.model.dto.response.GiftHistoryDto;
 import com.e101.nift.gift.model.dto.response.SendGiftHistoryDto;
 import com.e101.nift.secondhand.model.dto.response.ScrollDto;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface GiftHistoryService {
     ScrollDto<SendGiftHistoryDto> getSendGiftHistories(Long userId, Pageable pageable);
@@ -13,4 +16,5 @@ public interface GiftHistoryService {
     void sendGiftHistory(Long sender, SendGiftDto request);
 
     void receivedGiftHistory(Long receiver, ReceivedGiftDto receivedGiftDto);
+    List<GiftHistoryDto> getAcceptedGifts(Long userId, int page, int size);
 }

@@ -1,10 +1,13 @@
 package com.e101.nift.gift.service;
 
 import com.e101.nift.common.util.ConvertUtil;
+import com.e101.nift.gift.entity.CardDesign;
 import com.e101.nift.gift.entity.GiftHistory;
 import com.e101.nift.gift.model.dto.request.ReceivedGiftDto;
 import com.e101.nift.gift.model.dto.request.SendGiftDto;
+import com.e101.nift.gift.model.dto.response.GiftHistoryDto;
 import com.e101.nift.gift.model.dto.response.SendGiftHistoryDto;
+import com.e101.nift.gift.repository.CardDesignRepository;
 import com.e101.nift.gift.repository.GiftHistoryRepository;
 import com.e101.nift.gifticon.entity.Gifticon;
 import com.e101.nift.gifticon.repository.GifticonRepository;
@@ -20,11 +23,15 @@ import com.e101.nift.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,6 +43,7 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
     private final UserRepository userRepository;
     private final ContractService contractService;
     private final TransactionService transactionService;
+    private final CardDesignRepository cardDesignRepository;
 
     @Override
     public ScrollDto<SendGiftHistoryDto> getSendGiftHistories(Long senderId, Pageable pageable) {
@@ -122,9 +130,31 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
         giftHistoryRepository.save(giftHistory);
     }
 
+    @Override
+    public List<GiftHistoryDto> getAcceptedGifts(Long userId, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return giftHistoryRepository.findByToUserIdAndIsReceivedOrderByCreatedAtDesc(userId, true, pageRequest)
+                .stream()
+                .map(gift -> {
+                    CardDesign cardDesign = fetchCardDesign(gift.getMongoId());
+
+                    return GiftHistoryDto.builder()
+                            .createdAt(gift.getCreatedAt())
+                            .senderNickname(gift.getFromUserId().getNickName())
+                            .cardDesign(cardDesign)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
     private void giftFromArticle(Long senderId, SendGiftDto request, GifticonNFT.GiftPendingEventResponse giftPendingEventResponse) {
         Article article = transactionService.getArticle(giftPendingEventResponse.serialNumber);
 
         contractService.addArticleHistory(article.getArticleId(), request.getTxHashPurchase(), senderId);
+    }
+
+    private CardDesign fetchCardDesign(String mongoId) {
+        return cardDesignRepository.findById(mongoId)
+                .orElseThrow(() -> new RuntimeException("CardDesign not found with id: " + mongoId));
     }
 }

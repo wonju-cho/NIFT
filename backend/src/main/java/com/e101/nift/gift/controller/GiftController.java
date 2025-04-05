@@ -5,15 +5,16 @@ import com.e101.nift.common.security.CustomUserDetails;
 import com.e101.nift.common.security.JwtTokenProvider;
 import com.e101.nift.gift.model.dto.request.ReceivedGiftDto;
 import com.e101.nift.gift.model.dto.request.SendGiftDto;
+import com.e101.nift.gift.model.dto.response.GiftHistoryDto;
 import com.e101.nift.gift.service.GiftHistoryService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/gift-histories")
@@ -47,5 +48,17 @@ public class GiftController {
         giftHistoryService.receivedGiftHistory(receiver, receivedGiftDto);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/received")
+    @Operation(summary = "받은 선물 조회", description = "받은 선물의 카드 디자인을 포함한 조회입니다.")
+    public ResponseEntity<List<GiftHistoryDto>> getReceivedGifts(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size
+    ) {
+        Long receiverId = userDetails.getUserId();
+        List<GiftHistoryDto> receivedGifts = giftHistoryService.getAcceptedGifts(receiverId, page, size);
+        return ResponseEntity.ok(receivedGifts);
     }
 }
