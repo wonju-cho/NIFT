@@ -78,8 +78,8 @@ export function ArticleSellerOther({ userId }: { userId: number }) {
                 <h3 className="text-sm font-medium line-clamp-2 mb-auto">
                   {item.title}
                 </h3>
-                <div className="mt-2 text-sm font-bold text-primary">
-                  {item.currentPrice.toLocaleString()}원
+                <div className="mt-2 text-sm font-bold text-primary text-right">
+                🪙 {item.currentPrice.toLocaleString()}
                 </div>
               </div>
             </div>
