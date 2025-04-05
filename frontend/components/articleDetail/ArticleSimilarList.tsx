@@ -9,7 +9,7 @@ export function ArticleSimilarList() {
     <section className="py-12">
       <div className="container">
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">비슷한 상품품</h2>
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">비슷한 상품</h2>
           <Link href="/articles?sort=likes&page=1" className="flex items-center gap-1 text-sm font-medium text-primary hover:underline">
             더 보기{" "}
             <svg
@@ -23,12 +23,6 @@ export function ArticleSimilarList() {
             </svg>
           </Link>
         </div>
-        <ArticleGrid 
-          articles={articles.map(article => ({
-            ...article,
-            isLiked: article.liked,
-        }))}
-        />
       </div>
     </section>
   );
