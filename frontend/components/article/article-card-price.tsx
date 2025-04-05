@@ -54,7 +54,7 @@ type ArticlePriceCardProps = {
         {/* 현재가 표시 (validCurrentPrice가 없으면 originalPrice만 보여주거나, 혹은 '무료'로 처리 등 상황에 맞게) */}
         {validCurrentPrice ? (
           <span className="text-base font-bold">
-            {validCurrentPrice.toLocaleString()}
+            🪙 {validCurrentPrice.toLocaleString()}
           </span>
         ) : (
           <span className="text-base font-bold text-gray-500">
