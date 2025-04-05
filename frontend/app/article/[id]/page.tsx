@@ -19,7 +19,6 @@ import { ArticlePrice } from "@/components/articleDetail/ArticlePrice";
 import { ArticleLikeAndShare } from "@/components/articleDetail/ArticleLikeAndShare";
 import { ArticlePurchaseDialog } from "@/components/articleDetail/ArticlePurchaseDialog";
 import { ArticleSellerTab } from "@/components/articleDetail/ArticleSellerTab";
-import { ArticleSimilarList } from "@/components/articleDetail/ArticleSimilarList";
 import { DeleteArticleButton } from "@/components/articleDetail/DeleteArticleButton";
 import { postPurchaseHash, PurchaseParams } from "@/lib/api/purchase";
 import { PopularArticles } from "@/components/home/popular-articles";
@@ -364,6 +363,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                 className="mt-6 rounded-lg bg-white p-6 shadow-sm"
               >
                 <ArticleSellerTab
+                  userId={article.userId}
                   userNickName={article.userNickName}
                   profileImage={article.profileImage}
                   sellerTxs={article.sellerTxs}

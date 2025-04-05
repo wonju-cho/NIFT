@@ -1,6 +1,7 @@
 // components/article/ArticleInfo.tsx
 
 import { Clock } from "lucide-react";
+import { brandColors } from "@/lib/api/ArticleService";
 
 // 날짜 포맷용
 const formatDateOnly = (dateStr: string) => {
@@ -39,7 +40,7 @@ export function ArticleInfo({
       <span
         className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white"
           style={{
-            backgroundColor: "#DD5851",
+            backgroundColor: brandColors[brandName] || "#DD5851",
             boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
             }}
       >{brandName}

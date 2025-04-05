@@ -1,14 +1,17 @@
 // components/article/ArticleSellerTab.tsx
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ArticleSellerOther } from "@/components/articleDetail/ArticleSellerOther";
 
 type ArticleSellerTabProps = {
+  userId: number;
   userNickName: string;
   profileImage: string;
   sellerTxs: number;
 };
 
 export function ArticleSellerTab({
+  userId,
   userNickName,
   profileImage,
   sellerTxs
@@ -29,8 +32,9 @@ export function ArticleSellerTab({
       <div>
         <h4 className="font-medium">판매자의 다른 상품</h4>
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-          {/* TODO: 판매자의 다른 상품 리스트 구현 */}
         </div>
+        {/* TODO: 판매자의 다른 상품 리스트 구현 */}
+        <ArticleSellerOther userId={userId} />
       </div>
     </div>
   );
