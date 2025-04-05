@@ -82,4 +82,6 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                                     @Param("end") LocalDateTime end);
 
 
+    // 판매자로 찾는 게시글 수
+    Integer countByUserId(Long userId);
 }

@@ -5,13 +5,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 type ArticleSellerTabProps = {
   userNickName: string;
   profileImage: string;
-  viewCnt: number;
+  sellerTxs: number;
 };
 
 export function ArticleSellerTab({
   userNickName,
   profileImage,
-  viewCnt,
+  sellerTxs
 }: ArticleSellerTabProps) {
   return (
     <div className="space-y-4">
@@ -22,7 +22,7 @@ export function ArticleSellerTab({
         </Avatar>
         <div>
           <h3 className="text-lg font-medium">{userNickName}</h3>
-          <p className="text-sm text-muted-foreground">거래 {viewCnt}회</p>
+          <p className="text-sm text-muted-foreground">거래 {sellerTxs}회</p>
         </div>
       </div>
 

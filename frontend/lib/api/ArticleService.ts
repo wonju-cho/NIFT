@@ -136,3 +136,20 @@ export async function getArticleById(id: string) {
     throw err;
   }
 }
+
+export async function Article5AService() {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/secondhand-articles`, {
+      params: {
+        sort: "likes",
+        page: 1,
+        size: 5
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("🔥 인기 상위 5개 조회 실패:", error);
+    return { content: [], totalPages: 0 };
+  }
+}

@@ -22,6 +22,7 @@ import { ArticleSellerTab } from "@/components/articleDetail/ArticleSellerTab";
 import { ArticleSimilarList } from "@/components/articleDetail/ArticleSimilarList";
 import { DeleteArticleButton } from "@/components/articleDetail/DeleteArticleButton";
 import { postPurchaseHash, PurchaseParams } from "@/lib/api/purchase";
+import { PopularArticles } from "@/components/home/popular-articles";
 
 type ArticleDetail = {
   articleId: number;
@@ -42,6 +43,7 @@ type ArticleDetail = {
   isLiked: boolean;
   userNickName: string;
   profileImage: string;
+  sellerTxs: number;
 };
 
 export default function ArticlePage({ params }: { params: { id: string } }) {
@@ -276,6 +278,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                 createAt={article.createAt}
                 viewCnt={article.viewCnt}
                 countLikes={countLikes}
+                brandName={article.brandName}
               />
 
               <ArticlePrice
@@ -363,14 +366,15 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                 <ArticleSellerTab
                   userNickName={article.userNickName}
                   profileImage={article.profileImage}
-                  viewCnt={article.viewCnt}
+                  sellerTxs={article.sellerTxs}
                 />
               </TabsContent>
             </Tabs>
           </div>
 
-          <ArticleSimilarList />
         </div>
+        {/* <ArticleSimilarList /> */}
+        <PopularArticles />
       </main>
       <Footer />
     </div>
