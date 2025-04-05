@@ -39,18 +39,18 @@ export function GifticonCarousel({
           </Button>
         </div>
       </div>
-      <div ref={scrollRef} className="flex overflow-x-auto gap-4 pb-4">
+      <div ref={scrollRef} className="flex overflow-x-auto gap-4 pb-4 overflow-y-visible">
         {gifticons.map((gifticon) => (
           <div
             key={Number(gifticon.serialNum)}
-            className={`cursor-pointer rounded-lg border w-[200px] h-[300px] flex flex-col justify-between p-4 flex-shrink-0 transition-all
-    ${selected === gifticon.serialNum ? "border-primary bg-primary/5" : ""}
-    ${
-      gifticon.isSelling || gifticon.isPending
-        ? "opacity-40 pointer-events-none"
-        : "hover:border-gray-400"
-    }
-  `}
+            className={`group relative z-10 cursor-pointer rounded-lg border w-[200px] h-[300px] flex flex-col justify-between p-4 flex-shrink-0 transition-all
+              ${selected === gifticon.serialNum ? "border-primary bg-primary/5" : ""}
+              ${
+                gifticon.isSelling || gifticon.isPending
+                  ? "opacity-40 pointer-events-none"
+                  : "hover:border-gray-400 hover:shadow-md"
+              }
+            `}
             onClick={() => {
               if (gifticon.isSelling) return;
               onSelect(String(gifticon.serialNum));
@@ -62,7 +62,9 @@ export function GifticonCarousel({
                 src={gifticon.image}
                 alt={gifticon.title}
                 fill
-                className="object-cover rounded-md"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover rounded-md transition-transform group-hover:scale-105"
+                priority
               />
               {gifticon.isSelling && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
