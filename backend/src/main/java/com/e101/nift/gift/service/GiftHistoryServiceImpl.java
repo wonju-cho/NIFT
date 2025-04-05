@@ -139,6 +139,7 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
                     CardDesign cardDesign = fetchCardDesign(gift.getMongoId());
 
                     return GiftHistoryDto.builder()
+                            .giftHistoryId(gift.getGiftHistoryId())
                             .createdAt(gift.getCreatedAt())
                             .senderNickname(gift.getFromUserId().getNickName())
                             .cardDesign(cardDesign)

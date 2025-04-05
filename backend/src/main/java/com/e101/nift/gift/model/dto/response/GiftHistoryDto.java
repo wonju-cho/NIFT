@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class GiftHistoryDto {
+    private Long giftHistoryId;
     private LocalDateTime createdAt;
     private String senderNickname;
     private CardDesign cardDesign;
