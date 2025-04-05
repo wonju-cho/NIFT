@@ -10,6 +10,10 @@ import com.e101.nift.gift.service.GiftHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -51,14 +55,18 @@ public class GiftController {
     }
 
     @GetMapping("/received")
-    @Operation(summary = "받은 선물 조회", description = "받은 선물의 카드 디자인을 포함한 조회입니다.")
-    public ResponseEntity<List<GiftHistoryDto>> getReceivedGifts(
+    @Operation(summary = "받은 선물 조회", description = "받은 선물 카드 포함")
+    public ResponseEntity<Page<GiftHistoryDto>> getReceivedGifts(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "8") int size
     ) {
-        Long receiverId = userDetails.getUserId();
-        List<GiftHistoryDto> receivedGifts = giftHistoryService.getAcceptedGifts(receiverId, page, size);
-        return ResponseEntity.ok(receivedGifts);
+        Long userId = userDetails.getUserId(); // 카카오 ID 기반
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<GiftHistoryDto> result = giftHistoryService.getAcceptedGifts(userId, pageable);
+        return ResponseEntity.ok(result);
     }
+
+
 }

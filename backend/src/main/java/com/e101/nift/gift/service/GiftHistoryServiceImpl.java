@@ -1,5 +1,7 @@
 package com.e101.nift.gift.service;
 
+import com.e101.nift.common.exception.CustomException;
+import com.e101.nift.common.exception.ErrorCode;
 import com.e101.nift.common.util.ConvertUtil;
 import com.e101.nift.gift.entity.CardDesign;
 import com.e101.nift.gift.entity.GiftHistory;
@@ -131,12 +133,13 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
     }
 
     @Override
-    public List<GiftHistoryDto> getAcceptedGifts(Long userId, int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return giftHistoryRepository.findByToUserIdAndIsReceivedOrderByCreatedAtDesc(userId, true, pageRequest)
-                .stream()
+    public Page<GiftHistoryDto> getAcceptedGifts(Long toUserId, Pageable pageable) {
+        return giftHistoryRepository
+                .findByToUserIdAndIsReceivedTrue(toUserId, pageable)
                 .map(gift -> {
-                    CardDesign cardDesign = fetchCardDesign(gift.getMongoId());
+                    CardDesign cardDesign = cardDesignRepository
+                            .findById(gift.getMongoId())
+                            .orElse(null); // 또는 Optional.map + default 처리 가능
 
                     return GiftHistoryDto.builder()
                             .giftHistoryId(gift.getGiftHistoryId())
@@ -144,18 +147,13 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
                             .senderNickname(gift.getFromUserId().getNickName())
                             .cardDesign(cardDesign)
                             .build();
-                })
-                .collect(Collectors.toList());
+                });
     }
+
 
     private void giftFromArticle(Long senderId, SendGiftDto request, GifticonNFT.GiftPendingEventResponse giftPendingEventResponse) {
         Article article = transactionService.getArticle(giftPendingEventResponse.serialNumber);
 
         contractService.addArticleHistory(article.getArticleId(), request.getTxHashPurchase(), senderId);
-    }
-
-    private CardDesign fetchCardDesign(String mongoId) {
-        return cardDesignRepository.findById(mongoId)
-                .orElseThrow(() -> new RuntimeException("CardDesign not found with id: " + mongoId));
     }
 }
