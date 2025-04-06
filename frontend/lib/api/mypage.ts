@@ -1,7 +1,7 @@
 import axios from "axios"
 
 import { apiClient } from "./CustomAxios";
-import { GiftMemory } from "@/types/gift-memory"
+
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -12,6 +12,57 @@ export interface LikedArticle {
   countLikes: number;
   currentPrice: number;
   state: string;
+}
+
+export interface GiftMemoryResponse {
+  content: GiftMemory[]
+  totalPages: number
+  number: number
+  size: number
+  totalElements: number
+}
+
+export interface GiftMemory {
+  giftHistoryId: number
+  createdAt: string
+  senderNickname: string
+  cardDesign: CardDesign
+}
+
+export interface CardDesign {
+  id: string
+  message: string
+  recipientName: string
+  frontTemplate: Record<string, any>
+  backTemplate: Record<string, any>
+  frontElements: Record<string, any>[]
+  backElements: Record<string, any>[]
+  flipped: boolean
+}
+
+export interface PendingGiftMemory {
+  id: string;
+  senderName: string;
+  senderNickname: string;
+  sentDate: string;
+  isAccepted: boolean;
+  acceptedDate?: string;
+  cardData: CardDesign;
+  giftItem?: {
+    id: string;
+    title: string;
+    brand: string;
+    price: number;
+    image: string;
+  };
+}
+
+// 받은 선물은 GiftHistory 기반
+export interface ReceivedGiftMemory {
+  giftHistoryId: number;
+  createdAt: string;
+  senderNickname: string;
+  cardDesign: CardDesign;
 }
 
 export const deleteUser = async () => {
@@ -63,22 +114,20 @@ export async function fetchLikedArticles(
   }
 }
 
-export const fetchAcceptedGifts = async (page = 0, size = 8): Promise<GiftMemory[]> => {
-  const response = await axios.get(`${BASE_URL}/api/gift-histories/received`, {
-    params: { page, size },
+export async function fetchReceivedGifts(page = 0, size = 8) {
+  const token = localStorage.getItem("access_token")
+  const url = `${BASE_URL}/gift-histories/received?page=${page}&size=${size}`
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
   })
 
-  const data = response.data as {
-    createdAt: string
-    senderNickname: string
-    cardDesign: any
-  }[]
+  if (!response.ok) {
+    throw new Error("받은 선물 불러오기 실패")
+  }
 
-  // 변환해서 GiftMemory 형태로 맞추기
-  return data.map((item) => ({
-    id: item.giftHistoryId, // mongoId를 GiftMemory의 id로 사용
-    sentDate: item.createdAt,
-    senderNickname: item.senderNickname,
-    cardData: item.cardDesign
-  }))
+  return await response.json()
 }
