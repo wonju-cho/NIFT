@@ -22,6 +22,7 @@ import com.e101.nift.secondhand.service.ContractService;
 import com.e101.nift.secondhand.service.TransactionService;
 import com.e101.nift.user.entity.User;
 import com.e101.nift.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -148,6 +149,17 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
                             .cardDesign(cardDesign)
                             .build();
                 });
+    }
+
+    @Override
+    public CardDesign findCardDesignBySerialNumber(Long serialNumber) {
+        GiftHistory giftHistory = giftHistoryRepository.findBySerialNum(serialNumber)
+                .orElseThrow(() -> new EntityNotFoundException("GiftHistory not found for serialNum: " + serialNumber));
+
+        CardDesign cardDesign = cardDesignRepository.findById(giftHistory.getMongoId())
+                .orElseThrow(() -> new EntityNotFoundException("CardDesign not found for mongoId: " + giftHistory.getMongoId()));
+
+        return cardDesign;
     }
 
 

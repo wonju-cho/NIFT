@@ -3,6 +3,7 @@ package com.e101.nift.gift.controller;
 
 import com.e101.nift.common.security.CustomUserDetails;
 import com.e101.nift.common.security.JwtTokenProvider;
+import com.e101.nift.gift.entity.CardDesign;
 import com.e101.nift.gift.model.dto.request.ReceivedGiftDto;
 import com.e101.nift.gift.model.dto.request.SendGiftDto;
 import com.e101.nift.gift.model.dto.response.GiftHistoryDto;
@@ -66,6 +67,13 @@ public class GiftController {
 
         Page<GiftHistoryDto> result = giftHistoryService.getAcceptedGifts(userId, pageable);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/card-design")
+    @Operation(summary = "카드 디자인 조회", description = "serialNumber로 카드 디자인 조회")
+    public ResponseEntity<CardDesign> getCardDesignBySerialNum(@RequestParam Long serialNum) {
+        CardDesign cardDesign = giftHistoryService.findCardDesignBySerialNumber(serialNum);
+        return ResponseEntity.ok(cardDesign);
     }
 
 

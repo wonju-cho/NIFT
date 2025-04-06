@@ -1,5 +1,6 @@
 package com.e101.nift.gift.service;
 
+import com.e101.nift.gift.entity.CardDesign;
 import com.e101.nift.gift.model.dto.request.ReceivedGiftDto;
 import com.e101.nift.gift.model.dto.request.SendGiftDto;
 import com.e101.nift.gift.model.dto.response.GiftHistoryDto;
@@ -18,4 +19,5 @@ public interface GiftHistoryService {
 
     void receivedGiftHistory(Long receiver, ReceivedGiftDto receivedGiftDto);
     Page<GiftHistoryDto> getAcceptedGifts(Long toUserId, Pageable pageable);
+    CardDesign findCardDesignBySerialNumber(Long serialNumber);
 }
