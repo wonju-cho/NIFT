@@ -64,7 +64,7 @@ export default function MyPage() {
   const [ssfBalance, setSsfBalance] = useState("0");
   const [copied, setCopied] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [likedArticles, setLikedArticles] = useState<ArticleCardProps[]>([]);
+  const [allLikedArticles, setAllLikedArticles] = useState<ArticleCardProps[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPage, setTotalPage] = useState(1);
   const [availableGiftCards, setAvailableGiftCards] = useState<any[]>([]);
@@ -197,13 +197,18 @@ export default function MyPage() {
   }, [walletAddress]);
 
   useEffect(() => {
-    const loadLikeArticles = async () => {
+    const loadAllLikedArticles = async () => {
       try {
-        const data = await fetchLikedArticles(currentPage);
-        const transformed = data.likes.map((article: any) => ({
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles/likes`, {
+          headers: {
+            Authorization: `Bearer ${getAccessToken()}`,
+          },
+        });
+        const data = await res.json();
+        const transformed = data.map((article: any) => ({
           articleId: article.articleId,
           title: article.title,
-          brandName: "",
+          brandName: "", 
           currentPrice: article.currentPrice,
           originalPrice: article.currentPrice,
           discountRate: 0,
@@ -211,14 +216,14 @@ export default function MyPage() {
           isLiked: true,
           state: article.state,
         }));
-        setLikedArticles(transformed);
-        setTotalPage(data?.totalPage || 1);
+        setAllLikedArticles(transformed);
+        setTotalPage(Math.ceil(transformed.length / ITEMS_PER_PAGE));
       } catch (error) {
-        console.error("찜한 상품 목록 오류:", error);
+        console.error("전체 찜 목록 가져오기 실패:", error);
       }
     };
-    loadLikeArticles();
-  }, [currentPage]);
+    loadAllLikedArticles();
+  }, []);  
 
   useEffect(() => {
     const loadGifticons = async () => {
@@ -244,9 +249,17 @@ export default function MyPage() {
     loadGifticons();
   }, [user.walletAddress]);
 
-  const currentGroup = Math.ceil((currentPage + 1) / PAGE_GROUP_SIZE);
-  const startPage = (currentGroup - 1) * PAGE_GROUP_SIZE;
-  const endPage = Math.min(startPage + PAGE_GROUP_SIZE, totalPage);
+  const [startPage, setStartPage] = useState(0);
+  const [endPage, setEndPage] = useState(PAGE_GROUP_SIZE);
+
+  useEffect(() => {
+    const currentGroup = Math.ceil((currentPage + 1) / PAGE_GROUP_SIZE);
+    const newStartPage = (currentGroup - 1) * PAGE_GROUP_SIZE;
+    const newEndPage = Math.min(newStartPage + PAGE_GROUP_SIZE, totalPage);
+
+    setStartPage(newStartPage);
+    setEndPage(newEndPage);
+  }, [currentPage, totalPage]);
 
   const sidebarItems = [
     { icon: Gift, label: "보유 NIFT", value: "gifticons" },
@@ -359,14 +372,16 @@ export default function MyPage() {
                         </TabsContent>
 
                         <TabsContent value="favorites">
-                          <WishList
-                            likedArticles={likedArticles}
-                            currentPage={currentPage}
-                            setCurrentPage={setCurrentPage}
-                            startPage={startPage}
-                            endPage={endPage}
-                            totalPage={totalPage}
-                          />
+                        <WishList
+                          allLikedArticles={allLikedArticles}
+                          setAllLikedArticles={setAllLikedArticles}
+                          currentPage={currentPage}
+                          setCurrentPage={setCurrentPage}
+                          startPage={startPage}
+                          endPage={endPage}
+                          totalPage={totalPage}
+                          setTotalPage={setTotalPage}
+                        />
                         </TabsContent>
 
                         <TabsContent value="settings">
