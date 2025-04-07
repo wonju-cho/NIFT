@@ -33,7 +33,7 @@ public class AdminIpFilter extends OncePerRequestFilter {
             remoteIp = request.getRemoteAddr();
         }
 
-        System.out.println("📌 요청 경로: " + path + ", IP: " + remoteIp);
+        log.info("📌 요청 경로: " + path + ", IP: " + remoteIp);
 
         if (path.startsWith("/api/admin/") && !request.getMethod().equalsIgnoreCase("OPTIONS")) {
             if (!adminIpProperties.getAllowedIps().contains(remoteIp)) {
