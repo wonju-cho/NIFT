@@ -19,6 +19,7 @@ export interface ArticleCardProps {
   isLiked?: boolean;
   className?: string;
   state?: string;
+  likeCount?: number; // Add like count prop
   onUnlike?: (articleId: number) => void;
 }
 
@@ -32,6 +33,7 @@ export function ArticleCard({
   isLiked: initialIsLiked,
   className,
   state,
+  likeCount, // Destructure like count
   onUnlike,
 }: ArticleCardProps) {
   const isSold = state === "SOLD";
@@ -63,7 +65,7 @@ export function ArticleCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col h-full overflow-hidden rounded-lg border bg-white transition-all hover:shadow-md",
+        "group relative flex flex-col h-full overflow-hidden rounded-lg border bg-white transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1", // Enhanced hover effect
         isSold && "opacity-60",
         className
       )}
@@ -121,6 +123,26 @@ export function ArticleCard({
             <h3 className="text-sm font-medium truncate max-w-full">
               {title.length > 10 ? title.slice(0, 10) + "..." : title}
             </h3>
+            {/* Like Count */}
+            <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+              {likeCount !== undefined && (
+                <span className="flex items-center gap-0.5">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-3 w-3 fill-red-500 text-red-500" // Use red color for likes
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  {likeCount}
+                </span>
+              )}
+            </div>
           </div>
           <div className="mt-2">
             <ArticlePriceCard

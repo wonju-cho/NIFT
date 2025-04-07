@@ -796,8 +796,9 @@ export function ArticleListing() {
                     discountRate: article.discountRate,
                     imageUrl: article.imageUrl,
                     state: article.state,
+                    likeCount: article.interestCount, // Map interestCount to likeCount
                   }))}
-                  className="mb-8 border rounded-md overflow-hidden" // Add some basic list styling
+                  className="mb-8" // Removed border here, will add to item
                   // Add onUnlike handler if needed based on ArticleListProps
                 />
               ) : (
@@ -814,6 +815,7 @@ export function ArticleListing() {
                     discountRate: article.discountRate,
                     imageUrl: article.imageUrl,
                     state: article.state,
+                    likeCount: article.interestCount, // Map interestCount to likeCount
                   }))}
                   className="mb-8"
                 />
@@ -849,63 +851,57 @@ export function ArticleListing() {
         </div>
       </div>
 
-      {/* 페이지네이션 - Show if there are any articles */}
-      {filteredArticles.length > 0 && (
+      {/* 페이지네이션 - Show only if more than one page */}
+      {filteredArticles.length > 0 && totalPages > 1 && (
         <div className="flex flex-col items-center justify-center mt-8 space-y-2">
-          {/* Page X of Y indicator */}
-          <span className="text-sm text-gray-500">
-            Page {page} of {totalPages}
-          </span>
-          {/* Only show buttons if more than one page */}
-          {totalPages > 1 && (
-            <nav className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={page === 1}
-                onClick={() => {
-                  const newPage = page - 1;
+          {/* Page X of Y indicator removed */}
+          {/* Navigation buttons */}
+          <nav className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={page === 1}
+              onClick={() => {
+                const newPage = page - 1;
 
-                  // 먼저 URL 업데이트
-                  const params = new URLSearchParams(window.location.search);
-                  params.set("page", newPage.toString());
-                  updateUrlWithoutRefresh(params);
+                // 먼저 URL 업데이트
+                const params = new URLSearchParams(window.location.search);
+                params.set("page", newPage.toString());
+                updateUrlWithoutRefresh(params);
 
-                  // 그 다음 상태 업데이트
-                  startTransition(() => {
-                    setPage(newPage);
-                  });
-                }}
-              >
-                ‹ 이전
-              </Button>
+                // 그 다음 상태 업데이트
+                startTransition(() => {
+                  setPage(newPage);
+                });
+              }}
+            >
+              ‹ 이전
+            </Button>
 
-              {/* 페이지 번호 버튼 */}
-              {renderPaginationButtons()}
+            {/* 페이지 번호 버튼 */}
+            {renderPaginationButtons()}
 
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={page === totalPages}
-                onClick={() => {
-                  const newPage = page + 1;
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={page === totalPages}
+              onClick={() => {
+                const newPage = page + 1;
 
-                  // 먼저 URL 업데이트
-                  const params = new URLSearchParams(window.location.search);
-                  params.set("page", newPage.toString());
-                  updateUrlWithoutRefresh(params);
+                // 먼저 URL 업데이트
+                const params = new URLSearchParams(window.location.search);
+                params.set("page", newPage.toString());
+                updateUrlWithoutRefresh(params);
 
-                  // 그 다음 상태 업데이트
-                  startTransition(() => {
-                    setPage(newPage);
-                  });
-                }}
-              >
-                다음 ›
-              </Button>
-            </nav>
-          )}{" "}
-          {/* <-- Added missing closing parenthesis */}
+                // 그 다음 상태 업데이트
+                startTransition(() => {
+                  setPage(newPage);
+                });
+              }}
+            >
+              다음 ›
+            </Button>
+          </nav>
         </div>
       )}
     </div>

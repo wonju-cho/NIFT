@@ -64,4 +64,6 @@ public class LikeController {
         likeService.removeLike(userId, articleId);
         return ResponseEntity.ok("좋아요 취소 완료");
     }
+
+
 }

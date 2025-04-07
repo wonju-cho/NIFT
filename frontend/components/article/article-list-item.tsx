@@ -20,6 +20,7 @@ export interface ArticleListItemProps {
   isLiked?: boolean;
   className?: string;
   state?: string;
+  likeCount?: number; // Add like count prop
   onUnlike?: (articleId: number) => void;
 }
 
@@ -33,6 +34,7 @@ export function ArticleListItem({
   isLiked: initialIsLiked,
   className,
   state,
+  likeCount, // Destructure like count
   onUnlike,
 }: ArticleListItemProps) {
   const isSold = state === "SOLD";
@@ -57,7 +59,7 @@ export function ArticleListItem({
   return (
     <div
       className={cn(
-        "group relative flex items-center gap-4 p-3 border-b bg-white transition-all hover:bg-gray-50",
+        "group relative flex items-center gap-4 p-3 border rounded-md mb-2 bg-white transition-all hover:bg-gray-50", // Added border, rounded, margin-bottom; removed border-b
         isSold && "opacity-60",
         className
       )}
@@ -92,6 +94,26 @@ export function ArticleListItem({
             originalPrice={originalPrice}
             // size="sm" // Removed size prop as it's not supported
           />
+          {/* Like and Comment Counts */}
+          <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+            {likeCount !== undefined && (
+              <span className="flex items-center gap-0.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3 w-3 fill-red-500 text-red-500" // Use red color for likes
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {likeCount}
+              </span>
+            )}
+          </div>
         </Link>
 
         {/* Like Button */}
