@@ -2,7 +2,7 @@ def sendMessage(String msg, String hookUrl) {
 	def payload = groovy.json.JsonOutput.toJson([text: msg])
 	writeFile file: 'payload.json', text: payload
 
-	withEnv(["HOOK_URL"=${hookUrl}])
+	withEnv(["HOOK_URL=${hookUrl}"])
 	{
 		sh(
 			script: '''
