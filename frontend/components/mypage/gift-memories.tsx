@@ -318,10 +318,10 @@ export function GiftMemories({
         );
 
         alert("선물 받기가 완료 되었습니다");
-        // const data = {
-        //   txHash: response.txHash,
-        // };
-        // await apiClient.post("/gift-histories/received", data);
+        const data = {
+          txHash: response.txHash,
+        };
+        await apiClient.post("/gift-histories/received", data);
       }
     } catch (error) {
       console.error("선물 받기 실패:", error);
