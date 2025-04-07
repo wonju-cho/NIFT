@@ -14,4 +14,5 @@ public interface UserService {
     UserInfoDto getUserInfoByUser(Long userId);
     Optional<Long> findUserIdByAddress(String address);
     List<User> getAllUsers();
+    List<User> getAllUsersWithAddress();
 }
