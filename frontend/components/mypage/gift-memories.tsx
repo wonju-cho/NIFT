@@ -305,7 +305,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
       {pendingGifts.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-medium">받을 수 있는 선물 ({pendingGifts.length})</h3>
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
             {pendingGifts.map((gift) => (
               <div
                 key={gift.id}
@@ -314,7 +314,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                 <Dialog>
                   <DialogTrigger asChild>
                     <div className="cursor-pointer" onClick={() => setSelectedGift(gift)}>
-                      <div className={cn("relative overflow-hidden", isGiftCardMobile ? "aspect-[4/3]" : "h-[250px]")}>
+                      <div className={cn("relative overflow-hidden", isGiftCardMobile ? "aspect-[4/3]" : "h-[200px]")}>
                         <GiftMemoryCard cardData={gift.cardData} isAccepted={gift.isAccepted} showFlipHint={false} />
                         <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                           <Button variant="secondary" className="font-medium">
@@ -342,10 +342,10 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                           <div className="text-center py-8">
                             <div className="flex justify-center mb-4">
                               <Image
-                                src="/placeholder.svg?height=120&width=120&text=🎁"
+                                src="/gift-box.png"
                                 alt="Gift box"
-                                width={120}
-                                height={120}
+                                width={200}
+                                height={200}
                                 className="object-contain"
                               />
                             </div>

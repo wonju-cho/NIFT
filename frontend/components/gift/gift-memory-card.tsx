@@ -132,17 +132,15 @@ export function GiftMemoryCard({
         </div>
       ) : (
         // 미수락 선물 - 선물 상자 표시
-        <div className="w-full h-full bg-blue-50 flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center"
+          style={{
+            backgroundImage: `url('/gift-box.png')`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+          >
           <div className="text-center">
-            <div className="flex justify-center mb-2">
-              <Image
-                src="/placeholder.svg?height=80&width=80&text=🎁"
-                alt="Gift box"
-                width={80}
-                height={80}
-                className="object-contain"
-              />
-            </div>
             {onAccept && (
               <Button
                 size="sm"
