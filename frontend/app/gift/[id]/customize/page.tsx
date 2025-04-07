@@ -177,7 +177,25 @@ export default function GiftCardCustomizePage({
         textSpan.style.padding = '2px'; // Small padding
         textSpan.style.lineHeight = '1.2'; // Adjust line height
         elemDiv.appendChild(textSpan);
+      } else if (element.type === "sticker" && element.src?.includes("text=")) {
+        // Handle text-based emoji stickers
+        const emojiSpan = document.createElement("span");
+        try {
+          // Extract emoji text from src (e.g., /placeholder.svg?text=🎂)
+          const urlParams = new URLSearchParams(element.src.split('?')[1]);
+          const emojiText = urlParams.get('text') || '';
+          emojiSpan.textContent = decodeURIComponent(emojiText); // Decode URL encoding if any
+        } catch (e) {
+          console.error("Error parsing emoji sticker src:", element.src, e);
+          emojiSpan.textContent = '?'; // Fallback character
+        }
+        // Apply styling similar to how CardPreview might render it
+        emojiSpan.style.fontSize = `${Math.min(element.width, element.height) * 0.6}px`; // Approximate size
+        emojiSpan.style.display = 'inline-block'; // Ensure it behaves like a block for centering
+        emojiSpan.style.lineHeight = '1'; // Adjust line height for emoji centering
+        elemDiv.appendChild(emojiSpan);
       } else if ((element.type === "image" || element.type === "sticker") && element.src) {
+        // Handle actual image elements (user uploads or non-emoji stickers)
         const img = document.createElement("img");
         img.src = element.src;
         img.crossOrigin = "anonymous"; // Important for html2canvas with external images
@@ -189,28 +207,54 @@ export default function GiftCardCustomizePage({
       cloneContainer.appendChild(elemDiv);
     });
 
-    // 4. Append to body & capture
+    // 4. Append to body
     document.body.appendChild(cloneContainer);
 
+    // 5. Wait ONLY for actual images (<img> tags) to load
+    const imagesToLoad = Array.from(cloneContainer.querySelectorAll("img")); // Select only img elements
+    const imageLoadPromises = imagesToLoad.map(img => {
+      // Check if the image is already loaded/cached or is a data URI
+      if (img.complete || img.src.startsWith('data:')) {
+        return Promise.resolve();
+      }
+      return new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        // Resolve even on error to not block capture, placeholder might be rendered
+        img.onerror = () => {
+          console.warn(`Image failed to load for capture: ${img.src}`);
+          resolve();
+        };
+      });
+    });
+
     try {
+      // Wait for all images to settle (load or error)
+      await Promise.allSettled(imageLoadPromises);
+
+      // Add a small delay just in case rendering needs a tick
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // 6. Capture canvas
       const canvas = await html2canvas(cloneContainer, {
         useCORS: true, // Enable CORS for images/stickers
-        allowTaint: true, // Allow cross-origin images (if useCORS isn't enough)
+        allowTaint: true, // Allow cross-origin images (if useCORS isn't enough) - may not be needed with CORS
         backgroundColor: null, // Use container's background
         scale: 2, // Higher resolution
         logging: false, // Reduce console noise
-        // Removed invalid 'onrendered' option
       });
-      // 6. Remove clone & return data URL
+
+      // 7. Remove clone & return data URL
       document.body.removeChild(cloneContainer);
       return canvas.toDataURL("image/png");
+
     } catch (error) {
       console.error("카드 클론 캡처 중 오류 발생:", error);
-      // Ensure cleanup even on error
-      if (document.body.contains(cloneContainer)) {
-        document.body.removeChild(cloneContainer);
-      }
-      return "";
+      return ""; // Return empty string on error
+    } finally {
+       // Ensure cleanup happens even if errors occur during capture
+       if (document.body.contains(cloneContainer)) {
+         document.body.removeChild(cloneContainer);
+       }
     }
   }
 
