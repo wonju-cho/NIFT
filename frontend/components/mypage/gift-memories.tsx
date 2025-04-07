@@ -342,9 +342,9 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                           <div className="text-center py-8">
                             <div className="flex justify-center mb-4">
                               <Image
-                                src="/gift-box.png"
+                                src="/pubilc/images/gift-box.png"
                                 alt="Gift box"
-                                width={200}
+                                width={200} 
                                 height={200}
                                 className="object-contain"
                               />

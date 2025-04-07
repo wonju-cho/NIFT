@@ -336,14 +336,16 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                 <DialogContent className="sm:max-w-md p-6">
                   {selectedGift && (
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">새로운 선물이 도착했습니다!</h3>
+                      <h3 className="text-lg font-semibold text-center">새로운 선물이 도착했습니다!</h3>
                       {isUnboxing ? (
                         <GiftUnboxAnimation gift={selectedGift} onComplete={handleUnboxComplete} />
                       ) : (
                         <div className="text-center py-8">
-                          <Image src="/placeholder.svg?height=120&width=120&text=🎁" alt="Gift box" width={120} height={120} />
+                          <div className="flex justify-center">
+                            <Image src="/gift-box.png" alt="Gift box" width={200} height={200} className="mx-auto"/>
+                          </div>
                           <p className="mt-4 mb-4">
-                            <span className="font-medium">{gift.senderNickname}</span>님이 보낸 선물이 도착했습니다.
+                            <span className="font-bold">{gift.senderNickname}</span>님이 보낸 선물이 도착했습니다.
                             <br />선물을 수락하면 카드와 기프티콘을 확인할 수 있습니다.
                           </p>
                           <Button onClick={() => {
@@ -355,10 +357,6 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                           </Button>
                         </div>
                       )}
-                      <div className="text-sm text-gray-500 text-left space-y-1 pt-4">
-                        <p>보낸 사람: {gift.senderName}</p>
-                        <p>보낸 날짜: {formatDate(gift.sentDate)}</p>
-                      </div>
                     </div>
                   )}
                 </DialogContent>
@@ -394,8 +392,10 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                   <DialogContent className="sm:max-w-md p-6">
                     {selectedGift && (
                       <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">선물 카드</h3>
-                        <GiftMemoryCard cardData={selectedGift.cardData} isAccepted={true} isDetailView showFlipHint />
+                        <h3 className="text-lg font-semibold text-center">선물 카드</h3>
+                        <div className="flex justify-center">
+                          <GiftMemoryCard cardData={selectedGift.cardData} isAccepted={true} isDetailView showFlipHint />
+                        </div>
                         <div className="bg-gray-50 p-5 rounded-lg space-y-3">
                           <div className="flex gap-4 items-start">
                             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
