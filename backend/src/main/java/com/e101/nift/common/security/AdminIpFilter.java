@@ -5,10 +5,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @RequiredArgsConstructor
 public class AdminIpFilter extends OncePerRequestFilter {
 
@@ -23,7 +25,7 @@ public class AdminIpFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         String remoteIp = request.getRemoteAddr();
-
+        log.info("[AdminIpFilter]: {}", adminIpProperties);
         System.out.println("📌 요청 경로: " + path + ", IP: " + remoteIp);
 
         if (path.startsWith("/api/admin/") && !request.getMethod().equals("OPTIONS")) {
