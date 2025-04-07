@@ -4,7 +4,7 @@ FROM node:18
 # 작업 디렉토리 설정
 WORKDIR /app
 
-ARG PORT=3001
+ARG PORT 
 # ENV에 ARG 값 넣기
 ENV PORT=${PORT}
 
