@@ -424,21 +424,24 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                   <DialogContent
                     className="p-6"
                     style={{
-                      width: "auto", // 고정된 너비 제거
+                      perspective: "1500px", // 플립 효과 자연스럽게
+                      width: "100%",
+                      maxWidth: "640px",
                       height: "auto",
-                      maxHeight: "none",
-                      overflow: "visible",
+                      maxHeight: "90vh",
+                      overflowY: "auto",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
                     }}
                   >
+
                       {selectedGift && (
                         <div className="space-y-4">
                           <h3 className="text-lg font-semibold">선물 카드</h3>
 
                           {/* 이 부분에 사이즈 강제 지정 */}
-                          <div className="mx-auto">
+                          <div className="w-full" style={{ maxWidth: "600px" }}>
                             <GiftMemoryCardFullView cardData={selectedGift.cardData!} />
                           </div>
 

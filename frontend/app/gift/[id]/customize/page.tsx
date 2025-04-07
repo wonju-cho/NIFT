@@ -17,6 +17,7 @@ import { MessageForm } from "@/components/gift/message-form"
 import { v4 as uuidv4 } from "uuid"
 import { cn } from "@/lib/utils"
 import type { CardElementType } from "@/types"
+import html2canvas from "html2canvas"
 
 export default function GiftCardCustomizePage({ 
   params,
@@ -73,11 +74,16 @@ export default function GiftCardCustomizePage({
   } = useCardEditor(params.id)
 
   // 선물 카드 저장 및 다음 단계로 이동
-  const handleSaveCard = () => {
-    if (saveCardData()) {
+  const handleSaveCard = async () => {
+    const frontImage = await captureCardAsImage(false)
+    const backImage = await captureCardAsImage(true)
+  
+    const success = saveCardData({ frontImage, backImage })
+    if (success) {
       router.push(`/gift/${params.id}/payment?type=${type}`)
     }
   }
+  
 
   // 이미지 추가 핸들러 (ImageHandler 컴포넌트에서 사용)
   const handleAddImageFromHandler = (imageData: string) => {
@@ -100,6 +106,36 @@ export default function GiftCardCustomizePage({
     }
 
     setSelectedElementId(newElement.id)
+  }
+
+  // 카드를 이미지로 캡처하는 함수
+  const captureCardAsImage = async (isCardFlipped: boolean): Promise<string> => {
+    if (!cardRef.current) return ""
+
+    // 카드 요소 선택
+    const cardElement = cardRef.current.querySelector(
+      isCardFlipped
+        ? '.backface-hidden[style*="visibility: visible"]'
+        : '.backface-hidden[style*="visibility: visible"]',
+    )
+
+    if (!cardElement) return ""
+
+    try {
+      // 카드 요소를 캡처하여 캔버스로 변환
+      const canvas = await html2canvas(cardElement as HTMLElement, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        scale: 2, // 고해상도 캡처를 위해 스케일 조정
+      })
+
+      // 캔버스를 데이터 URL로 변환
+      return canvas.toDataURL("image/png")
+    } catch (error) {
+      console.error("카드 캡처 중 오류 발생:", error)
+      return ""
+    }
   }
 
   return (
