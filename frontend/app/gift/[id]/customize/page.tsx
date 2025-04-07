@@ -108,35 +108,112 @@ export default function GiftCardCustomizePage({
     setSelectedElementId(newElement.id)
   }
 
-  // 카드를 이미지로 캡처하는 함수
-  const captureCardAsImage = async (isCardFlipped: boolean): Promise<string> => {
-    if (!cardRef.current) return ""
+  // 카드를 이미지로 캡처하는 함수 (수정됨: 클론 생성 방식)
+  const captureCardAsImage = async (captureBackFace: boolean): Promise<string> => {
+    const elementsToCapture = captureBackFace ? backElements : frontElements;
+    const templateToUse = captureBackFace ? selectedBackTemplate : selectedTemplate;
+    const backgroundToUse = captureBackFace ? customBackBackground : customBackground;
+    const cardWidth = 400; // Use a fixed base width for consistency, matching editor?
+    const cardHeight = (cardWidth * 3) / 4; // Maintain aspect ratio
 
-    // 카드 요소 선택
-    const cardElement = cardRef.current.querySelector(
-      isCardFlipped
-        ? '.backface-hidden[style*="visibility: visible"]'
-        : '.backface-hidden[style*="visibility: visible"]',
-    )
+    // 1. Create temporary container
+    const cloneContainer = document.createElement("div");
+    cloneContainer.style.position = "absolute";
+    cloneContainer.style.left = "-9999px"; // Position off-screen
+    cloneContainer.style.top = "-9999px";
+    cloneContainer.style.width = `${cardWidth}px`;
+    cloneContainer.style.height = `${cardHeight}px`;
+    cloneContainer.style.overflow = "hidden"; // Clip content
+    // Removed fontFamily and color from template - rely on element or defaults
 
-    if (!cardElement) return ""
+    // 2. Apply background
+    const effectiveBackground = templateToUse.isCustom && backgroundToUse ? backgroundToUse : templateToUse.background;
+    if (effectiveBackground) {
+      if (effectiveBackground.startsWith("data:image") || effectiveBackground.startsWith("http") || effectiveBackground.startsWith("/")) {
+        cloneContainer.style.backgroundImage = `url(${effectiveBackground})`;
+        cloneContainer.style.backgroundSize = "cover";
+        cloneContainer.style.backgroundPosition = "center";
+        cloneContainer.style.backgroundColor = 'transparent'; // Ensure background color doesn't interfere
+      } else if (effectiveBackground.startsWith("linear-gradient")) {
+         cloneContainer.style.background = effectiveBackground; // Apply gradient
+      } else {
+        cloneContainer.style.backgroundColor = effectiveBackground; // Apply color
+      }
+    } else {
+       cloneContainer.style.backgroundColor = 'white'; // Default background if none specified
+    }
+
+
+    // 3. Append element clones
+    elementsToCapture.forEach((element: CardElementType) => {
+      const elemDiv = document.createElement("div");
+      elemDiv.style.position = "absolute";
+      elemDiv.style.left = `${element.x}px`;
+      elemDiv.style.top = `${element.y}px`;
+      elemDiv.style.width = `${element.width}px`;
+      elemDiv.style.height = `${element.height}px`;
+      elemDiv.style.transform = `rotate(${element.rotation}deg)`;
+      elemDiv.style.transformOrigin = "center center";
+      elemDiv.style.zIndex = `${element.zIndex || 1}`;
+      elemDiv.style.display = 'flex'; // Use flex for centering content
+      elemDiv.style.alignItems = 'center';
+      elemDiv.style.justifyContent = 'center';
+      elemDiv.style.overflow = 'hidden'; // Hide overflow within element bounds
+
+      if (element.type === "text") {
+        const textSpan = document.createElement("span");
+        textSpan.textContent = element.content || "";
+        // Use fontFamily from element if available, otherwise inherit
+        textSpan.style.fontFamily = element.fontFamily || "inherit";
+        // Approximate font size based on element height/width for capture
+        const approxFontSize = Math.min(element.width / 10, element.height / 1.5);
+        textSpan.style.fontSize = `${approxFontSize}px`;
+        // Set default text color as element.color and template.fontColor don't exist
+        textSpan.style.color = "black";
+        // Set default text align as element.textAlign doesn't exist
+        textSpan.style.textAlign = "center";
+        textSpan.style.wordBreak = "break-word";
+        textSpan.style.whiteSpace = "pre-wrap"; // Preserve whitespace/newlines
+        textSpan.style.padding = '2px'; // Small padding
+        textSpan.style.lineHeight = '1.2'; // Adjust line height
+        elemDiv.appendChild(textSpan);
+      } else if ((element.type === "image" || element.type === "sticker") && element.src) {
+        const img = document.createElement("img");
+        img.src = element.src;
+        img.crossOrigin = "anonymous"; // Important for html2canvas with external images
+        img.style.width = "100%";
+        img.style.height = "100%";
+        img.style.objectFit = "contain"; // Match rendering style
+        elemDiv.appendChild(img);
+      }
+      cloneContainer.appendChild(elemDiv);
+    });
+
+    // 4. Append to body & capture
+    document.body.appendChild(cloneContainer);
 
     try {
-      // 카드 요소를 캡처하여 캔버스로 변환
-      const canvas = await html2canvas(cardElement as HTMLElement, {
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        scale: 2, // 고해상도 캡처를 위해 스케일 조정
-      })
-
-      // 캔버스를 데이터 URL로 변환
-      return canvas.toDataURL("image/png")
+      const canvas = await html2canvas(cloneContainer, {
+        useCORS: true, // Enable CORS for images/stickers
+        allowTaint: true, // Allow cross-origin images (if useCORS isn't enough)
+        backgroundColor: null, // Use container's background
+        scale: 2, // Higher resolution
+        logging: false, // Reduce console noise
+        // Removed invalid 'onrendered' option
+      });
+      // 6. Remove clone & return data URL
+      document.body.removeChild(cloneContainer);
+      return canvas.toDataURL("image/png");
     } catch (error) {
-      console.error("카드 캡처 중 오류 발생:", error)
-      return ""
+      console.error("카드 클론 캡처 중 오류 발생:", error);
+      // Ensure cleanup even on error
+      if (document.body.contains(cloneContainer)) {
+        document.body.removeChild(cloneContainer);
+      }
+      return "";
     }
   }
+
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -347,4 +424,3 @@ export default function GiftCardCustomizePage({
     </div>
   )
 }
-
