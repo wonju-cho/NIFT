@@ -34,6 +34,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -134,22 +137,25 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
     }
 
     @Override
-    public Page<GiftHistoryDto> getAcceptedGifts(Long toUserId, Pageable pageable) {
-        return giftHistoryRepository
-                .findByToUserIdAndIsReceivedTrue(toUserId, pageable)
-                .map(gift -> {
-                    CardDesign cardDesign = cardDesignRepository
-                            .findById(gift.getMongoId())
-                            .orElse(null); // 또는 Optional.map + default 처리 가능
+    public Page<GiftHistoryDto> getAcceptedGifts(Long userId, Pageable pageable) {
+        Page<GiftHistory> gifts = giftHistoryRepository.findByToUserIdAndIsReceivedTrue(userId, pageable);
 
-                    return GiftHistoryDto.builder()
-                            .giftHistoryId(gift.getGiftHistoryId())
-                            .createdAt(gift.getCreatedAt())
-                            .senderNickname(gift.getFromUserId().getNickName())
-                            .cardDesign(cardDesign)
-                            .build();
-                });
+        // 1. MongoId 리스트 추출
+        List<String> mongoIds = gifts.stream()
+                .map(GiftHistory::getMongoId)
+                .collect(Collectors.toList());
+
+        // 2. CardDesign 한 번에 가져오기
+        Map<String, CardDesign> cardDesignMap = cardDesignRepository.findAllById(mongoIds).stream()
+                .collect(Collectors.toMap(CardDesign::getId, Function.identity()));
+
+        // 3. DTO 매핑
+        return gifts.map(gift -> {
+            CardDesign design = cardDesignMap.get(gift.getMongoId());
+            return GiftHistoryDto.from(gift, design);
+        });
     }
+
 
     @Override
     public CardDesign findCardDesignBySerialNumber(Long serialNumber) {
