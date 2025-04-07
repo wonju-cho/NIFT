@@ -1,16 +1,3 @@
-def sendMessage(String msg, String hookUrl) {
-	def payload = groovy.json.JsonOutput.toJson([text: msg])
-	writeFile file: 'payload.json', text: payload
-
-	sh(
-		script: """
-		export HOOK_URL=${hookUrl}
-		curl -X POST -H 'Content-Type: application/json' -d @payload.json \$HOOK_URL
-		""",
-		label: 'Send message'
-	)
-}
-
 pipeline {
 	agent any
 
@@ -47,9 +34,9 @@ pipeline {
 
 					def checkCredential = { filePath, name ->
 		                if (!fileExists(filePath)) {
-		                    error "❌ Credential ${name} (${filePath}) is missing."
+		                    error "❌ Credential ${name} is missing."
 		                } else {
-		                    echo "✅ Credential ${name} found at ${filePath}"
+		                    echo "✅ Credential ${name} is available."
 		                }
 	            	}
 
@@ -112,7 +99,10 @@ pipeline {
 		            if (env.ENV == 'dev') {
 		                def props = readProperties file: '.env'
 		                def workspace = env.WORKSPACE.replaceFirst("^/var/jenkins_home", "/home/ubuntu/jenkins-data")
-		                def migrationPath = "${workspace}/backend/src/main/resources/db/migration"
+		                def migrationPath = (env.ENV == 'dev') ?
+		                "${workspace}/backend/src/main/resources/db/migration" :
+		                "${workspace}/backend/src/main/resources/db/migration_master"
+		                
 		                echo "Migration Path: ${migrationPath}"
 
 		                def baseCmd = """
@@ -171,10 +161,9 @@ pipeline {
 			steps {
 				script {
 					try {
-						def composeFile = (env.ENV == 'production') ? 'docker-compose-production.yml' : 'docker-compose-dev.yml'
 						sh 'cp .env ./frontend'
 						sh 'cp .env ./admin'
-						sh "docker-compose -f ${composeFile} --env-file .env up -d --build"	
+						sh "docker-compose --env-file .env up -d --build"	
 						env.IMAGE_BUILD_SUCCESS = "true"
 					}
 					catch(Exception e) {
@@ -193,6 +182,21 @@ pipeline {
 	    always {
 	        script {
 	            try {
+
+	            	def sendMessage = {String msg -> 
+	            		def payload = groovy.json.JsonOutput.toJson([text: msg])
+						writeFile file: 'payload.json', text: payload
+
+						withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
+							sh(
+								script: '''
+									curl -X POST -H 'Content-Type: application/json' -d @payload.json \$MATTERMOST_WEBHOOK
+								''',
+								label: 'Send message'
+							)
+						}
+	            	}
+					
 	                if (env.IMAGE_BUILD_SUCCESS == "true") {
 
 						def message = """
@@ -202,9 +206,7 @@ pipeline {
 						- 툴별 결과:
 						""".stripIndent()
 
-	                    withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
-		                    sendMessage(message, MATTERMOST_WEBHOOK)
-	                    }
+						sendMessage(message)
 	                    
 	                } else {
 	                    def message = """
@@ -214,13 +216,14 @@ pipeline {
 	                    - [Jenkins 로그 보기](${env.BUILD_URL})
 	                    """.stripIndent()
 	                    
-	                    withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
-		                    sendMessage(message, MATTERMOST_WEBHOOK)
-	                    }
+	                    sendMessage(message)
 	                }
 	                
 	                 // .env 파일 삭제
-                	sh 'rm -f .env.*'
+                	sh 'find . -name ".env" -delete'
+                	//메시지 관련 .json 삭제
+                	sh'rm -f payload.json'
+                	
 	            } catch (e) {
 	                echo "recordIssues() 중 오류 발생: ${e}"
 	            }

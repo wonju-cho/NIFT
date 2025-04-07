@@ -22,11 +22,17 @@ public class AdminIpFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        String remoteIp = request.getRemoteAddr();
+
+        String remoteIp = request.getHeader("X-Forwarded-For");
+        if (remoteIp != null && !remoteIp.isEmpty()) {
+            remoteIp = remoteIp.split(",")[0].trim();
+        } else {
+            remoteIp = request.getRemoteAddr();
+        }
 
         System.out.println("📌 요청 경로: " + path + ", IP: " + remoteIp);
 
-        if (path.startsWith("/api/admin/") && !request.getMethod().equals("OPTIONS")) {
+        if (path.startsWith("/api/admin/") && !request.getMethod().equalsIgnoreCase("OPTIONS")) {
             if (!adminIpProperties.getAllowedIps().contains(remoteIp)) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json;charset=UTF-8");

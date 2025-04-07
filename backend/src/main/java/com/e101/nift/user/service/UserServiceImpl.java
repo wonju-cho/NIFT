@@ -100,6 +100,11 @@ public class UserServiceImpl implements UserService{
         return userRepository.findAll();
     }
 
+    @Override
+    public List<User> getAllUsersWithAddress() {
+        return userRepository.findAllByWalletAddressIsNotNull();
+    }
+
 
     private boolean unlinkedKakaoInfo(String accessToken) {
         log.info("🔍 [UserService] Kakao Unlink API 요청");
