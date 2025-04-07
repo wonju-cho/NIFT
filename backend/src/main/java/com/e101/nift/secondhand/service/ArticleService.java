@@ -5,6 +5,7 @@ import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
 import com.e101.nift.secondhand.model.dto.request.TxHashDTO;
 import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
+import com.e101.nift.secondhand.model.dto.response.ArticleSellerDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -19,4 +20,6 @@ public interface ArticleService {
     void deleteArticle(Long articleId, TxHashDTO txHashDTO);
 
     Float getMaxCurrentPrice();
+
+    Page<ArticleSellerDto> getOtherArticlesByUser(Long userId, int page, int size);
 }

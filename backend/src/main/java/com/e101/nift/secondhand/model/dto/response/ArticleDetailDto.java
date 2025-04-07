@@ -32,4 +32,5 @@ public class ArticleDetailDto {
 
     private String userNickName;
     private String profileImage;
+    private Integer sellerTxs; // 판매자가 참여한 거래수
 }

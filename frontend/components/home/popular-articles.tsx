@@ -3,105 +3,20 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArticleGrid } from "@/components/article/article-grid"
-
-// access_token 가져오기
-const getAccessToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("access_token") || null
-  }
-  return null
-}
-
-// 백엔드 API에서 상품 데이터를 가져오는 함수
-const fetchArticles = async ({
-  categories = [],
-  sort = "newest",
-  page = 0,
-  size = 5,
-  userId,
-  priceRange = [0, 30000], // Add priceRange parameter
-}: {
-  categories?: number[]
-  sort?: string
-  page?: number
-  size?: number
-  userId?: number
-  priceRange?: number[] // Add type definition
-}) => {
-  try {
-    const accessToken = getAccessToken()
-
-    // URL 쿼리 파라미터 구성
-    const params = new URLSearchParams()
-
-    if (categories.length > 0) {
-      categories.forEach((cat) => params.append("category", cat.toString()))
-    }
-
-    // Add price range parameters
-    
-    params.append("sort", sort)
-    params.append("page", page.toString())
-    params.append("size", size.toString())
-    params.append("minPrice", priceRange[0].toString())
-    params.append("maxPrice", priceRange[1].toString())
-    
-    const queryString = params.toString()
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles${queryString ? `?${queryString}` : ""}`
-
-    console.log("Fetching articles from:", url)
-
-    const headers: HeadersInit = { "Content-Type": "application/json" }
-    if (accessToken) {
-      headers["Authorization"] = `Bearer ${accessToken}` // 로그인한 경우에만 헤더 추가
-    }
-
-    const res = await fetch(url, {
-      method: "GET", 
-      headers,
-      cache: 'no-store' // Disable caching for development
-    })
-
-    if (!res.ok) {
-      console.error(`API error: ${res.status} ${res.statusText}`)
-      throw new Error("Failed to fetch articles")
-    }
-
-    const data = await res.json()
-    console.log("API Response:", data)
-    return data
-  } catch (error) {
-    console.error("Error fetching articles:", error)
-    return { content: [], totalPages: 1, totalElements: 0 }
-  }
-}
+import { Article5AService } from "@/lib/api/ArticleService"
 
 
 export function PopularArticles() {
   const [articles, setArticles] = useState<any[]>([])
 
+
   useEffect(() => {
-    const loadLatestArticles = async () => {
-      try {
-        console.log("Loading latest articles...")
-        // Use the fetchArticles function with specific parameters for recently listed
-        const data = await fetchArticles({
-          sort: "likes",
-          page: 1,
-          size: 5,
-          priceRange: [0, 30000]
-        })
-        
-        console.log("Articles data:", data)
-        setArticles(data.content || [])
-      } catch (error) {
-        console.error("Error loading latest articles:", error)
-        setArticles([])
-      }
-    }
-    
-    loadLatestArticles()
-  }, [])
+    const loadTop5 = async () => {
+      const data = await Article5AService();
+      setArticles(data.content || []);
+    };
+    loadTop5();
+  }, []);
 
   return (
     <section className="py-12">

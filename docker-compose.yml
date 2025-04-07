@@ -19,7 +19,7 @@ services:
     env_file:
       - .env
     environment:
-      - "SPRING_PROFILES_ACTIVE=server"
+      SPRING_PROFILES_ACTIVE: server
     ports:
         - "8081:8081"
     networks:
@@ -35,7 +35,7 @@ services:
     restart: always
     container_name: frontend
     environment:
-      - NODE_ENV=production
+      NODE_ENV: production
     env_file:
       - .env
     depends_on: 
@@ -57,7 +57,7 @@ services:
     restart: always
     container_name: frontend_admin
     environment:
-      - NODE_ENV=production
+      NODE_ENV: production
     env_file:
       - .env
     depends_on:
