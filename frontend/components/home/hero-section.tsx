@@ -11,7 +11,7 @@ const slides = [
     id: 1,
     title: "NFT 기프티콘 중고거래",
     description: "안 쓰는 기프티콘, NFT로 거래해요",
-    image: "/slide1.png?height=600&width=1200",
+    image: "/slide4.png?height=600&width=1200",
     cta: {
       text: "지금 시작하기",
       link: "/signin",
@@ -62,7 +62,7 @@ export function HeroSection() {
 
   return (
     <div className="relative overflow-hidden">
-      <div className="relative h-[300px] md:h-[400px] lg:h-[500px] w-full overflow-hidden">
+      <div className="relative h-[260px] md:h-[280px] lg:h-[300px] w-full overflow-hidden">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
@@ -81,21 +81,16 @@ export function HeroSection() {
                 priority={index === 0}
               />
             </div>
-            <div className="container relative z-10 flex flex-col items-start justify-center gap-4 text-white">
-              <h1 className="max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
+            <div className="container relative z-10 flex flex-col items-start justify-center gap-3 text-white">
+              <h1 className="max-w-2xl text-3xl font-bold tracking-tight sm:text-3xl md:text-4xl lg:text-5xl">
                 {slide.title}
               </h1>
-              <p className="max-w-md text-base md:text-lg lg:text-xl opacity-90">{slide.description}</p>
+              <p className="max-w-md text-base md:text-base lg:text-lg opacity-90">{slide.description}</p>
               <Button
                 size="lg"
-                className="mt-2 bg-white hover:bg-white/90"
+                className="mt-1 bg-white hover:bg-white/90"
                 style={{
-                  color:
-                    slide.id === 1
-                      ? "#E86040"
-                      : slide.id === 2
-                      ? "#1556C7"
-                      : "#9A3CC2",
+                  color: slide.id === 1 ? "#E86040" : slide.id === 2 ? "#1556C7" : "#9A3CC2",
                 }}
                 asChild
               >
