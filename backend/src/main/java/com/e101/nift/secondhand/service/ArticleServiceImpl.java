@@ -10,6 +10,7 @@ import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
 import com.e101.nift.secondhand.model.dto.request.TxHashDTO;
 import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
+import com.e101.nift.secondhand.model.dto.response.ArticleSellerDto;
 import com.e101.nift.secondhand.model.state.SaleStatus;
 import com.e101.nift.secondhand.repository.ArticleRepository;
 import com.e101.nift.secondhand.repository.LikeRepository;
@@ -109,6 +110,14 @@ public class ArticleServiceImpl implements ArticleService {
         return maxPrice != null ? maxPrice : 0f;
     }
 
+    @Override
+    public Page<ArticleSellerDto> getOtherArticlesByUser(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Article> articles = articleRepository.findByUserIdAndState(userId, SaleStatus.ON_SALE, pageable);
+
+        return articles.map(ArticleSellerDto::from);
+    }
+
     // 로그인 여부와 관계없이 전체 상품 반환
     // userId == null 이면 isLiked=false로 설정
     private ArticleListDto mapArticleToDto(Article article, Long userId) {
@@ -133,6 +142,7 @@ public class ArticleServiceImpl implements ArticleService {
 
         User user = userRepository.findByUserId(article.getUserId())
                 .orElseThrow(() -> new RuntimeException("판매자 정보가 조회되지 않습니다."));
+        Integer sellerTxs = articleRepository.countByUserId(userId);
 
         return new ArticleDetailDto(
                 article.getArticleId(),
@@ -152,7 +162,8 @@ public class ArticleServiceImpl implements ArticleService {
                 gifticon.getCategory().getCategoryName(),
                 isLiked,
                 user.getNickName(),
-                user.getProfileImage()
+                user.getProfileImage(),
+                sellerTxs
         );
     }
 

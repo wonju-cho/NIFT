@@ -6,6 +6,7 @@ import com.e101.nift.secondhand.model.dto.request.PostArticleDto;
 import com.e101.nift.secondhand.model.dto.request.TxHashDTO;
 import com.e101.nift.secondhand.model.dto.response.ArticleDetailDto;
 import com.e101.nift.secondhand.model.dto.response.ArticleListDto;
+import com.e101.nift.secondhand.model.dto.response.ArticleSellerDto;
 import com.e101.nift.secondhand.service.ArticleService;
 import com.e101.nift.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -97,6 +98,16 @@ public class ArticleController {
     ) {
         articleService.deleteArticle(articleId, txHashDTO);
         return ResponseEntity.status(201).build();
+    }
+
+    @GetMapping("/others")
+    @Operation(summary = "판매자의 다른 상품", description = "판매자가 판매중인 다른 상품을 조회합니다.")
+    public Page<ArticleSellerDto> getOtherArticlesByUser(
+            @RequestParam Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    ){
+        return articleService.getOtherArticlesByUser(userId, page, size);
     }
 
 }
