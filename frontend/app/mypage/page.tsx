@@ -27,7 +27,8 @@ import {
 } from "@/lib/api/mypage";
 import type { ArticleCardProps } from "@/components/article/article-card";
 import { Gift, Clock, Package, Heart, Settings } from "lucide-react";
-import { GiftMemories } from "@/components/mypage/gift-memories";
+// import { GiftMemories } from "@/components/mypage/gift-memories";
+import { GiftMemories } from "@/components/mypage/gift-memory";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const ITEMS_PER_PAGE = 6;

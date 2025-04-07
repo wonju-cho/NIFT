@@ -31,7 +31,7 @@ export function GiftCard({ expiryDays, card }: GiftCardProps) {
           src={card.image || "/placeholder.svg"}
           alt={card.title} // Ensure alt text is present
           fill
-          className="object-cover"
+          className="object-cover transition-transform group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         {expiryDays && (

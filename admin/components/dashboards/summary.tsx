@@ -54,7 +54,7 @@ export default function DashboardStats() {
         />
         <StatsCard
           title="주간 매출"
-          value={`SSF ${summary.weeklyRevenue.toLocaleString()}`}
+          value={`🪙 ${summary.weeklyRevenue.toLocaleString()}`}
           icon={<BadgeDollarSign className="h-5 w-5" />}
           description="이번 주 매출 합계"
         />
