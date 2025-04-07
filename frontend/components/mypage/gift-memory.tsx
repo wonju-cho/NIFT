@@ -6,7 +6,7 @@ import { useEffect, useState, useMemo } from "react"
 import Image from "next/image"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
-import { ChevronLeft, ChevronRight, Package } from "lucide-react"
+import { Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { GiftMemoryCard } from "@/components/gift/gift-memory-card"
@@ -18,7 +18,7 @@ import { GiftUnboxAnimation } from "@/components/gift/gift-animation/gift-unbox-
 import { getGift, getNFTDetailInfo, receiveNFT, type UserNFT } from "@/lib/api/web3"
 import type { User } from "@/app/mypage/page"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Pagination } from "./pagination"
+import { fetchReceivedGifts } from "@/lib/api/mypage"
 
 interface GiftMemoriesProps {
   user: User
@@ -33,9 +33,11 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   const [selectedGift, setSelectedGift] = useState<GiftMemory | null>(null)
   const [isUnboxing, setIsUnboxing] = useState(false)
   const isGiftCardMobile = useGiftCardMobile()
-  const itemsPerPage = 4 // 페이지당 아이템 수 감소
-  const totalPages = Math.ceil(memories.length / itemsPerPage)
+  const itemsPerPage = 8 // 페이지당 아이템 수 감소
   const [giftTab, setGiftTab] = useState("pending")
+  const [acceptedMemories, setAcceptedMemories] = useState<GiftMemory[]>([])
+  const [acceptedTotalPages, setAcceptedTotalPages] = useState(1)
+  const [acceptedPage, setAcceptedPage] = useState(0)
 
   async function fetchGifts() {
     const result = await getGift(user.kakaoId)
@@ -49,14 +51,6 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   useEffect(() => {
     fetchGifts()
   }, [user.kakaoId])
-
-  const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(0, prev - 1))
-  }
-
-  const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))
-  }
 
   // handleAcceptGift 함수를 다음과 같이 수정
   const handleAcceptGift = (giftId: string) => {
@@ -94,9 +88,6 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "yyyy.MM.dd a hh:mm", { locale: ko })
   }
-
-  const currentItems = memories.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
-
   // Add this function to transform API data to GiftMemory format
   const transformApiDataToGiftMemories = (apiData: UserNFT[]): GiftMemory[] => {
     // 카드 템플릿 정의
@@ -266,7 +257,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   }
 
   // Create separate arrays for accepted and pending gifts
-  const [acceptedGifts, pendingGifts] = useMemo(() => {
+  const [pendingGifts] = useMemo(() => {
     const accepted = memories.filter((gift) => gift.isAccepted)
     const pending = memories.filter((gift) => !gift.isAccepted)
     return [accepted, pending]
@@ -302,6 +293,39 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
     }
   }
 
+  function transformReceivedGiftResponse(apiData: any[]): GiftMemory[] {
+    return apiData.map((item) => ({
+      id: String(item.giftHistoryId),
+      senderName: "", // 현재 API에는 없음. 필요시 추가
+      senderNickname: item.senderNickname,
+      sentDate: item.createdAt,
+      isAccepted: true,
+      acceptedDate: item.createdAt,
+      cardData: {
+        frontTemplate: {
+          background: item.cardDesign.frontTemplate.background,
+        },
+        backTemplate: {
+          background: item.cardDesign.backTemplate.background,
+        },
+        frontElements: item.cardDesign.frontElements,
+        backElements: item.cardDesign.backElements,
+      },
+    }))
+  }
+  
+  useEffect(() => {
+    fetchReceivedGifts(acceptedPage, itemsPerPage)
+      .then((res) => {
+        const transformed = transformReceivedGiftResponse(res.content)
+        setAcceptedMemories(transformed)
+        setAcceptedTotalPages(res.totalPages)
+      })
+      .catch(() => {
+      alert("받은 선물을 불러오는 데 실패했습니다.")
+    })
+  }, [giftTab, acceptedPage])
+
   return (
     <Tabs value={giftTab} onValueChange={setGiftTab} className="space-y-8">
       <TabsList className="w-full">
@@ -309,7 +333,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
           받을 수 있는 선물 ({pendingGifts.length})
         </TabsTrigger>
         <TabsTrigger value="accepted" className="flex-1">
-          받은 선물 ({acceptedGifts.length})
+          받은 선물 ({acceptedMemories.length})
         </TabsTrigger>
       </TabsList>
 
@@ -375,10 +399,10 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
 
       {/* Accepted Gifts */}
       <TabsContent value="accepted">
-        {acceptedGifts.length > 0 ? (
+        {acceptedMemories.length > 0 ? (
           <>
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-              {currentItems.map((gift) => (
+              {acceptedMemories.map((gift) => (
                 <Dialog key={gift.id}>
                   <DialogTrigger asChild>
                     <div className="cursor-pointer" onClick={() => setSelectedGift(gift)}>
@@ -424,13 +448,11 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                 </Dialog>
               ))}
             </div>
-            {totalPages > 1 && (
-                <Pagination
-                currentPage={currentPage}
-                totalPage={totalPages}
-                setCurrentPage={setCurrentPage}
-                />
-            )}
+              <Pagination
+              currentPage={acceptedPage}
+              totalPage={acceptedTotalPages}
+              setCurrentPage={setAcceptedPage}
+              />
           </>
         ) : (
           <div className="text-center py-12 text-gray-500">
@@ -441,5 +463,53 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
       </TabsContent>
     </Tabs>
   )
+
+  function Pagination({
+    currentPage,
+    totalPage,
+    setCurrentPage,
+  }: {
+    currentPage: number
+    totalPage: number
+    setCurrentPage: (page: number) => void
+  }) {
+    const maxButtons = 5
+    const start = Math.floor(currentPage / maxButtons) * maxButtons
+    const end = Math.min(start + maxButtons, totalPage)
+  
+    return (
+      <div className="mt-8 flex justify-center items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={currentPage === 0}
+          onClick={() => setCurrentPage(Math.max(currentPage - 1, 0))}
+        >
+          ‹ 이전
+        </Button>
+  
+        {Array.from({ length: end - start }, (_, i) => i + start).map((pageNum) => (
+          <Button
+            key={pageNum}
+            variant={currentPage === pageNum ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setCurrentPage(pageNum)}
+          >
+            {pageNum + 1}
+          </Button>
+        ))}
+  
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={currentPage === totalPage - 1}
+          onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPage - 1))}
+        >
+          다음 ›
+        </Button>
+      </div>
+    )
+  }
+  
 }
 
