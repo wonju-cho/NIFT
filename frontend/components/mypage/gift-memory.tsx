@@ -19,6 +19,7 @@ import { getGift, getNFTDetailInfo, receiveNFT, type UserNFT } from "@/lib/api/w
 import type { User } from "@/app/mypage/page"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { fetchReceivedGifts } from "@/lib/api/mypage"
+import { GiftMemoryCardFullView } from "../gift/gift-memory-card-full"
 
 interface GiftMemoriesProps {
   user: User
@@ -294,25 +295,30 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   }
 
   function transformReceivedGiftResponse(apiData: any[]): GiftMemory[] {
-    return apiData.map((item) => ({
-      id: String(item.giftHistoryId),
-      senderName: "", // 현재 API에는 없음. 필요시 추가
-      senderNickname: item.senderNickname,
-      sentDate: item.createdAt,
-      isAccepted: true,
-      acceptedDate: item.createdAt,
-      cardData: {
-        frontTemplate: {
-          background: item.cardDesign.frontTemplate.background,
+    return apiData.map((item) => {
+      const card = item.cardDesign
+  
+      return {
+        id: String(item.giftHistoryId),
+        senderName: "", // 백엔드에서 없으니 일단 공백
+        senderNickname: item.senderNickname,
+        sentDate: item.createdAt,
+        isAccepted: true,
+        acceptedDate: item.createdAt,
+        cardData: {
+          frontTemplate: {
+            background: card.frontTemplate.background,
+          },
+          backTemplate: {
+            background: card.backTemplate.background,
+          },
+          frontElements: card.frontElements,
+          backElements: card.backElements,
         },
-        backTemplate: {
-          background: item.cardDesign.backTemplate.background,
-        },
-        frontElements: item.cardDesign.frontElements,
-        backElements: item.cardDesign.backElements,
-      },
-    }))
+      }
+    })
   }
+  
   
   useEffect(() => {
     fetchReceivedGifts(acceptedPage, itemsPerPage)
@@ -415,36 +421,55 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                       </div>
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-md p-6">
-                    {selectedGift && (
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">선물 카드</h3>
-                        <GiftMemoryCard cardData={selectedGift.cardData} isAccepted={true} isDetailView showFlipHint />
-                        <div className="bg-gray-50 p-5 rounded-lg space-y-3">
-                          <div className="flex gap-4 items-start">
-                            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                              <Image
-                                src={selectedGift.giftItem?.image || "/placeholder.svg"}
-                                alt={selectedGift.giftItem?.title || ""}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                            <div>
-                              <h4 className="font-medium">{selectedGift.giftItem?.title}</h4>
-                              <p className="text-sm text-gray-500">{selectedGift.giftItem?.brand}</p>
-                              <p className="text-sm font-medium mt-1">{selectedGift.giftItem?.price.toLocaleString()}원</p>
+                  <DialogContent
+                    className="p-6"
+                    style={{
+                      width: "auto", // 고정된 너비 제거
+                      height: "auto",
+                      maxHeight: "none",
+                      overflow: "visible",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
+                  >
+                      {selectedGift && (
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold">선물 카드</h3>
+
+                          {/* 이 부분에 사이즈 강제 지정 */}
+                          <div className="mx-auto">
+                            <GiftMemoryCardFullView cardData={selectedGift.cardData!} />
+                          </div>
+
+                          {/* 기타 선물 정보 */}
+                          <div className="bg-gray-50 p-5 rounded-lg space-y-3">
+                            <div className="flex gap-4 items-start">
+                              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                                <Image
+                                  src={selectedGift.giftItem?.image || "/placeholder.svg"}
+                                  alt={selectedGift.giftItem?.title || ""}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                              <div>
+                                <h4 className="font-medium">{selectedGift.giftItem?.title}</h4>
+                                <p className="text-sm text-gray-500">{selectedGift.giftItem?.brand}</p>
+                                <p className="text-sm font-medium mt-1">{selectedGift.giftItem?.price.toLocaleString()}원</p>
+                              </div>
                             </div>
                           </div>
+
+                          <div className="text-sm text-gray-500 text-left space-y-1 pt-4">
+                            <p>보낸 사람: {selectedGift.senderNickname}</p>
+                            <p>보낸 날짜: {formatDate(selectedGift.sentDate)}</p>
+                            {selectedGift.acceptedDate && <p>수락 날짜: {formatDate(selectedGift.acceptedDate)}</p>}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500 text-left space-y-1 pt-4">
-                          <p>보낸 사람: {selectedGift.senderName}</p>
-                          <p>보낸 날짜: {formatDate(selectedGift.sentDate)}</p>
-                          {selectedGift.acceptedDate && <p>수락 날짜: {formatDate(selectedGift.acceptedDate)}</p>}
-                        </div>
-                      </div>
-                    )}
-                  </DialogContent>
+                      )}
+                    </DialogContent>
+
                 </Dialog>
               ))}
             </div>
