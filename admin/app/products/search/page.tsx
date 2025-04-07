@@ -6,7 +6,16 @@ import SearchControls from "@/components/search/SearchControls";
 import FilterPanel from "@/components/search/FilterPanel";
 import ProductResults from "@/components/search/ProductResults";
 import MintingModal from "@/components/modals/MintingModal"; // 모달 import
-
+import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { ChevronDown, Check } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { fetchBrands, fetchCategories, fetchGifticons } from "@/lib/gifticons";
 
 export default function ProductSearchPage() {

@@ -75,3 +75,50 @@ export const mintNFT = async ({
     throw err;
   }
 };
+
+export const sendNft = async (amount: number, to: string, tokenId: number) => {
+  if (!window.ethereum) {
+    console.error("지갑이 연결되어 있지 않습니다.");
+    throw new Error("No wallet");
+  }
+
+  console.log("📡 지갑 연결 시도 중...");
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+
+  const senderAddress = await signer.getAddress();
+  console.log("✅ 서명자 주소:", senderAddress);
+
+  const contract = new ethers.Contract(
+    process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+    GifticonNFT.abi,
+    signer
+  );
+
+  try {
+    const serials: bigint[] = await contract.getSerialsByOwner(senderAddress);
+    console.log("📦 보유 시리얼 수:", serials.length);
+
+    const toSend = serials.slice(0, amount);
+
+    for (const serial of toSend) {
+      const id = await contract.getTokenIdBySerial(Number(serial));
+
+      if (id != tokenId) continue;
+
+      console.log(`🚚 ${serial.toString()} 전송 중...`);
+      const tx = await contract.authorizedTransferBySerial(
+        senderAddress,
+        to,
+        serial
+      );
+      await tx.wait();
+      console.log(`✅ ${serial.toString()} 전송 완료`);
+    }
+
+    console.log("🎉 모든 NFT 전송 완료");
+  } catch (err) {
+    console.error("❌ 전송 실패:", err);
+    throw err;
+  }
+};

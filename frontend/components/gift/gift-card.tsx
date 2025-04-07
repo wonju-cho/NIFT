@@ -33,7 +33,7 @@ export function GiftCard({ expiryDays, card, onGifticonUsed }: GiftCardProps) {
     const response = await useNft(Number(card.serialNum), walletAddress);
     if (response.success) {
       alert("사용이 완료되었습니다.");
-      await apiClient.post(`/users/gifticons/${response.txHash}`);
+      // await apiClient.post(`/users/gifticons/${response.txHash}`);
       onGifticonUsed?.(Number(card.serialNum));
     }
     setIsLoading(false);

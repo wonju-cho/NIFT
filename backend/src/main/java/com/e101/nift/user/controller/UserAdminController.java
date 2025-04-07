@@ -13,13 +13,20 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/user")
+@RequestMapping("/admin")
 @RequiredArgsConstructor
 public class UserAdminController {
 
     private final UserService userService;
 
-    @GetMapping
+    @GetMapping("/users/with-address")
+    @Operation(summary = "address를 가진 모든 사용자 조회")
+    public ResponseEntity<List<User>> getAlUsersWithAddress() {
+        List<User> users = userService.getAllUsersWithAddress();
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/user")
     @Operation(summary = "관리자 계정의 회원 조회", description = "모든 사용자의 정보를 조회합니다")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
