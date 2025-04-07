@@ -1,98 +1,116 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useEffect, useState, useMemo } from "react"
-import Image from "next/image"
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
-import { ChevronLeft, ChevronRight, Package } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-import { GiftMemoryCard } from "@/components/gift/gift-memory-card"
-import { cn } from "@/lib/utils"
-import { useGiftCardMobile } from "@/hooks/use-giftcard-mobile"
-import type { GiftMemory } from "@/types/gift-memory"
+import { useEffect, useState, useMemo } from "react";
+import Image from "next/image";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { ChevronLeft, ChevronRight, Package } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { GiftMemoryCard } from "@/components/gift/gift-memory-card";
+import { cn } from "@/lib/utils";
+import { useGiftCardMobile } from "@/hooks/use-giftcard-mobile";
+import type { GiftMemory } from "@/types/gift-memory";
 // 상단에 GiftUnboxAnimation 컴포넌트 import 추가
-import { GiftUnboxAnimation } from "@/components/gift/gift-animation/gift-unbox-animation"
-import { getGift, getNFTDetailInfo, receiveNFT, type UserNFT } from "@/lib/api/web3"
-import type { User } from "@/app/mypage/page"
+import { GiftUnboxAnimation } from "@/components/gift/gift-animation/gift-unbox-animation";
+import {
+  getGift,
+  getNFTDetailInfo,
+  receiveNFT,
+  type UserNFT,
+} from "@/lib/api/web3";
+import type { User } from "@/app/mypage/page";
+import { useLoading } from "../LoadingContext";
+import { apiClient } from "@/lib/api/CustomAxios";
 
 interface GiftMemoriesProps {
-  user: User
-  availableGiftCards: any[]
-  setAvailableGiftCards: React.Dispatch<React.SetStateAction<any[]>>
+  user: User;
+  availableGiftCards: any[];
+  setAvailableGiftCards: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
-export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }: GiftMemoriesProps) {
-  const [gifts, setGifts] = useState<UserNFT[]>([])
-  const [memories, setMemories] = useState<GiftMemory[]>([])
-  const [currentPage, setCurrentPage] = useState(0)
-  const [selectedGift, setSelectedGift] = useState<GiftMemory | null>(null)
-  const [isUnboxing, setIsUnboxing] = useState(false)
-  const isGiftCardMobile = useGiftCardMobile()
-  const itemsPerPage = 4 // 페이지당 아이템 수 감소
-  const totalPages = Math.ceil(memories.length / itemsPerPage)
+export function GiftMemories({
+  user,
+  availableGiftCards,
+  setAvailableGiftCards,
+}: GiftMemoriesProps) {
+  const [gifts, setGifts] = useState<UserNFT[]>([]);
+  const [memories, setMemories] = useState<GiftMemory[]>([]);
+  const { isLoading, setIsLoading } = useLoading();
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [selectedGift, setSelectedGift] = useState<GiftMemory | null>(null);
+  const [isUnboxing, setIsUnboxing] = useState(false);
+  const isGiftCardMobile = useGiftCardMobile();
+  const itemsPerPage = 4; // 페이지당 아이템 수 감소
+  const totalPages = Math.ceil(memories.length / itemsPerPage);
 
   async function fetchGifts() {
-    const result = await getGift(user.kakaoId)
-    setGifts(result)
+    const result = await getGift(user.kakaoId);
+    setGifts(result);
 
     // Transform API data to match the GiftMemory format
-    const transformedGifts = transformApiDataToGiftMemories(result)
-    setMemories(transformedGifts)
+    const transformedGifts = transformApiDataToGiftMemories(result);
+    setMemories(transformedGifts);
   }
 
   useEffect(() => {
-    fetchGifts()
-  }, [user.kakaoId])
+    fetchGifts();
+  }, [user.kakaoId]);
 
   const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(0, prev - 1))
-  }
+    setCurrentPage((prev) => Math.max(0, prev - 1));
+  };
 
   const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))
-  }
+    setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+  };
 
   // handleAcceptGift 함수를 다음과 같이 수정
   const handleAcceptGift = (giftId: string) => {
     // 언박싱 애니메이션 시작
-    setIsUnboxing(true)
+    setIsUnboxing(true);
 
     // 선택된 선물이 있고 그 선물의 ID가 수락한 선물의 ID와 같다면 선택된 선물도 업데이트
     if (selectedGift && selectedGift.id === giftId) {
       // 애니메이션이 끝나면 상태 업데이트
       // 실제 구현에서는 여기서 API 호출을 통해 선물 수락 처리
-      console.log(`선물 ${giftId} 수락 처리`)
+      console.log(`선물 ${giftId} 수락 처리`);
     }
-  }
+  };
 
   // 애니메이션 완료 후 처리 함수 추가
   const handleUnboxComplete = () => {
     if (selectedGift) {
-      const now = new Date().toISOString()
+      const now = new Date().toISOString();
 
       // 메모리 상태 업데이트
       const updatedMemories = memories.map((gift) =>
-        gift.id === selectedGift.id ? { ...gift, isAccepted: true, acceptedDate: now } : gift,
-      )
+        gift.id === selectedGift.id
+          ? { ...gift, isAccepted: true, acceptedDate: now }
+          : gift
+      );
 
-      setMemories(updatedMemories)
+      setMemories(updatedMemories);
 
       // 선택된 선물 상태 업데이트
-      setSelectedGift({ ...selectedGift, isAccepted: true, acceptedDate: now })
+      setSelectedGift({ ...selectedGift, isAccepted: true, acceptedDate: now });
 
       // 언박싱 상태 초기화
-      setIsUnboxing(false)
+      setIsUnboxing(false);
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), "yyyy.MM.dd a hh:mm", { locale: ko })
-  }
+    return format(new Date(dateString), "yyyy.MM.dd a hh:mm", { locale: ko });
+  };
 
-  const currentItems = memories.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
+  const currentItems = memories.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
 
   // Add this function to transform API data to GiftMemory format
   const transformApiDataToGiftMemories = (apiData: UserNFT[]): GiftMemory[] => {
@@ -206,25 +224,25 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
           },
         ],
       },
-    ]
+    ];
 
     return apiData.map((item, index) => {
       // Determine if the gift is accepted based on isPending
-      const isAccepted = !item.isPending
+      const isAccepted = !item.isPending;
 
       // Create a date string from pendingDate
-      const sentDate = new Date(Number(item.pendingDate) * 1000).toISOString()
+      const sentDate = new Date(Number(item.pendingDate) * 1000).toISOString();
 
       // Create an accepted date if the gift is accepted
       const acceptedDate = isAccepted
         ? new Date(Date.now() - Math.random() * 86400000).toISOString() // Random time within last 24 hours
-        : undefined
+        : undefined;
 
       // Select a card template (alternate between the two templates)
-      const cardTemplate = cardTemplates[index % cardTemplates.length]
+      const cardTemplate = cardTemplates[index % cardTemplates.length];
 
       // Add the title to the card's front elements
-      const frontElements = [...cardTemplate.frontElements]
+      const frontElements = [...cardTemplate.frontElements];
       if (item.title) {
         frontElements.push({
           id: "title-element",
@@ -237,7 +255,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
           rotation: 0,
           zIndex: 2,
           fontFamily: "'Noto Sans KR', sans-serif",
-        })
+        });
       }
 
       return {
@@ -258,46 +276,60 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
           price: item.price || 0,
           image: item.image,
         },
-      }
-    })
-  }
+      };
+    });
+  };
 
   // Create separate arrays for accepted and pending gifts
   const [acceptedGifts, pendingGifts] = useMemo(() => {
-    const accepted = memories.filter((gift) => gift.isAccepted)
-    const pending = memories.filter((gift) => !gift.isAccepted)
-    return [accepted, pending]
-  }, [memories])
+    const accepted = memories.filter((gift) => gift.isAccepted);
+    const pending = memories.filter((gift) => !gift.isAccepted);
+    return [accepted, pending];
+  }, [memories]);
 
   const handleReceive = async (gift: UserNFT) => {
-    const response = await receiveNFT(gift.serialNum, user.kakaoId)
-    if (response.success) {
-      // Remove from gifts array
-      setGifts(gifts.filter((g) => g.serialNum !== gift.serialNum))
+    setIsLoading(true); // ✅ 로딩 시작
 
-      // Get updated NFT info
-      const newInfo = await getNFTDetailInfo(gift.serialNum)
+    try {
+      const response = await receiveNFT(gift.serialNum, user.kakaoId);
 
-      // Update available gift cards
-      const updatedUsedGiftCards = [...availableGiftCards, newInfo]
-      setAvailableGiftCards(updatedUsedGiftCards)
+      if (response.success) {
+        // Remove from gifts array
+        setGifts(gifts.filter((g) => g.serialNum !== gift.serialNum));
 
-      // Update memories to mark the gift as accepted
-      setMemories((prevMemories) =>
-        prevMemories.map((mem) =>
-          mem.id === String(gift.serialNum)
-            ? {
-                ...mem,
-                isAccepted: true,
-                acceptedDate: new Date().toISOString(),
-              }
-            : mem,
-        ),
-      )
+        // Get updated NFT info
+        const newInfo = await getNFTDetailInfo(gift.serialNum);
 
-      alert("선물 받기가 완료 되었습니다")
+        // Update available gift cards
+        const updatedUsedGiftCards = [...availableGiftCards, newInfo];
+        setAvailableGiftCards(updatedUsedGiftCards);
+
+        // Update memories to mark the gift as accepted
+        setMemories((prevMemories) =>
+          prevMemories.map((mem) =>
+            mem.id === String(gift.serialNum)
+              ? {
+                  ...mem,
+                  isAccepted: true,
+                  acceptedDate: new Date().toISOString(),
+                }
+              : mem
+          )
+        );
+
+        alert("선물 받기가 완료 되었습니다");
+        const data = {
+          txHash: response.txHash,
+        };
+        await apiClient.post("/gift-histories/received", data);
+      }
+    } catch (error) {
+      console.error("선물 받기 실패:", error);
+      alert("선물 받기에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsLoading(false); // ✅ 로딩 종료
     }
-  }
+  };
 
   return (
     <div className="space-y-8">
@@ -324,8 +356,12 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                       </div>
                       <div className="p-4">
                         <div className="flex justify-between items-center">
-                          <div className="text-sm font-medium">from. {gift.senderNickname}</div>
-                          <div className="text-xs text-gray-500">{formatDate(gift.sentDate)}</div>
+                          <div className="text-sm font-medium">
+                            from. {gift.senderNickname}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {formatDate(gift.sentDate)}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -333,10 +369,15 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                   <DialogContent className="sm:max-w-md p-6">
                     {selectedGift && !selectedGift.isAccepted && (
                       <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">새로운 선물이 도착했습니다!</h3>
+                        <h3 className="text-lg font-semibold">
+                          새로운 선물이 도착했습니다!
+                        </h3>
                         {isUnboxing ? (
                           <div className="w-full aspect-[4/3] relative overflow-hidden rounded-lg">
-                            <GiftUnboxAnimation gift={selectedGift} onComplete={handleUnboxComplete} />
+                            <GiftUnboxAnimation
+                              gift={selectedGift}
+                              onComplete={handleUnboxComplete}
+                            />
                           </div>
                         ) : (
                           <div className="text-center py-8">
@@ -350,19 +391,24 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                               />
                             </div>
                             <p className="mb-4">
-                              <span className="font-medium">{gift.senderNickname}</span>
+                              <span className="font-medium">
+                                {gift.senderNickname}
+                              </span>
                               님이 보낸 선물이 도착했습니다.
                               <br />
-                              선물을 수락하면 카드와 기프티콘을 확인할 수 있습니다.
+                              선물을 수락하면 카드와 기프티콘을 확인할 수
+                              있습니다.
                             </p>
                             <Button
                               onClick={() => {
                                 // Find the corresponding UserNFT
-                                const apiGift = gifts.find((g) => String(g.serialNum) === gift.id)
+                                const apiGift = gifts.find(
+                                  (g) => String(g.serialNum) === gift.id
+                                );
                                 if (apiGift) {
-                                  handleReceive(apiGift)
+                                  handleReceive(apiGift);
                                 } else {
-                                  handleAcceptGift(gift.id)
+                                  handleAcceptGift(gift.id);
                                 }
                               }}
                             >
@@ -386,7 +432,9 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
 
       {/* Accepted Gifts Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">받은 선물 ({acceptedGifts.length})</h3>
+        <h3 className="text-lg font-medium">
+          받은 선물 ({acceptedGifts.length})
+        </h3>
         {acceptedGifts.length > 0 ? (
           <>
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
@@ -399,9 +447,15 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                   >
                     <Dialog>
                       <DialogTrigger asChild>
-                        <div className="cursor-pointer" onClick={() => setSelectedGift(gift)}>
+                        <div
+                          className="cursor-pointer"
+                          onClick={() => setSelectedGift(gift)}
+                        >
                           <div
-                            className={cn("relative overflow-hidden", isGiftCardMobile ? "aspect-[4/3]" : "h-[250px]")}
+                            className={cn(
+                              "relative overflow-hidden",
+                              isGiftCardMobile ? "aspect-[4/3]" : "h-[250px]"
+                            )}
                           >
                             <GiftMemoryCard
                               cardData={gift.cardData}
@@ -411,8 +465,12 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                           </div>
                           <div className="p-4">
                             <div className="flex justify-between items-center">
-                              <div className="text-sm font-medium">from. {gift.senderNickname}</div>
-                              <div className="text-xs text-gray-500">{formatDate(gift.sentDate)}</div>
+                              <div className="text-sm font-medium">
+                                from. {gift.senderNickname}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {formatDate(gift.sentDate)}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -433,25 +491,41 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                               <div className="flex gap-4 items-start">
                                 <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
                                   <Image
-                                    src={selectedGift.giftItem?.image || "/placeholder.svg" || "/placeholder.svg"}
+                                    src={
+                                      selectedGift.giftItem?.image ||
+                                      "/placeholder.svg" ||
+                                      "/placeholder.svg"
+                                    }
                                     alt={selectedGift.giftItem?.title || ""}
                                     fill
                                     className="object-cover"
                                   />
                                 </div>
                                 <div>
-                                  <h4 className="font-medium">{selectedGift.giftItem?.title}</h4>
-                                  <p className="text-sm text-gray-500">{selectedGift.giftItem?.brand}</p>
+                                  <h4 className="font-medium">
+                                    {selectedGift.giftItem?.title}
+                                  </h4>
+                                  <p className="text-sm text-gray-500">
+                                    {selectedGift.giftItem?.brand}
+                                  </p>
                                   <p className="text-sm font-medium mt-1">
-                                    {selectedGift.giftItem?.price.toLocaleString()}원
+                                    {selectedGift.giftItem?.price.toLocaleString()}
+                                    원
                                   </p>
                                 </div>
                               </div>
                             </div>
                             <div className="text-sm text-gray-500 text-left space-y-1 pt-4">
                               <p>보낸 사람: {selectedGift.senderName}</p>
-                              <p>보낸 날짜: {formatDate(selectedGift.sentDate)}</p>
-                              {selectedGift.acceptedDate && <p>수락 날짜: {formatDate(selectedGift.acceptedDate)}</p>}
+                              <p>
+                                보낸 날짜: {formatDate(selectedGift.sentDate)}
+                              </p>
+                              {selectedGift.acceptedDate && (
+                                <p>
+                                  수락 날짜:{" "}
+                                  {formatDate(selectedGift.acceptedDate)}
+                                </p>
+                              )}
                             </div>
                           </div>
                         )}
@@ -463,7 +537,12 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
 
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-6">
-                <Button variant="outline" size="icon" onClick={handlePrevPage} disabled={currentPage === 0}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 0}
+                >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm font-medium">
@@ -488,6 +567,5 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
         )}
       </div>
     </div>
-  )
+  );
 }
-

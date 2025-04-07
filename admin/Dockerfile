@@ -4,7 +4,7 @@ FROM node:18
 # 작업 디렉토리 설정
 WORKDIR /app
 
-ARG PORT=3001
+ARG PORT 
 # ENV에 ARG 값 넣기
 ENV PORT=${PORT}
 
@@ -25,9 +25,9 @@ COPY .env .env
 
 # NODE_ENV에 따라 build 분기
 RUN if [ "$BUILD_MODE" = "development" ]; then \
-    npm run build --verbose; \
+    npm run build --verbose && rm -f .env; \
   else \
-    npm run build; \
+    npm run build && rm -f .env; \
   fi
 
 # 컨테이너 실행 시 Next.js 실행
