@@ -19,9 +19,9 @@ export function GiftCard({ expiryDays, card, onGifticonUsed }: GiftCardProps) {
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
   const { isLoading, setIsLoading } = useLoading();
 
-  const handleGift = async (serialNum: number) => {
+  const handleGift = async (tokenId: number) => {
     try {
-      router.push(`/gift/${serialNum}/customize?type=gifticon`);
+      router.push(`/gift/${tokenId}/customize?type=gifticon`);
     } catch (error) {
       console.error("gifticonId 조회 실패:", error);
       alert("기프티콘 정보를 가져오지 못했습니다.");
@@ -121,7 +121,7 @@ export function GiftCard({ expiryDays, card, onGifticonUsed }: GiftCardProps) {
 
           <button
             className="rounded border border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-700 hover:text-white transition-colors"
-            onClick={() => handleGift(Number(card.serialNum))}
+            onClick={() => handleGift(Number(card.tokenId))}
           >
             선물하기
           </button>
