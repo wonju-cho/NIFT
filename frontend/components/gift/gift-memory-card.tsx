@@ -96,7 +96,7 @@ export function GiftMemoryCard({
     src="/gift-box.png"
     alt="Gift box"
     fill
-    className="object-contain md:object-cover object-center"  // object-contain → object-cover 로 변경
+    style={{ objectFit: 'cover', objectPosition: 'center center' }} // Explicitly center the image
   />
   <div className="absolute inset-0 flex items-center justify-center">
     <div className="text-center">
