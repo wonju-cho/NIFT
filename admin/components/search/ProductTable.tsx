@@ -132,7 +132,7 @@ export default function ProductTable({
                 <TableCell>{product.brandName ?? "브랜드 없음"}</TableCell>
                 <TableCell>{product.categoryName ?? "기타"}</TableCell>
                 <TableCell className="text-right">
-                  🪙 {Math.floor(product.price).toLocaleString()}
+                  🪙 {product.price.toLocaleString()}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
