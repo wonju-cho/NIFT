@@ -28,6 +28,7 @@ export function GiftTab({
   calculateDday,
   giftCardTab,
   setGiftCardTab,
+  onGifticonUsed,
 }: GiftTabProps) {
   const availableTotalPage =
     Math.ceil(availableGiftCards.length / ITEMS_PER_PAGE) || 1;
