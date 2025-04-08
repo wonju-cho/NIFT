@@ -28,7 +28,6 @@ export function GiftTab({
   calculateDday,
   giftCardTab,
   setGiftCardTab,
-  onGifticonUsed,
 }: GiftTabProps) {
   const availableTotalPage =
     Math.ceil(availableGiftCards.length / ITEMS_PER_PAGE) || 1;
@@ -58,7 +57,7 @@ export function GiftTab({
                 key={Number(card.serialNum)}
                 expiryDays={`D-${calculateDday(card.expiryDate)}`}
                 card={card}
-                onGifticonUsed={onGifticonUsed}
+                // onGifticonUsed={onGifticonUsed}
               />
             ))}
         </div>

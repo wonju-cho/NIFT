@@ -3,14 +3,11 @@
 import { useNft, UserNFT } from "@/lib/api/web3";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react"; // Import useCallback
-// Removed useState, useCallback, QrScanner, apiClient, useLoading imports as they move to detail page
-// import Link from "next/link"; // Remove Link
+import { useCallback } from "react";
 
 interface GiftCardProps {
   expiryDays: string;
   card: UserNFT;
-  // Removed onGifticonUsed prop
 }
 
 export function GiftCard({ expiryDays, card }: GiftCardProps) {
