@@ -98,14 +98,34 @@ export const sendNft = async (amount: number, to: string, tokenId: number) => {
   try {
     const serials: bigint[] = await contract.getSerialsByOwner(senderAddress);
     console.log("📦 보유 시리얼 수:", serials.length);
+    console.log(
+      "📦 보유 시리얼 목록:",
+      serials.map((s) => s.toString())
+    );
 
-    const toSend = serials.slice(0, amount);
+    const filteredSerials: bigint[] = [];
 
-    for (const serial of toSend) {
-      const id = await contract.getTokenIdBySerial(Number(serial));
+    for (const serial of serials) {
+      try {
+        const id = await contract.getTokenIdBySerial(Number(serial));
+        console.log(`🔍 serial: ${serial.toString()}, tokenId: ${id}`);
 
-      if (id != tokenId) continue;
+        if (Number(id) === tokenId) {
+          filteredSerials.push(serial);
+          if (filteredSerials.length === amount) break;
+        }
+      } catch (err) {
+        console.error(`❗ getTokenIdBySerial 실패: serial=${serial}`, err);
+      }
+    }
 
+    console.log(
+      "📦 전송 대상 시리얼:",
+      filteredSerials.map((s) => s.toString())
+    );
+    console.log("🧾 필터링된 시리얼 수:", filteredSerials.length);
+
+    for (const serial of filteredSerials) {
       console.log(`🚚 ${serial.toString()} 전송 중...`);
       const tx = await contract.authorizedTransferBySerial(
         senderAddress,

@@ -35,7 +35,7 @@ public class BatchServiceImpl implements BatchService {
     private final ContractService contractService;
     private final SyncStatusRepository syncStatusRepository;
 
-    @Scheduled(fixedDelay = 90000)
+    @Scheduled(fixedDelay = 100000)
     public void realTimeSync() {
         log.info("[BatchService] 실시간 동기화 진행: {}", LocalDateTime.now());
 
