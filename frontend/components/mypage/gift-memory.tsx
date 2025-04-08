@@ -19,8 +19,6 @@ import { getGift, getNFTDetailInfo, receiveNFT, type UserNFT } from "@/lib/api/w
 import type { User } from "@/app/mypage/page"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { fetchReceivedGifts } from "@/lib/api/mypage"
-// GiftMemoryCardFullView 는 더 이상 사용하지 않으므로 주석 처리 또는 삭제 가능
-// import { GiftMemoryCardFullView } from "../gift/gift-memory-card-full"
 import { RefreshCcw } from "lucide-react"
 import { Pagination } from "@/components/mypage/pagination"
 
@@ -34,7 +32,6 @@ interface GiftMemoriesProps {
 export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }: GiftMemoriesProps) {
   const [gifts, setGifts] = useState<UserNFT[]>([])
   const [memories, setMemories] = useState<GiftMemory[]>([])
-  const [currentPage, setCurrentPage] = useState(0)
   const [selectedGift, setSelectedGift] = useState<GiftMemory | null>(null)
   const [isUnboxing, setIsUnboxing] = useState(false)
   const isGiftCardMobile = useGiftCardMobile()
@@ -258,7 +255,6 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
         cardData: {
           ...cardTemplate,
           frontElements,
-          // Pending 탭에서는 base64 이미지가 없으므로 추가하지 않음
         },
         giftItem: {
           id: String(item.id),
@@ -316,7 +312,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
     }
   }
 
-  // API 응답 타입 정의 (피드백 기반)
+  // API 응답 타입 정의 
   interface ReceivedGiftApiResponse {
     giftHistoryId: number;
     senderNickname: string;
@@ -328,13 +324,13 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
       id: string;
       message: string;
       recipientName: string;
-      frontTemplate: { id: string; background?: string }; // background는 optional일 수 있음
+      frontTemplate: { id: string; background?: string };
       backTemplate: { id: string; background: string };
       frontElements: any[];
       backElements: any[];
       frontImage?: string; // base64
       backImage?: string; // base64
-      flipped?: boolean; // API 응답에 포함되어 있다면 사용 가능
+      flipped?: boolean; 
     };
     gifticonResponse?: {
         id: number;
@@ -350,7 +346,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   
       return {
         id: String(item.giftHistoryId),
-        senderName: "", // API에 별도로 없으므로 빈 값
+        senderName: "",
         senderNickname: item.senderNickname,
         sentDate: item.createdAt,
         isAccepted: true,
@@ -404,7 +400,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
           받을 수 있는 선물 ({pendingGifts.length})
         </TabsTrigger>
         <TabsTrigger value="accepted" className="flex-1">
-          받은 선물 ({acceptedGiftCount !== null ? acceptedGiftCount : '...'}) {/* 총 개수 표시 (로딩 중 '...') */}
+          받은 선물 ({acceptedGiftCount !== null ? acceptedGiftCount : '...'})
         </TabsTrigger>
       </TabsList>
 
