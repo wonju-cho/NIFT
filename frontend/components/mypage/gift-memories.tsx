@@ -508,10 +508,10 @@ export function GiftMemories({
                                   <p className="text-sm text-gray-500">
                                     {selectedGift.giftItem?.brand}
                                   </p>
-                                  <p className="text-sm font-medium mt-1">
+                                  {/* <p className="text-sm font-medium mt-1">
                                     {selectedGift.giftItem?.price.toLocaleString()}
                                     원
-                                  </p>
+                                  </p> */}
                                 </div>
                               </div>
                             </div>
