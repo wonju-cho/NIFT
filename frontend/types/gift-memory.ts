@@ -24,5 +24,6 @@ export interface GiftMemory {
       title: string
       image: string
       brand?: string
+      price?: number
     }
   }
