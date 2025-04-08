@@ -21,6 +21,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { fetchReceivedGifts } from "@/lib/api/mypage"
 // GiftMemoryCardFullView 는 더 이상 사용하지 않으므로 주석 처리 또는 삭제 가능
 // import { GiftMemoryCardFullView } from "../gift/gift-memory-card-full"
+import { RefreshCcw } from "lucide-react"
+import { Pagination } from "@/components/mypage/pagination"
+
 
 interface GiftMemoriesProps {
   user: User
@@ -41,6 +44,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   const [acceptedTotalPages, setAcceptedTotalPages] = useState(1)
   const [acceptedPage, setAcceptedPage] = useState(0)
   const [isCardFlipped, setIsCardFlipped] = useState(false) // 카드 뒤집기 상태 추가
+  const [acceptedGiftCount, setAcceptedGiftCount] = useState<number | null>(null); // 받은 선물 총 개수 상태 추가
 
   async function fetchGifts() {
     const result = await getGift(user.kakaoId)
@@ -52,8 +56,18 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   }
 
   useEffect(() => {
-    fetchGifts()
-  }, [user.kakaoId])
+    fetchGifts();
+    // 컴포넌트 마운트 시 받은 선물 총 개수 가져오기
+    fetchReceivedGifts(0, 1) // 첫 페이지만 가져와서 totalElements 확인
+      .then((res) => {
+        // API 응답에 totalElements가 있다고 가정합니다. 없다면 API 수정 필요
+        setAcceptedGiftCount(res.totalElements ?? 0);
+      })
+      .catch(() => {
+        console.error("받은 선물 총 개수를 불러오는 데 실패했습니다.");
+        setAcceptedGiftCount(0); // 실패 시 0으로 설정
+      });
+  }, [user.kakaoId]); // user.kakaoId 의존성 유지
 
   // handleAcceptGift 함수를 다음과 같이 수정
   const handleAcceptGift = (giftId: string) => {
@@ -291,6 +305,8 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
           setAcceptedMemories(transformed)
           setAcceptedTotalPages(res.totalPages)
           setAcceptedPage(0); // 페이지 초기화
+          // 선물 받기 성공 시 총 개수 업데이트 (API 응답 기반)
+          setAcceptedGiftCount(res.totalElements ?? 0); // setAcceptedGiftCount 사용 확인
         })
         .catch(() => {
         alert("받은 선물을 불러오는 데 실패했습니다.")
@@ -305,6 +321,9 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
     giftHistoryId: number;
     senderNickname: string;
     createdAt: string;
+    title?: string;
+    imageUrl?: string;
+    brandName?: string;
     cardDesign: {
       id: string;
       message: string;
@@ -321,7 +340,6 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
         id: number;
         name: string;
         brandName: string;
-        price: number;
         imageUrl: string;
     }
   }
@@ -329,38 +347,39 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   function transformReceivedGiftResponse(apiData: ReceivedGiftApiResponse[]): GiftMemory[] {
     return apiData.map((item) => {
       const card = item.cardDesign
-
+  
       return {
         id: String(item.giftHistoryId),
-        senderName: "", // API에 없으므로 빈 문자열
+        senderName: "", // API에 별도로 없으므로 빈 값
         senderNickname: item.senderNickname,
         sentDate: item.createdAt,
-        isAccepted: true, // 'accepted' 탭 데이터이므로 항상 true
-        acceptedDate: item.createdAt, // 수락 날짜를 생성 날짜로 사용 (API에 별도 필드 없으면)
+        isAccepted: true,
+        acceptedDate: item.createdAt,
         cardData: {
           frontTemplate: {
-            background: card.frontTemplate.background || 'transparent', // background가 없을 경우 대비
+            background: card.frontTemplate.background || 'transparent',
           },
           backTemplate: {
             background: card.backTemplate.background,
           },
           frontElements: card.frontElements,
           backElements: card.backElements,
-          frontImage: card.frontImage, // base64 이미지
-          backImage: card.backImage, // base64 이미지
+          frontImage: card.frontImage,
+          backImage: card.backImage,
         },
-        giftItem: item.gifticonResponse ? {
-          id: String(item.gifticonResponse.id),
-          title: item.gifticonResponse.name,
-          brand: item.gifticonResponse.brandName,
-          price: item.gifticonResponse.price || 0,
-          image: item.gifticonResponse.imageUrl,
-        } : undefined,
+        // title과 imageUrl이 모두 존재할 때만 giftItem 생성, Optional 필드 안전하게 처리
+        giftItem: (item.title && item.imageUrl) ? {
+          id: String(item.giftHistoryId), // 기프티콘 ID가 별도로 없으므로 giftHistoryId 사용
+          title: item.title,
+          brand: item.brandName ?? "", // brandName이 null/undefined면 빈 문자열
+          image: item.imageUrl,        // imageUrl은 존재가 보장됨
+        } : undefined, // title 또는 imageUrl 없으면 undefined
       }
     })
   }
   
-  
+
+
   useEffect(() => {
     // Accepted 탭이 활성화될 때만 데이터를 가져옴
     if (giftTab === 'accepted') {
@@ -369,6 +388,8 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
           const transformed = transformReceivedGiftResponse(res.content)
           setAcceptedMemories(transformed)
           setAcceptedTotalPages(res.totalPages)
+          // 탭 변경 시에도 totalElements 업데이트 (선물 수락 등으로 변경되었을 수 있으므로)
+          setAcceptedGiftCount(res.totalElements ?? 0); // setAcceptedGiftCount 사용 확인
         })
         .catch(() => {
         alert("받은 선물을 불러오는 데 실패했습니다.")
@@ -383,7 +404,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
           받을 수 있는 선물 ({pendingGifts.length})
         </TabsTrigger>
         <TabsTrigger value="accepted" className="flex-1">
-          받은 선물 ({acceptedMemories.length})
+          받은 선물 ({acceptedGiftCount !== null ? acceptedGiftCount : '...'}) {/* 총 개수 표시 (로딩 중 '...') */}
         </TabsTrigger>
       </TabsList>
 
@@ -461,8 +482,8 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                         setSelectedGift(gift);
                         setIsCardFlipped(false); // Dialog 열 때 카드 앞면으로 초기화
                       }}>
-                        {/* 이미지 중앙 표시 */}
-                        <div className={cn("relative overflow-hidden bg-gray-100", isGiftCardMobile ? "aspect-[4/3]" : "h-[250px]")}>
+                        {/* 이미지 중앙 표시 및 둥근 모서리 추가 */}
+                        <div className={cn("relative overflow-hidden bg-gray-100 rounded-lg", isGiftCardMobile ? "aspect-[4/3]" : "h-[250px]")}> {/* rounded-lg 추가 */}
                         {gift.cardData?.frontImage ? (
                           <Image
                             src={gift.cardData.frontImage} // Base64 데이터 직접 사용
@@ -488,107 +509,114 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                   <DialogContent
                     className="p-6"
                     style={{
-                      perspective: "1500px", // 플립 효과 자연스럽게
+                      perspective: "1500px",
                       width: "100%",
-                      maxWidth: "640px",
-                      height: "auto",
+                      maxWidth: "520px",
                       maxHeight: "90vh",
                       overflowY: "auto",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
-                      gap: "1rem", // 요소 간 간격 추가
+                      gap: "1.5rem",
+                      borderRadius: "1rem",
                     }}
                   >
-                    {/* selectedGift와 현재 매핑 중인 gift의 ID가 일치할 때만 내용을 렌더링 */}
                     {selectedGift && selectedGift.id === gift.id && (
                       <>
-                        {/* Flippable Card Container */}
+                        {/* 카드 플립 컨테이너 */}
                         <div className="w-full max-w-[400px] aspect-[4/3]" style={{ perspective: "1000px" }}>
                           <div
                             className={cn(
                               "relative w-full h-full transition-transform duration-700",
-                              "[transform-style:preserve-3d]", // Tailwind JIT 모드 필요 또는 인라인 스타일
+                              "[transform-style:preserve-3d]",
                             )}
                             style={{ transform: isCardFlipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
                           >
-                            {/* Front Face */}
-                            <div className="absolute w-full h-full [backface-visibility:hidden] rounded-lg overflow-hidden">
+                            {/* 앞면 */}
+                            <div className="absolute w-full h-full [backface-visibility:hidden] rounded-xl overflow-hidden shadow-md border border-gray-200">
                               {selectedGift.cardData?.frontImage ? (
                                 <Image
-                                  src={selectedGift.cardData.frontImage} // Base64 데이터 직접 사용
+                                  src={selectedGift.cardData.frontImage}
                                   alt={`${selectedGift.senderNickname}님의 선물 앞면`}
                                   fill
                                   className="object-contain"
-                                  unoptimized // Base64 이미지 최적화 비활성화
+                                  unoptimized
                                 />
                               ) : (
-                                <div className="flex items-center justify-center h-full bg-gray-200">
+                                <div className="flex items-center justify-center h-full bg-gray-100">
                                   <Package size={48} className="text-gray-400" />
                                 </div>
                               )}
                             </div>
 
-                            {/* Back Face */}
-                            <div className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-lg overflow-hidden">
+                            {/* 뒷면 */}
+                            <div className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-xl overflow-hidden shadow-md border border-gray-200">
                               {selectedGift.cardData?.backImage ? (
                                 <Image
-                                  src={selectedGift.cardData.backImage} // Base64 데이터 직접 사용
+                                  src={selectedGift.cardData.backImage}
                                   alt={`${selectedGift.senderNickname}님의 선물 뒷면`}
                                   fill
                                   className="object-contain"
-                                  unoptimized // Base64 이미지 최적화 비활성화
+                                  unoptimized
                                 />
                               ) : (
-                                <div className="flex items-center justify-center h-full bg-gray-200">
+                                <div className="flex items-center justify-center h-full bg-gray-100">
                                   <Package size={48} className="text-gray-400" />
                                 </div>
                               )}
                             </div>
                           </div>
-                        </div>
 
-                        {/* Flip Button */}
-                        {(selectedGift.cardData?.frontImage || selectedGift.cardData?.backImage) && (
-                           <Button variant="outline" onClick={() => setIsCardFlipped(!isCardFlipped)}>
-                             {isCardFlipped ? "앞면 보기" : "뒷면 보기"}
-                           </Button>
-                         )}
-
-                        {/* 기타 선물 정보 */}
-                        <div className="w-full max-w-[400px] bg-gray-50 p-4 rounded-lg space-y-3 mt-2">
-                           <h3 className="text-lg font-semibold mb-2">선물 정보</h3>
-                          {selectedGift.giftItem ? (
-                            <div className="flex gap-4 items-start">
-                              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-gray-200">
-                                <Image
-                                  src={selectedGift.giftItem.image || "/placeholder.svg"}
-                                  alt={selectedGift.giftItem.title || "기프티콘 이미지"}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                              <div>
-                                <h4 className="font-medium">{selectedGift.giftItem.title}</h4>
-                                <p className="text-sm text-gray-500">{selectedGift.giftItem.brand}</p>
-                                <p className="text-sm font-medium mt-1">{selectedGift.giftItem.price?.toLocaleString()}원</p>
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="text-sm text-gray-500">기프티콘 정보를 불러올 수 없습니다.</p>
+                          {/* 카드 플립 버튼 */}
+                          {(selectedGift.cardData?.frontImage || selectedGift.cardData?.backImage) && (
+                            <Button
+                              size="icon"
+                              className="absolute bottom-4 right-4 z-10 rounded-full backdrop-blur-md bg-white/70 hover:bg-white border border-gray-300 shadow-md transition"
+                              onClick={() => setIsCardFlipped(!isCardFlipped)}
+                            >
+                              <RefreshCcw className="w-5 h-5 text-gray-700" />
+                            </Button>
                           )}
                         </div>
 
-                        {/* 보낸 사람 및 날짜 정보 */}
-                        <div className="w-full max-w-[400px] text-sm text-gray-500 text-left space-y-1 pt-2">
-                          <h3 className="text-lg font-semibold mb-2">상세 정보</h3>
-                          <p><span className="font-medium">보낸 사람:</span> {selectedGift.senderNickname}</p>
-                          <p><span className="font-medium">보낸 날짜:</span> {formatDate(selectedGift.sentDate)}</p>
-                          {selectedGift.acceptedDate && <p><span className="font-medium">수락 날짜:</span> {formatDate(selectedGift.acceptedDate)}</p>}
+                        {/* 선물 + 상세 정보 카드 */}
+                        <div className="w-full max-w-[400px] bg-white shadow-lg p-5 rounded-xl space-y-6 border border-gray-100">
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-bold text-gray-900">🎁 선물 정보</h3>
+                            {selectedGift.giftItem ? (
+                              <div className="flex gap-4 items-center">
+                                <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+                                  <Image
+                                    src={selectedGift.giftItem.image || "/placeholder.svg"}
+                                    alt={selectedGift.giftItem.title || "기프티콘 이미지"}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-base font-semibold text-gray-900">
+                                    {selectedGift.giftItem.title}
+                                  </p>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-500">기프티콘 정보를 불러올 수 없습니다.</p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium text-gray-900">보낸 사람:</span> {selectedGift.senderNickname}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium text-gray-900">보낸 날짜:</span> {formatDate(selectedGift.sentDate)}
+                            </p>
+                          </div>
                         </div>
                       </>
                     )}
                   </DialogContent>
+
                 </Dialog>
               ))}
             </div>
@@ -607,52 +635,4 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
       </TabsContent>
     </Tabs>
   )
-
-  function Pagination({
-    currentPage,
-    totalPage,
-    setCurrentPage,
-  }: {
-    currentPage: number
-    totalPage: number
-    setCurrentPage: (page: number) => void
-  }) {
-    const maxButtons = 5
-    const start = Math.floor(currentPage / maxButtons) * maxButtons
-    const end = Math.min(start + maxButtons, totalPage)
-  
-    return (
-      <div className="mt-8 flex justify-center items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={currentPage === 0}
-          onClick={() => setCurrentPage(Math.max(currentPage - 1, 0))}
-        >
-          ‹ 이전
-        </Button>
-  
-        {Array.from({ length: end - start }, (_, i) => i + start).map((pageNum) => (
-          <Button
-            key={pageNum}
-            variant={currentPage === pageNum ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setCurrentPage(pageNum)}
-          >
-            {pageNum + 1}
-          </Button>
-        ))}
-  
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={currentPage === totalPage - 1}
-          onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPage - 1))}
-        >
-          다음 ›
-        </Button>
-      </div>
-    )
-  }
-  
 }

@@ -22,8 +22,6 @@ export interface GiftMemory {
     giftItem?: {
       id: string
       title: string
-      brand: string
-      price: number
       image: string
     }
   }
