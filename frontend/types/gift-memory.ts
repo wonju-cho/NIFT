@@ -23,5 +23,6 @@ export interface GiftMemory {
       id: string
       title: string
       image: string
+      brand?: string
     }
   }
