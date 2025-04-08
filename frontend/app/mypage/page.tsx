@@ -64,7 +64,9 @@ export default function MyPage() {
   const [ssfBalance, setSsfBalance] = useState("0");
   const [copied, setCopied] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [allLikedArticles, setAllLikedArticles] = useState<ArticleCardProps[]>([]);
+  const [allLikedArticles, setAllLikedArticles] = useState<ArticleCardProps[]>(
+    []
+  );
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPage, setTotalPage] = useState(1);
   const [availableGiftCards, setAvailableGiftCards] = useState<any[]>([]);
@@ -199,16 +201,19 @@ export default function MyPage() {
   useEffect(() => {
     const loadAllLikedArticles = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles/likes`, {
-          headers: {
-            Authorization: `Bearer ${getAccessToken()}`,
-          },
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/secondhand-articles/likes`,
+          {
+            headers: {
+              Authorization: `Bearer ${getAccessToken()}`,
+            },
+          }
+        );
         const data = await res.json();
         const transformed = data.map((article: any) => ({
           articleId: article.articleId,
           title: article.title,
-          brandName: "", 
+          brandName: "",
           currentPrice: article.currentPrice,
           originalPrice: article.currentPrice,
           discountRate: 0,
@@ -223,7 +228,7 @@ export default function MyPage() {
       }
     };
     loadAllLikedArticles();
-  }, []);  
+  }, []);
 
   useEffect(() => {
     const loadGifticons = async () => {
@@ -301,10 +306,13 @@ export default function MyPage() {
                     copyToClipboard={copyToClipboard}
                     connectOrUpdateWallet={connectOrUpdateWallet}
                   />
-                  <UserSidebar
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                  />
+                  {/* ✅ 이 부분만 모바일에서 숨김 */}
+                  <div className="hidden lg:block">
+                    <UserSidebar
+                      activeTab={activeTab}
+                      setActiveTab={setActiveTab}
+                    />
+                  </div>
                 </aside>
                 <div>
                   <Card className="border-none shadow-md">
@@ -372,16 +380,16 @@ export default function MyPage() {
                         </TabsContent>
 
                         <TabsContent value="favorites">
-                        <WishList
-                          allLikedArticles={allLikedArticles}
-                          setAllLikedArticles={setAllLikedArticles}
-                          currentPage={currentPage}
-                          setCurrentPage={setCurrentPage}
-                          startPage={startPage}
-                          endPage={endPage}
-                          totalPage={totalPage}
-                          setTotalPage={setTotalPage}
-                        />
+                          <WishList
+                            allLikedArticles={allLikedArticles}
+                            setAllLikedArticles={setAllLikedArticles}
+                            currentPage={currentPage}
+                            setCurrentPage={setCurrentPage}
+                            startPage={startPage}
+                            endPage={endPage}
+                            totalPage={totalPage}
+                            setTotalPage={setTotalPage}
+                          />
                         </TabsContent>
 
                         <TabsContent value="settings">
