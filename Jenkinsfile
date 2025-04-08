@@ -88,7 +88,7 @@ pipeline {
 					def mongoHost = "mongo:27017"
 
 					//Spring mongo URI도 치환
-					db["SPRING_DATA_MONGODB_URI"] = "mongodb://${mongoUser}:${mongoPass}@${mongoHost}/${mongoDbName}"
+					db["SPRING_DATA_MONGODB_URI"] = "mongodb://${mongoUser}:${mongoPass}@${mongoHost}/${mongoDbName}?authSource=admin"
 
 					//바꾼 값들을 반영한 .env 파일 생성
 					def dbContent = db.collect { k, v -> "${k}=${v}"}.join('\n')
