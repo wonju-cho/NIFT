@@ -16,6 +16,8 @@ public class GiftHistoryDto {
     private LocalDateTime createdAt;
     private String senderNickname;
     private CardDesign cardDesign;
+    private String imageUrl;
+    private String title;
 
     public static GiftHistoryDto from(GiftHistory gift, CardDesign design) {
         return GiftHistoryDto.builder()
@@ -23,6 +25,8 @@ public class GiftHistoryDto {
                 .createdAt(gift.getCreatedAt())
                 .senderNickname(gift.getFromUserId().getNickName()) // 필요에 따라 수정
                 .cardDesign(design)
+                .imageUrl(gift.getGifticon().getImageUrl())
+                .title(gift.getGifticon().getGifticonTitle())
                 .build();
     }
 
