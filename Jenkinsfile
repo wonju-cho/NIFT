@@ -1,18 +1,3 @@
-def sendMessage(String msg, String hookUrl) {
-	def payload = groovy.json.JsonOutput.toJson([text: msg])
-	writeFile file: 'payload.json', text: payload
-
-	withEnv(["HOOK_URL=${hookUrl}"])
-	{
-		sh(
-			script: '''
-				curl -X POST -H 'Content-Type: application/json' -d @payload.json \$HOOK_URL
-			''',
-			label: 'Send message'
-		)	
-	}
-}
-
 pipeline {
 	agent any
 
@@ -87,7 +72,7 @@ pipeline {
 					def isDev = (env.ENV == 'dev')
 
 					def mySQLDbName = isDev ? db.MYSQL_DEV_DATABASE : db.MYSQL_DATABASE
-					def mongoDbName = isDev ? 'nift_dev' : 'nift'
+					def mongoDbName = isDev ? 'nift_db' : 'nift'
 
 					//덮어쓰기
 					db["MYSQL_DATABASE"] = mySQLDbName
@@ -97,9 +82,13 @@ pipeline {
 					db["SPRING_DATASOURCE_URL"] = db["SPRING_DATASOURCE_URL"]
 					.replaceAll(/\/[^\/?]+\?/, "/${mySQLDbName}?")
 
+					// Mongo URI 구성: 아이디, 비번, DB명 모두 치환
+					def mongoUser = db["MONGO_INITDB_ROOT_USERNAME"]
+					def mongoPass = db["MONGO_INITDB_ROOT_PASSWORD"]
+					def mongoHost = "mongo:27017"
+
 					//Spring mongo URI도 치환
-					db["SPRING_DATA_MONGODB_URI"] = db["SPRING_DATA_MONGODB_URI"]
-					.replaceAll(/\/[^\/?]+$/, "/${mongoDbName}")
+					db["SPRING_DATA_MONGODB_URI"] = "mongodb://${mongoUser}:${mongoPass}@${mongoHost}/${mongoDbName}?authSource=admin"
 
 					//바꾼 값들을 반영한 .env 파일 생성
 					def dbContent = db.collect { k, v -> "${k}=${v}"}.join('\n')
@@ -197,6 +186,21 @@ pipeline {
 	    always {
 	        script {
 	            try {
+
+	            	def sendMessage = {String msg -> 
+	            		def payload = groovy.json.JsonOutput.toJson([text: msg])
+						writeFile file: 'payload.json', text: payload
+
+						withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
+							sh(
+								script: '''
+									curl -X POST -H 'Content-Type: application/json' -d @payload.json \$MATTERMOST_WEBHOOK
+								''',
+								label: 'Send message'
+							)
+						}
+	            	}
+					
 	                if (env.IMAGE_BUILD_SUCCESS == "true") {
 
 						def message = """
@@ -206,9 +210,7 @@ pipeline {
 						- 툴별 결과:
 						""".stripIndent()
 
-	                    withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
-		                    sendMessage(message, MATTERMOST_WEBHOOK)
-	                    }
+						sendMessage(message)
 	                    
 	                } else {
 	                    def message = """
@@ -218,13 +220,14 @@ pipeline {
 	                    - [Jenkins 로그 보기](${env.BUILD_URL})
 	                    """.stripIndent()
 	                    
-	                    withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
-		                    sendMessage(message, MATTERMOST_WEBHOOK)
-	                    }
+	                    sendMessage(message)
 	                }
 	                
 	                 // .env 파일 삭제
                 	sh 'find . -name ".env" -delete'
+                	//메시지 관련 .json 삭제
+                	sh'rm -f payload.json'
+                	
 	            } catch (e) {
 	                echo "recordIssues() 중 오류 발생: ${e}"
 	            }
