@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import {
   Dialog,
@@ -48,7 +48,7 @@ export function ArticlePurchaseDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="px-8 py-10">
         <DialogHeader>
           <DialogTitle>NFT 기프티콘 구매</DialogTitle>
           <DialogDescription>

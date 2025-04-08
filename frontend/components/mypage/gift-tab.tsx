@@ -46,7 +46,8 @@ export function GiftTab({
       </TabsList>
 
       <TabsContent value="available" className="mt-6">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Changed grid-cols-1 to grid-cols-2 for better mobile layout */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
           {availableGiftCards
             .slice(
               availableCurrentPage * ITEMS_PER_PAGE,
@@ -76,7 +77,8 @@ export function GiftTab({
       </TabsContent>
 
       <TabsContent value="used" className="mt-6">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Changed grid-cols-1 to grid-cols-2 for better mobile layout */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
           {usedGiftCards
             .slice(
               usedCurrentPage * ITEMS_PER_PAGE,
