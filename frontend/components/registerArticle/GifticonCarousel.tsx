@@ -1,8 +1,8 @@
 "use client";
+
 import Image from "next/image";
-import { Check } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { UserNFT } from "@/lib/api/web3";
 
 export function GifticonCarousel({
@@ -39,12 +39,22 @@ export function GifticonCarousel({
           </Button>
         </div>
       </div>
-      <div ref={scrollRef} className="flex overflow-x-auto gap-4 pb-4 overflow-y-visible">
+
+      <div
+        ref={scrollRef}
+        className="flex overflow-x-auto gap-4 pb-4 overflow-y-visible"
+      >
         {gifticons.map((gifticon) => (
           <div
             key={Number(gifticon.serialNum)}
-            className={`group relative z-10 cursor-pointer rounded-lg border w-[200px] h-[300px] flex flex-col justify-between p-4 flex-shrink-0 transition-all
-              ${selected === gifticon.serialNum ? "border-primary bg-primary/5" : ""}
+            className={`group relative z-10 cursor-pointer rounded-lg border 
+              flex flex-col justify-between p-3 flex-shrink-0 transition-all
+              w-[140px] h-[220px] sm:w-[180px] sm:h-[260px] md:w-[200px] md:h-[300px]
+              ${
+                selected === gifticon.serialNum
+                  ? "border-primary bg-primary/5"
+                  : ""
+              }
               ${
                 gifticon.isSelling || gifticon.isPending
                   ? "opacity-40 pointer-events-none"
@@ -52,31 +62,25 @@ export function GifticonCarousel({
               }
             `}
             onClick={() => {
-              if (gifticon.isSelling) return;
+              if (gifticon.isSelling || gifticon.isPending) return;
               onSelect(String(gifticon.serialNum));
             }}
           >
             {/* 이미지 + 상태 */}
-            <div className="relative h-[200px]">
+            <div className="relative h-[140px] sm:h-[180px] md:h-[200px]">
               <Image
                 src={gifticon.image}
                 alt={gifticon.title}
                 fill
-                sizes="(max-width: 768px) 100vw, 50vw"
+                sizes="(max-width: 768px) 40vw, 25vw"
                 className="object-cover rounded-md transition-transform group-hover:scale-105"
                 priority
+                unoptimized
               />
-              {gifticon.isSelling && (
+              {(gifticon.isSelling || gifticon.isPending) && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold uppercase tracking-wide shadow-lg z-10">
-                    판매 등록 중
-                  </div>
-                </div>
-              )}
-              {gifticon.isPending && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold uppercase tracking-wide shadow-lg z-10">
-                    선물 대기 중
+                  <div className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold shadow-lg z-10">
+                    {gifticon.isSelling ? "판매 등록 중" : "선물 대기 중"}
                   </div>
                 </div>
               )}
@@ -87,10 +91,12 @@ export function GifticonCarousel({
               )}
             </div>
 
-            {/* 텍스트 정보 (항상 아래쪽에 고정) */}
+            {/* 텍스트 정보 */}
             <div className="mt-2">
-              <h3 className="text-sm font-medium truncate">{gifticon.title}</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="text-xs sm:text-sm font-medium truncate">
+                {gifticon.title}
+              </h3>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
                 유효기간: {gifticon.expiryDate}
               </p>
             </div>

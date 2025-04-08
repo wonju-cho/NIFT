@@ -8,6 +8,7 @@ import { useCallback } from "react";
 interface GiftCardProps {
   expiryDays: string;
   card: UserNFT;
+  // onGifticonUsed?: (serialNum: number) => void;
 }
 
 export function GiftCard({ expiryDays, card }: GiftCardProps) {
