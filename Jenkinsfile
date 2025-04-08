@@ -72,7 +72,7 @@ pipeline {
 					def isDev = (env.ENV == 'dev')
 
 					def mySQLDbName = isDev ? db.MYSQL_DEV_DATABASE : db.MYSQL_DATABASE
-					def mongoDbName = isDev ? 'nift_dev' : 'nift'
+					def mongoDbName = isDev ? 'nift_db' : 'nift'
 
 					//덮어쓰기
 					db["MYSQL_DATABASE"] = mySQLDbName
@@ -82,9 +82,13 @@ pipeline {
 					db["SPRING_DATASOURCE_URL"] = db["SPRING_DATASOURCE_URL"]
 					.replaceAll(/\/[^\/?]+\?/, "/${mySQLDbName}?")
 
+					// Mongo URI 구성: 아이디, 비번, DB명 모두 치환
+					def mongoUser = db["MONGO_INITDB_ROOT_USERNAME"]
+					def mongoPass = db["MONGO_INITDB_ROOT_PASSWORD"]
+					def mongoHost = "mongo:27017"
+
 					//Spring mongo URI도 치환
-					db["SPRING_DATA_MONGODB_URI"] = db["SPRING_DATA_MONGODB_URI"]
-					.replaceAll(/\/[^\/?]+$/, "/${mongoDbName}")
+					db["SPRING_DATA_MONGODB_URI"] = "mongodb://${mongoUser}:${mongoPass}@${mongoHost}/${mongoDbName}"
 
 					//바꾼 값들을 반영한 .env 파일 생성
 					def dbContent = db.collect { k, v -> "${k}=${v}"}.join('\n')
