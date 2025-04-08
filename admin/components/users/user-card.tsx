@@ -1,14 +1,22 @@
+"use client";
+
 import NextImage from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Wallet, User } from "lucide-react"
 import type { User as UserType } from "@/lib/users"
+import { useState } from "react"
 
 interface UserCardProps {
   user: UserType
 }
 
 export default function UserCard({ user }: UserCardProps) {
+  const [imgError, setImgError] = useState(false)
+  const profileSrc = !user.profileImage || imgError
+    ? "/unknown.jpg"
+    : user.profileImage
+
   // 상태에 따른 배지 스타일 설정
   const getStatusBadge = (role: number) => {
     switch (role) {
@@ -27,7 +35,7 @@ export default function UserCard({ user }: UserCardProps) {
     <Card className="overflow-hidden transition-shadow hover:shadow-md">
       <div className="relative h-48 bg-gray-100">
       <NextImage
-        src={user.profileImage || "/placeholder.svg?height=200&width=200"}
+        src={profileSrc}
         alt={user.nickName}
         fill
         sizes="(max-width: 768px) 100vw, 33vw"
