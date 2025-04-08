@@ -37,11 +37,13 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   const isGiftCardMobile = useGiftCardMobile()
   const itemsPerPage = 8 // 페이지당 아이템 수 감소
   const [giftTab, setGiftTab] = useState("pending")
+  const [pendingGifts, setPendingGifts] = useState<GiftMemory[]>([])
   const [acceptedMemories, setAcceptedMemories] = useState<GiftMemory[]>([])
   const [acceptedTotalPages, setAcceptedTotalPages] = useState(1)
   const [acceptedPage, setAcceptedPage] = useState(0)
   const [isCardFlipped, setIsCardFlipped] = useState(false) // 카드 뒤집기 상태 추가
   const [acceptedGiftCount, setAcceptedGiftCount] = useState<number | null>(null); // 받은 선물 총 개수 상태 추가
+  
 
   async function fetchGifts() {
     const result = await getGift(user.kakaoId)
@@ -268,10 +270,9 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   }
 
   // Create separate arrays for accepted and pending gifts
-  const [pendingGifts] = useMemo(() => {
-    const accepted = memories.filter((gift) => gift.isAccepted)
-    const pending = memories.filter((gift) => !gift.isAccepted)
-    return [accepted, pending]
+  useEffect(() => {
+    setPendingGifts(memories.filter((gift) => !gift.isAccepted))
+    setAcceptedMemories(memories.filter((gift) => gift.isAccepted))
   }, [memories])
 
   const handleReceive = async (gift: UserNFT) => {
@@ -400,14 +401,14 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
           받을 수 있는 선물 ({pendingGifts.length})
         </TabsTrigger>
         <TabsTrigger value="accepted" className="flex-1">
-          받은 선물 ({acceptedGiftCount !== null ? acceptedGiftCount : '...'})
+          받은 선물 ({acceptedMemories.length})
         </TabsTrigger>
       </TabsList>
 
       {/* Pending Gifts */}
       <TabsContent value="pending">
         {pendingGifts.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
             {pendingGifts.map((gift) => (
               <Dialog key={gift.id}>
                 <DialogTrigger asChild>

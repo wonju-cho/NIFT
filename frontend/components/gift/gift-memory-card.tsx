@@ -91,30 +91,29 @@ export function GiftMemoryCard({
           />
         </div>
       ) : (
-        <div className="w-full h-full bg-blue-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="flex justify-center mb-2">
-              <Image
-                src="/placeholder.svg?height=80&width=80&text=🎁"
-                alt="Gift box"
-                width={80}
-                height={80}
-              />
-            </div>
-            {onAccept && (
-              <Button
-                size="sm"
-                className="mt-2"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onAccept()
-                }}
-              >
-                선물 수락하기
-              </Button>
-            )}
-          </div>
-        </div>
+        <div className="relative w-full h-full overflow-hidden">
+  <Image
+    src="/gift-box.png"
+    alt="Gift box"
+    fill
+    className="object-contain md:object-cover object-center"  // object-contain → object-cover 로 변경
+  />
+  <div className="absolute inset-0 flex items-center justify-center">
+    <div className="text-center">
+      {onAccept && (
+        <Button
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onAccept();
+          }}
+        >
+          선물 수락하기
+        </Button>
+      )}
+    </div>
+  </div>
+</div>
       )}
 
       {isAccepted && showFlipHint && !isFlipped && (
@@ -165,7 +164,7 @@ function CardFace({
             src={background}
             alt="card-bg"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             style={{ zIndex: 0 }}
           />
         ) : (
