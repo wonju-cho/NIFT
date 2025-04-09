@@ -135,6 +135,10 @@ public class ArticleServiceImpl implements ArticleService {
                 .orElseThrow(() -> new RuntimeException("상품이 조회되지 않습니다."));
 
         Gifticon gifticon = article.getGifticon();
+
+        article.setViewCnt(article.getViewCnt()+1);
+        articleRepository.save(article);
+
         boolean isLiked = false;
         if (userId != null) {
             isLiked = likeRepository.existsByArticle_ArticleIdAndUser_UserId(articleId, userId);
