@@ -73,6 +73,7 @@ export default function MyPage() {
   const [totalPage, setTotalPage] = useState(1);
   const [availableGiftCards, setAvailableGiftCards] = useState<any[]>([]);
   const [usedGiftCards, setUsedGiftCards] = useState<any[]>([]);
+  const [calculatedCards, setCalculatedCards] = useState<any[]>([]);
   const [availableCurrentPage, setAvailableCurrentPage] = useState(0);
   const [usedCurrentPage, setUsedCurrentPage] = useState(0);
   const [activeTab, setActiveTab] = useState("gifticons");
@@ -282,11 +283,11 @@ export default function MyPage() {
     setAvailableGiftCards((prev) =>
       prev.filter((item) => Number(item.serialNum) !== Number(serialNum))
     );
-    const usedGift = availableGiftCards.find(
+    const calculatedCards = availableGiftCards.find(
       (item) => Number(item.serialNum) === Number(serialNum)
     );
-    if (usedGift) {
-      setUsedGiftCards((prev) => [...prev, { ...usedGift, redeemed: true }]);
+    if (calculatedCards) {
+      setUsedGiftCards((prev) => [...prev, { ...calculatedCards, redeemed: true }]);
     }
   };
 
@@ -345,12 +346,12 @@ export default function MyPage() {
                             <p className="mb-6 text-sm text-muted-foreground">
                               {giftCardTab === "available"
                                 ? `사용 가능한 선물이 ${availableGiftCards.length}개 있어요.`
-                                : `사용 완료된 선물이 ${usedGiftCards.length}개 있어요.`}
+                                : `사용 완료된 선물이 ${calculatedCards.length}개 있어요.`}
                             </p>
                           </div>
                           <GiftTab
                             availableGiftCards={availableGiftCards}
-                            usedGiftCards={usedGiftCards}
+                            calculatedCards={calculatedCards}
                             ITEMS_PER_PAGE={ITEMS_PER_PAGE}
                             availableCurrentPage={availableCurrentPage}
                             setAvailableCurrentPage={setAvailableCurrentPage}

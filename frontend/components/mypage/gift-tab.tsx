@@ -5,7 +5,7 @@ import { UserNFT } from "@/lib/api/web3";
 
 interface GiftTabProps {
   availableGiftCards: any[];
-  usedGiftCards: any[];
+  calculatedCards: any[];
   ITEMS_PER_PAGE: number;
   availableCurrentPage: number;
   setAvailableCurrentPage: (page: number) => void;
@@ -19,7 +19,7 @@ interface GiftTabProps {
 
 export function GiftTab({
   availableGiftCards,
-  usedGiftCards,
+  calculatedCards,
   ITEMS_PER_PAGE,
   availableCurrentPage,
   setAvailableCurrentPage,
@@ -32,7 +32,7 @@ export function GiftTab({
 }: GiftTabProps) {
   const availableTotalPage =
     Math.ceil(availableGiftCards.length / ITEMS_PER_PAGE) || 1;
-  const usedTotalPage = Math.ceil(usedGiftCards.length / ITEMS_PER_PAGE) || 1;
+  const usedTotalPage = Math.ceil(calculatedCards.length / ITEMS_PER_PAGE) || 1;
 
   return (
     <Tabs value={giftCardTab} onValueChange={setGiftCardTab}>
@@ -41,7 +41,7 @@ export function GiftTab({
           사용 가능 {availableGiftCards.length}
         </TabsTrigger>
         <TabsTrigger value="used" className="flex-1">
-          사용 완료 {usedGiftCards.length}
+          정산 완료 {calculatedCards.length}
         </TabsTrigger>
       </TabsList>
 
@@ -79,7 +79,7 @@ export function GiftTab({
       <TabsContent value="used" className="mt-6">
         {/* Changed grid-cols-1 to grid-cols-2 for better mobile layout */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
-          {usedGiftCards
+          {calculatedCards
             .slice(
               usedCurrentPage * ITEMS_PER_PAGE,
               (usedCurrentPage + 1) * ITEMS_PER_PAGE
@@ -93,7 +93,7 @@ export function GiftTab({
             ))}
         </div>
 
-        {usedGiftCards.length === 0 ? (
+        {calculatedCards.length === 0 ? (
           <div className="mt-8 mb-12 text-center text-muted-foreground">
             사용 완료된 선물이 없습니다.
           </div>
