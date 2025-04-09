@@ -76,5 +76,12 @@ public class GiftController {
         return ResponseEntity.ok(cardDesign);
     }
 
+    @GetMapping("/sender")
+    @Operation(summary = "선물 보낸 사람 조회", description = "serialNumber로 송신자 닉네임 조회")
+    public ResponseEntity<String> getSenderBySerialNum(@RequestParam Long serialNum) {
+        String userNickname = giftHistoryService.getSenderNicknameBySerialNum(serialNum);
+        return ResponseEntity.ok(userNickname);
+
+    }
 
 }

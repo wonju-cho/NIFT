@@ -168,6 +168,14 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
         return cardDesign;
     }
 
+    @Override
+    public String getSenderNicknameBySerialNum(Long serialNum) {
+        GiftHistory giftHistory = giftHistoryRepository.findBySerialNum(serialNum)
+                .orElseThrow(() -> new IllegalArgumentException("해당 serialNum의 선물 기록이 존재하지 않습니다."));
+
+        return giftHistory.getFromUserId().getNickName();
+    }
+
 
     private void giftFromArticle(Long senderId, SendGiftDto request, GifticonNFT.GiftPendingEventResponse giftPendingEventResponse) {
         Article article = transactionService.getArticle(giftPendingEventResponse.serialNumber);
