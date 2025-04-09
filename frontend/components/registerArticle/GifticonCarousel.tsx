@@ -18,6 +18,9 @@ export function GifticonCarousel({
   scrollRef: React.RefObject<HTMLDivElement>;
   onScroll: (dir: "left" | "right") => void;
 }) {
+  // Filter out redeemed gifticons before rendering
+  const availableGifticons = gifticons.filter((gifticon) => !gifticon.redeemed);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -44,7 +47,8 @@ export function GifticonCarousel({
         ref={scrollRef}
         className="flex overflow-x-auto gap-4 pb-4 overflow-y-visible"
       >
-        {gifticons.map((gifticon) => (
+        {/* Map over the filtered list */}
+        {availableGifticons.map((gifticon) => (
           <div
             key={Number(gifticon.serialNum)}
             className={`group relative z-10 cursor-pointer rounded-lg border 
@@ -56,13 +60,15 @@ export function GifticonCarousel({
                   : ""
               }
               ${
-                gifticon.isSelling || gifticon.isPending
-                  ? "opacity-40 pointer-events-none"
+                gifticon.isSelling || gifticon.isPending || gifticon.redeemed // Add redeemed check
+                  ? "opacity-40 pointer-events-none" // Apply disabled style if selling, pending, OR redeemed
                   : "hover:border-gray-400 hover:shadow-md"
               }
             `}
             onClick={() => {
-              if (gifticon.isSelling || gifticon.isPending) return;
+              // Prevent selection if selling, pending, OR redeemed
+              if (gifticon.isSelling || gifticon.isPending || gifticon.redeemed)
+                return;
               onSelect(String(gifticon.serialNum));
             }}
           >
@@ -77,18 +83,33 @@ export function GifticonCarousel({
                 priority
                 unoptimized
               />
-              {(gifticon.isSelling || gifticon.isPending) && (
+              {/* Status Badges */}
+              {(gifticon.isSelling ||
+                gifticon.isPending ||
+                gifticon.redeemed) && ( // Show badge if selling, pending, OR redeemed
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold shadow-lg z-10">
-                    {gifticon.isSelling ? "판매 등록 중" : "선물 대기 중"}
+                  <div
+                    className={`px-3 py-1 rounded-full text-white text-xs font-semibold shadow-lg z-10 ${
+                      gifticon.redeemed ? "bg-gray-500" : "bg-red-500" // Different color for redeemed
+                    }`}
+                  >
+                    {gifticon.redeemed
+                      ? "사용 완료"
+                      : gifticon.isSelling
+                      ? "판매 등록 중"
+                      : "선물 대기 중"}
                   </div>
                 </div>
               )}
-              {selected === gifticon.serialNum && (
-                <div className="absolute right-2 top-2 rounded-full bg-primary text-white h-6 w-6 flex items-center justify-center">
-                  <Check className="h-4 w-4" />
-                </div>
-              )}
+              {/* Selection Checkmark */}
+              {selected === gifticon.serialNum &&
+                !gifticon.redeemed &&
+                !gifticon.isSelling &&
+                !gifticon.isPending && ( // Only show checkmark if selectable and selected
+                  <div className="absolute right-2 top-2 rounded-full bg-primary text-white h-6 w-6 flex items-center justify-center">
+                    <Check className="h-4 w-4" />
+                  </div>
+                )}
             </div>
 
             {/* 텍스트 정보 */}
