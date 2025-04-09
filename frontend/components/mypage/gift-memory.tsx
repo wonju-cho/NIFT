@@ -78,16 +78,20 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   }
 
   useEffect(() => {
-    fetchGifts()
-    fetchReceivedGifts(0, 1)
-      .then((res) => {
-        setAcceptedGiftCount(res.totalElements ?? 0)
-      })
-      .catch(() => {
-        console.error("받은 선물 총 개수를 불러오는 데 실패했습니다.")
-        setAcceptedGiftCount(0)
-      })
-  }, [user.kakaoId])
+    if (giftTab === "accepted") {
+      fetchReceivedGifts(acceptedPage, itemsPerPage)
+        .then((res) => {
+          const transformed = transformReceivedGiftResponse(res.content)
+          setAcceptedMemories(transformed)
+          setAcceptedTotalPages(res.totalPages)
+          setAcceptedGiftCount(res.totalElements ?? 0)
+        })
+        .catch(() => {
+          alert("받은 선물을 불러오는 데 실패했습니다.")
+        })
+    }
+  }, [giftTab, acceptedPage])
+  
 
   // ----------------------------------------------------------------
   // 3. 보낸 사람 정보를 업데이트하는 useEffect (캐싱 적용 및 단순 문자열도 처리)
@@ -213,6 +217,20 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
     }
   }
 
+  // 초기 받은 선물 개수 확인
+  useEffect(() => {
+    // 페이지 처음 로드 시 받은 선물 개수만 먼저 가져오기
+    fetchReceivedGifts(0, 1) // 1개만 받아도 totalElements 정보는 포함됨
+      .then((res) => {
+        setAcceptedGiftCount(res.totalElements ?? 0)
+      })
+      .catch(() => {
+        console.warn("초기 받은 선물 개수 로드 실패")
+        setAcceptedGiftCount(0) // 실패 시 기본값이라도 설정
+      })
+  }, []) // ⬅ 초기 1회 실행
+  
+
   function transformReceivedGiftResponse(apiData: ReceivedGiftApiResponse[]): GiftMemory[] {
     return apiData.map((item) => {
       const card = item.cardDesign
@@ -337,7 +355,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
           받을 수 있는 선물 ({pendingGifts.length})
         </TabsTrigger>
         <TabsTrigger value="accepted" className="flex-1">
-          받은 선물 ({acceptedMemories.length})
+          받은 선물 ({acceptedGiftCount})
         </TabsTrigger>
       </TabsList>
 
