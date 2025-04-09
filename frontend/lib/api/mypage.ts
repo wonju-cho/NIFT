@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import { apiClient } from "./CustomAxios";
+import { getUserNFTsAsJson } from './web3'
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 

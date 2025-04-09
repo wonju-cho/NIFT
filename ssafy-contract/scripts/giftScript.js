@@ -2,7 +2,7 @@ require("dotenv").config();
 const { ethers } = require("hardhat");
 
 async function main() {
-  const contractAddress = "0xa2BE7bc2bD6136ffd60684bdd88D015000A1c402"; // 컨트랙트 주소
+  const contractAddress = "0xB234356aE671F22D2bd0E23D843f02D61890b531"; // 컨트랙트 주소
   const userAAddress = "0x4ED78E0a67c2F984D4985D490aAA5bC36340263F"; // 사용자 A
   const userBAddress = "0xe911090F1ca13EE23f3C1eE964c5d4e323987e9f"; // 사용자 B
 
