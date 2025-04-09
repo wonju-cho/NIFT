@@ -78,6 +78,18 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   }
 
   useEffect(() => {
+    fetchGifts()
+    fetchReceivedGifts(0, 1)
+      .then((res) => {
+        setAcceptedGiftCount(res.totalElements ?? 0)
+      })
+      .catch(() => {
+        console.error("받은 선물 총 개수를 불러오는 데 실패했습니다.")
+        setAcceptedGiftCount(0)
+      })
+  }, [user.kakaoId])
+
+  useEffect(() => {
     if (giftTab === "accepted") {
       fetchReceivedGifts(acceptedPage, itemsPerPage)
         .then((res) => {
