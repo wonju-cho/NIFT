@@ -92,28 +92,29 @@ export function GiftMemoryCard({
         </div>
       ) : (
         <div className="relative w-full h-full overflow-hidden">
-  <Image
-    src="/gift-box.png"
-    alt="Gift box"
-    fill
-    style={{ objectFit: 'cover', objectPosition: 'center center' }} // Explicitly center the image
-  />
-  <div className="absolute inset-0 flex items-center justify-center">
-    <div className="text-center">
-      {onAccept && (
-        <Button
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAccept();
-          }}
-        >
-          선물 수락하기
-        </Button>
-      )}
-    </div>
-  </div>
-</div>
+        <Image
+          src="/gift-box.png"
+          alt="Gift box"
+          fill
+          className="object-cover" // object-contain → object-cover 로 변경
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            {onAccept && (
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAccept();
+                }}
+              >
+                선물 수락하기
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+      
       )}
 
       {isAccepted && showFlipHint && !isFlipped && (
