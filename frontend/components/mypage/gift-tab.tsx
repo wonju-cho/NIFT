@@ -78,10 +78,10 @@ export function GiftTab({
                 .filter(card => !card.isPending && !card.isSelling)
                 .sort((a, b) => Number(b.id) - Number(a.id)),
             ...availableGiftCards
-                .filter(card => card.isPending && !card.isSelling)
+                .filter(card => !card.isPending && card.isSelling)
                 .sort((a, b) => Number(b.id) - Number(a.id)),
             ...availableGiftCards
-                .filter(card => !card.isPending && card.isSelling)
+                .filter(card => card.isPending && !card.isSelling)
                 .sort((a, b) => Number(b.id) - Number(a.id)),
           ];
 
