@@ -352,8 +352,10 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                           <Button variant="secondary" className="font-medium">선물 받기</Button>
                         </div>
                       </div>
-                      <div className="p-4 flex justify-between items-center">
-                        <div className="text-sm font-medium">from. {gift.senderNickname}</div>
+                      <div className="p-4">
+                        <div className="text-sm font-medium">
+                          from. {gift.senderNickname}
+                        </div>
                         <div className="text-xs text-gray-500">
                           {format(new Date(gift.sentDate), "yyyy.MM.dd a hh:mm", { locale: ko })}
                         </div>
