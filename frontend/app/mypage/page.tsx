@@ -24,10 +24,10 @@ import {
   updateUserNickname,
   updateWallet,
   fetchLikedArticles,
+  fetchUsedGifticons
 } from "@/lib/api/mypage";
 import type { ArticleCardProps } from "@/components/article/article-card";
 import { Gift, Clock, Package, Heart, Settings } from "lucide-react";
-// import { GiftMemories } from "@/components/mypage/gift-memories";
 import { GiftMemories } from "@/components/mypage/gift-memory";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -47,6 +47,7 @@ export interface User {
   walletAddress: string;
   balance: number;
   kakaoId: string;
+  role: number;
 }
 
 export default function MyPage() {
@@ -58,6 +59,7 @@ export default function MyPage() {
     walletAddress: "",
     balance: 0,
     kakaoId: "",
+    role: 0
   });
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [nickname, setNickname] = useState("");
@@ -70,11 +72,13 @@ export default function MyPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPage, setTotalPage] = useState(1);
   const [availableGiftCards, setAvailableGiftCards] = useState<any[]>([]);
-  const [usedGiftCards, setUsedGiftCards] = useState<any[]>([]);
+  const [calculatedCards, setCalculatedCards] = useState<any[]>([]);
   const [availableCurrentPage, setAvailableCurrentPage] = useState(0);
-  const [usedCurrentPage, setUsedCurrentPage] = useState(0);
+  const [calculatedCurrentPage, setCalculatedCurrentPage] = useState(0);
   const [activeTab, setActiveTab] = useState("gifticons");
   const [giftCardTab, setGiftCardTab] = useState("available");
+  const [usedGiftCards, setUsedGiftCards] = useState<any[]>([]);
+const [usedCurrentPage, setUsedCurrentPage] = useState(0)
 
   const calculateDday = (expiry: string): number => {
     const today = new Date();
@@ -174,10 +178,12 @@ export default function MyPage() {
           walletAddress: data.walletAddress,
           balance: data.balance || 0,
           kakaoId: data.kakaoId,
+          role: data.role || 0
         });
         setNickname(data.nickname);
         setWalletAddress(data.walletAddress || null);
         setAccessToken(token);
+        // console.log("사용자 정보 : ", data.role)
       } catch (error) {
         console.error("유저 정보 불러오기 실패:", error);
       }
@@ -237,16 +243,16 @@ export default function MyPage() {
         const nfts = await getUserNFTsAsJson(user.walletAddress);
         const now = new Date();
         const available: any[] = [];
-        const used: any[] = [];
+        const calculated: any[] = [];
 
         for (const nft of nfts) {
           const expiry = new Date(Number(nft.expirationDate) * 1000);
-          if (nft.redeemed || expiry.getTime() < now.getTime()) used.push(nft);
+          if (nft.redeemed || expiry.getTime() < now.getTime()) calculated.push(nft);
           else available.push(nft);
         }
 
         setAvailableGiftCards(available);
-        setUsedGiftCards(used);
+        setCalculatedCards(calculated);
       } catch (err) {
         console.error("NIFT 불러오기 실패", err);
       }
@@ -274,17 +280,32 @@ export default function MyPage() {
     { icon: Settings, label: "설정", value: "settings" },
   ];
 
-  const handleGifticonUsed = (serialNum: number) => {
+  const handleGifticonCalculated = (serialNum: number) => {
     setAvailableGiftCards((prev) =>
       prev.filter((item) => Number(item.serialNum) !== Number(serialNum))
     );
-    const usedGift = availableGiftCards.find(
+    const calculatedCards = availableGiftCards.find(
       (item) => Number(item.serialNum) === Number(serialNum)
     );
-    if (usedGift) {
-      setUsedGiftCards((prev) => [...prev, { ...usedGift, redeemed: true }]);
+    if (calculatedCards) {
+      setCalculatedCards((prev) => [...prev, { ...calculatedCards, redeemed: true }]);
     }
   };
+
+  useEffect(() => {
+    const fetchUsedGifts = async () => {
+      try {
+        const data = await fetchUsedGifticons(0, 6); // 필요에 따라 size 조정
+        setUsedGiftCards(data.content || []);
+      } catch (err) {
+        console.error("사용 완료 선물 불러오기 실패:", err);
+      }
+    };
+  
+    if (accessToken) {
+      fetchUsedGifts();
+    }
+  }, [accessToken]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -341,21 +362,25 @@ export default function MyPage() {
                             <p className="mb-6 text-sm text-muted-foreground">
                               {giftCardTab === "available"
                                 ? `사용 가능한 선물이 ${availableGiftCards.length}개 있어요.`
-                                : `사용 완료된 선물이 ${usedGiftCards.length}개 있어요.`}
+                                : `사용 완료된 선물이 ${calculatedCards.length}개 있어요.`}
                             </p>
                           </div>
                           <GiftTab
+                            userRole={user.role}
                             availableGiftCards={availableGiftCards}
                             usedGiftCards={usedGiftCards}
+                            calculatedCards={calculatedCards}
                             ITEMS_PER_PAGE={ITEMS_PER_PAGE}
                             availableCurrentPage={availableCurrentPage}
                             setAvailableCurrentPage={setAvailableCurrentPage}
                             usedCurrentPage={usedCurrentPage}
                             setUsedCurrentPage={setUsedCurrentPage}
+                            calculatedCurrentPage={calculatedCurrentPage}
+                            setCalculatedCurrentPage={setCalculatedCurrentPage}
                             calculateDday={calculateDday}
                             giftCardTab={giftCardTab}
                             setGiftCardTab={setGiftCardTab}
-                            onGifticonUsed={handleGifticonUsed}
+                            onGifticonCalculated={handleGifticonCalculated}
                           />
                         </TabsContent>
 

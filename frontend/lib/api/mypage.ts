@@ -131,3 +131,21 @@ export async function fetchReceivedGifts(page = 0, size = 8) {
 
   return await response.json()
 }
+
+export async function fetchUsedGifticons(page = 0, size = 8) {
+  const token = localStorage.getItem("access_token");
+  const url = `${BASE_URL}/users/gifticons/used?page=${page}&size=${size}&sort=createdAt`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("사용한 기프티콘 불러오기 실패");
+  }
+
+  return await response.json();
+}
