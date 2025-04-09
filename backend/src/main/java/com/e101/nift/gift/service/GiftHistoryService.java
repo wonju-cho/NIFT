@@ -20,4 +20,5 @@ public interface GiftHistoryService {
     void receivedGiftHistory(Long receiver, ReceivedGiftDto receivedGiftDto);
     Page<GiftHistoryDto> getAcceptedGifts(Long toUserId, Pageable pageable);
     CardDesign findCardDesignBySerialNumber(Long serialNumber);
+    String getSenderNicknameBySerialNum(Long serialNum);
 }
