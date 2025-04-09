@@ -81,13 +81,9 @@ export default function NiftDetailPage() {
               "Failed to mark gifticon as used in backend DB:",
               markUsedResponse.error
             );
-            // Decide if you want to alert the user about the DB update failure
             alert(
               "사용 처리 중 일부 과정에 오류가 발생했습니다. 관리자에게 문의하세요."
             );
-            // Optionally, still update the UI based on blockchain success?
-            // const updated = await getNFTDetailInfo(BigInt(serialNum));
-            // setNiftDetails(updated);
           }
         } else {
           alert("사용에 실패했습니다.");
