@@ -142,7 +142,7 @@ public class ArticleServiceImpl implements ArticleService {
 
         User user = userRepository.findByUserId(article.getUserId())
                 .orElseThrow(() -> new RuntimeException("판매자 정보가 조회되지 않습니다."));
-        Integer sellerTxs = articleRepository.countByUserId(userId);
+        Long sellerTxs = articleRepository.countByUserId(article.getUserId());
 
         return new ArticleDetailDto(
                 article.getArticleId(),
