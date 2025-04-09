@@ -11,6 +11,14 @@ interface GiftCardProps {
   // onGifticonUsed?: (serialNum: number) => void;
 }
 
+interface UsedGifticon {
+  usedHistoryId: number;
+  brandName: string;
+  title: string;
+  usedAt: string;
+  imageUrl: string;
+}
+
 export function GiftCard({ expiryDays, card }: GiftCardProps) {
   const router = useRouter();
 
@@ -84,6 +92,40 @@ export function GiftCard({ expiryDays, card }: GiftCardProps) {
         )}
       </div>
       {/* Removed buttons and QR scanner logic */}
+    </div>
+  );
+}
+
+interface UsedGiftCardProps {
+  gifticon: UsedGifticon;
+}
+
+export function UsedGiftCard({ gifticon }: UsedGiftCardProps) {
+  return (
+    <div className="group block relative overflow-hidden rounded-lg border bg-white transition-all hover:shadow-md cursor-default">
+      <div className="relative aspect-square overflow-hidden">
+        <Image
+          src={gifticon.imageUrl || "/placeholder.svg"}
+          alt={gifticon.title}
+          fill
+          className="object-cover transition-transform group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+        <div className="absolute inset-0 bg-black/30" />
+        <div
+          className="absolute left-2 top-2 rounded px-2 py-1 text-xs text-white font-medium"
+          style={{ backgroundColor: "#dd5851" }}
+        >
+          사용 완료
+        </div>
+      </div>
+      <div className="p-3">
+        <div className="text-xs text-gray-500">{gifticon.brandName}</div>
+        <h3 className="line-clamp-2 text-sm font-medium">{gifticon.title}</h3>
+        <div className="mt-2 text-xs text-gray-500">
+          사용일: {new Date(gifticon.usedAt).toLocaleDateString()}
+        </div>
+      </div>
     </div>
   );
 }
