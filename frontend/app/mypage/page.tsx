@@ -47,6 +47,7 @@ export interface User {
   walletAddress: string;
   balance: number;
   kakaoId: string;
+  role: number;
 }
 
 export default function MyPage() {
@@ -58,6 +59,7 @@ export default function MyPage() {
     walletAddress: "",
     balance: 0,
     kakaoId: "",
+    role: 0
   });
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [nickname, setNickname] = useState("");
@@ -174,10 +176,12 @@ export default function MyPage() {
           walletAddress: data.walletAddress,
           balance: data.balance || 0,
           kakaoId: data.kakaoId,
+          role: data.role || 0
         });
         setNickname(data.nickname);
         setWalletAddress(data.walletAddress || null);
         setAccessToken(token);
+        // console.log("사용자 정보 : ", data.role)
       } catch (error) {
         console.error("유저 정보 불러오기 실패:", error);
       }
