@@ -14,6 +14,7 @@ import { AlertCircle, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type ArticlePurchaseDialogProps = {
   articleTitle: string;
@@ -40,6 +41,8 @@ export function ArticlePurchaseDialog({
   onBuy,
   onClose,
 }: ArticlePurchaseDialogProps) {
+  const router = useRouter();
+
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogTrigger asChild>
@@ -69,13 +72,13 @@ export function ArticlePurchaseDialog({
             <div className="flex justify-between mb-2">
               <span className="text-sm text-muted-foreground">가격</span>
               <span className="font-medium">
-                {(articlePrice * amount).toLocaleString()}원
+                🪙 {(articlePrice * amount).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between pt-2 border-t">
               <span className="font-medium">총 결제금액</span>
               <span className="text-lg font-bold text-primary">
-                {(articlePrice * amount).toLocaleString()}원
+                🪙 {(articlePrice * amount).toLocaleString()}
               </span>
             </div>
           </div>
@@ -104,8 +107,14 @@ export function ArticlePurchaseDialog({
             취소
           </Button>
           <Button
-            onClick={() => onBuy(serialNum)}
-            disabled={loading || purchaseStatus === "success"}
+            onClick={() => {
+              if (purchaseStatus === "success"){
+                router.push("/articles");
+              } else {
+                onBuy(serialNum);
+              }
+            }}
+            disabled={loading}
           >
             {loading ? (
               <>
