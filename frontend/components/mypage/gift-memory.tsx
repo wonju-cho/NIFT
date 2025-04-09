@@ -162,6 +162,11 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
         )
       )
       alert("선물 받기가 완료 되었습니다")
+      const data = {
+        txHash: response.txHash,
+      };
+      await apiClient.post("/gift-histories/received", data);
+
       setGiftTab("accepted")
       fetchReceivedGifts(0, itemsPerPage)
         .then((res) => {
