@@ -116,34 +116,40 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
     }
   };
 
-  // 유저 지갑 주소 확인 함수 (수정됨)
   async function checkWalletValidation(): Promise<
-    | "ok"
-    | "login"
-    | "no-wallet"
-    | "no-metamask"
-    | "no-account"
-    | "mismatch"
-    | "error"
+    "ok" | "login" | "no-metamask" | "no-account" | "mismatch" | "error"
   > {
     const token = localStorage.getItem("access_token");
     if (!token) return "login";
 
-    if (!article?.walletAddress) return "no-wallet";
-
     if (!window.ethereum) return "no-metamask";
 
     try {
-      const accounts = await window.ethereum.request({
-        method: "eth_accounts", // 연결 요청 없이 현재 연결 상태만 확인
-      });
-
+      // 1. 메타마스크 연결된 계정 가져오기
+      let accounts = await window.ethereum.request({ method: "eth_accounts" });
+      if (!accounts || accounts.length === 0) {
+        accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+      }
       if (!accounts || accounts.length === 0) return "no-account";
 
       const metamaskAddress = accounts[0].toLowerCase();
-      const dbAddress = article.walletAddress.toLowerCase();
 
-      if (metamaskAddress !== dbAddress) return "mismatch";
+      // 2. 내 유저 정보에서 walletAddress 가져오기
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("유저 정보 조회 실패");
+
+      const me = await res.json();
+      const myWalletAddress = me.walletAddress?.toLowerCase();
+
+      if (!myWalletAddress) return "mismatch"; // 유저 정보엔 지갑 주소 없는데 메타마스크 연결돼 있음
+
+      // 3. 메타마스크와 DB 지갑 주소 비교
+      if (metamaskAddress !== myWalletAddress) return "mismatch";
 
       return "ok";
     } catch (err) {
@@ -160,19 +166,8 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         alert("로그인이 필요합니다.");
         router.push("/signin");
         break;
-      case "no-wallet":
-        if (
-          window.confirm(
-            "지갑이 연결되어 있지 않습니다. 연결 페이지로 이동할까요?"
-          )
-        ) {
-          router.push("/mypage");
-        }
-        break;
       case "no-metamask":
-        alert(
-          "메타마스크가 설치되어 있지 않습니다. 설치 후 다시 시도해주세요."
-        );
+        alert("메타마스크가 설치되어 있지 않습니다.");
         break;
       case "no-account":
         alert("메타마스크 계정이 연결되어 있지 않습니다.");
@@ -184,7 +179,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         router.push("/mypage");
         break;
       case "error":
-        alert("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        alert("알 수 없는 오류가 발생했습니다.");
         break;
       case "ok":
         onSuccess();
@@ -309,7 +304,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                       <Button
                         className="h-12 w-full px-[16px]"
                         size="lg"
-                        onClick={handleClickBuy} // 이렇게만!
+                        onClick={handleClickBuy}
                       >
                         <ShoppingCart className="mr-1 h-4 w-4" />
                         구매하기
@@ -371,7 +366,6 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
               </TabsContent>
             </Tabs>
           </div>
-
         </div>
         {/* <ArticleSimilarList /> */}
         <PopularArticles />

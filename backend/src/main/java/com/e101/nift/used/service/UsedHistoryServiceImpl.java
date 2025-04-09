@@ -38,7 +38,13 @@ public class UsedHistoryServiceImpl implements UsedHistoryService {
 
         return usedHistoryRepository.findByUserId(user, pageable).map(history -> {
             Gifticon g = history.getGifticon();
-            return UsedHistoryDto.builder().brandName(g.getBrand().getBrandName()).title(g.getGifticonTitle()).imageUrl(g.getImageUrl()).usedAt(history.getCreatedAt()).build();
+            return UsedHistoryDto.builder()
+                    .usedHistoryId(history.getUsedHistoryId())
+                    .brandName(g.getBrand().getBrandName())
+                    .title(g.getGifticonTitle())
+                    .imageUrl(g.getImageUrl())
+                    .usedAt(history.getCreatedAt())
+                    .build();
         });
     }
 

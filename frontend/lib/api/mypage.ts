@@ -133,30 +133,20 @@ export async function fetchReceivedGifts(page = 0, size = 8) {
   return await response.json()
 }
 
-/**
- * 선물 일련번호로 보낸 사람 정보 조회
- * @param {string} userAddress - 사용자 지갑 주소
- * @returns {Promise<object[]>} - 각 NFT별 보낸 사람 정보가 포함된 배열
- */
-
-
-// fetchGiftSender 함수 추가
-async function fetchGiftSender(serialNum: bigint) {
+export async function fetchUsedGifticons(page = 0, size = 8) {
   const token = localStorage.getItem("access_token");
-  const cleanSerial = serialNum.toString().replace(/n$/, ''); // "100024"
+  const url = `${BASE_URL}/users/gifticons/used?page=${page}&size=${size}&sort=createdAt`;
 
-  try {
-    const response = await apiClient.get(`/gift-histories/sender`, {
-      params: { serialNum: cleanSerial },
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "*/*"
-      }
-    });
-    
-    return response.data;
-  } catch (error) {
-    console.error("선물 보낸 사람 정보 조회 실패:", error);
-    return null;
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("사용한 기프티콘 불러오기 실패");
   }
+
+  return await response.json();
 }
