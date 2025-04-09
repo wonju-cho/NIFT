@@ -55,7 +55,7 @@ export function ArticlePriceCard({
       {/* 현재가 표시 */}
       {validCurrentPrice ? (
         <span className="text-base font-bold">
-          {validCurrentPrice.toLocaleString()}
+          🪙{validCurrentPrice.toLocaleString()}
         </span>
       ) : validOriginalPrice ? (
         // If no current price, but original price exists, show original price
