@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import QrScanner from "@/components/ui/QrScanner";
 import { useLoading } from "@/components/LoadingContext";
 import { getNFTDetailInfo, useNft, UserNFT } from "@/lib/api/web3";
+import { markGifticonUsedAsRedeemed } from "@/lib/api/mypage"; // Import the new function
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 
@@ -65,10 +66,25 @@ export default function NiftDetailPage() {
           Number(niftDetails.serialNum),
           walletAddress
         );
-        if (response.success) {
-          alert("사용이 완료되었습니다.");
-          const updated = await getNFTDetailInfo(BigInt(serialNum));
-          setNiftDetails(updated);
+        if (response.success && response.txHash) {
+          // Call the backend API to mark as used
+          const markUsedResponse = await markGifticonUsedAsRedeemed(
+            response.txHash
+          );
+          if (markUsedResponse.success) {
+            console.log("Successfully marked gifticon as used in backend DB.");
+            alert("사용이 완료되었습니다.");
+            const updated = await getNFTDetailInfo(BigInt(serialNum));
+            setNiftDetails(updated);
+          } else {
+            console.error(
+              "Failed to mark gifticon as used in backend DB:",
+              markUsedResponse.error
+            );
+            alert(
+              "사용 처리 중 일부 과정에 오류가 발생했습니다. 관리자에게 문의하세요."
+            );
+          }
         } else {
           alert("사용에 실패했습니다.");
         }
