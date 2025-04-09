@@ -72,32 +72,50 @@ export function GiftTab({
       </TabsList>
 
       <TabsContent value="available" className="mt-6">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
-          {availableGiftCards
-            .slice(
-              availableCurrentPage * ITEMS_PER_PAGE,
-              (availableCurrentPage + 1) * ITEMS_PER_PAGE
-            )
-            .map((card: UserNFT) => (
-              <GiftCard
-                key={Number(card.serialNum)}
-                expiryDays={`D-${calculateDday(card.expiryDate)}`}
-                card={card}
-              />
-            ))}
-        </div>
+        {(() => {
+          const sortedAvailableGiftCards = [
+            ...availableGiftCards
+                .filter(card => !card.isPending && !card.isSelling)
+                .sort((a, b) => Number(b.id) - Number(a.id)),
+            ...availableGiftCards
+                .filter(card => card.isPending && !card.isSelling)
+                .sort((a, b) => Number(b.id) - Number(a.id)),
+            ...availableGiftCards
+                .filter(card => !card.isPending && card.isSelling)
+                .sort((a, b) => Number(b.id) - Number(a.id)),
+          ];
 
-        {availableGiftCards.length === 0 ? (
-          <div className="mt-8 mb-12 text-center text-muted-foreground">
-            사용 가능한 기프티콘이 없습니다.
-          </div>
-        ) : (
-          <Pagination
-            currentPage={availableCurrentPage}
-            totalPage={availableTotalPage}
-            setCurrentPage={setAvailableCurrentPage}
-          />
-        )}
+          return (
+              <>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
+                  {sortedAvailableGiftCards
+                      .slice(
+                          availableCurrentPage * ITEMS_PER_PAGE,
+                          (availableCurrentPage + 1) * ITEMS_PER_PAGE
+                      )
+                      .map((card: UserNFT) => (
+                          <GiftCard
+                              key={Number(card.serialNum)}
+                              expiryDays={`D-${calculateDday(card.expiryDate)}`}
+                              card={card}
+                          />
+                      ))}
+                </div>
+
+                {availableGiftCards.length === 0 ? (
+                    <div className="mt-8 mb-12 text-center text-muted-foreground">
+                      사용 가능한 기프티콘이 없습니다.
+                    </div>
+                ) : (
+                    <Pagination
+                        currentPage={availableCurrentPage}
+                        totalPage={availableTotalPage}
+                        setCurrentPage={setAvailableCurrentPage}
+                    />
+                )}
+              </>
+          );
+        })()}
       </TabsContent>
 
       <TabsContent value="used" className="mt-6">

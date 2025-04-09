@@ -378,16 +378,16 @@ export default function MyPage() {
                               usedGiftCards={usedGiftCards}
                               calculatedCards={calculatedCards}
                               ITEMS_PER_PAGE={ITEMS_PER_PAGE}
-                            availableCurrentPage={availableCurrentPage}
-                            setAvailableCurrentPage={setAvailableCurrentPage}
-                            usedCurrentPage={usedCurrentPage}
-                            setUsedCurrentPage={setUsedCurrentPage}
-                            calculatedCurrentPage={calculatedCurrentPage}
-                            setCalculatedCurrentPage={setCalculatedCurrentPage}
-                            calculateDday={calculateDday}
-                            giftCardTab={giftCardTab}
-                            setGiftCardTab={setGiftCardTab}
-                            onGifticonCalculated={handleGifticonCalculated}
+                              availableCurrentPage={availableCurrentPage}
+                              setAvailableCurrentPage={setAvailableCurrentPage}
+                              usedCurrentPage={usedCurrentPage}
+                              setUsedCurrentPage={setUsedCurrentPage}
+                              calculatedCurrentPage={calculatedCurrentPage}
+                              setCalculatedCurrentPage={setCalculatedCurrentPage}
+                              calculateDday={calculateDday}
+                              giftCardTab={giftCardTab}
+                              setGiftCardTab={setGiftCardTab}
+                              onGifticonCalculated={handleGifticonCalculated}
                               usedTotalPage={usedTotalPage}
                               usedTotalCount={usedTotalCount}
                           />
