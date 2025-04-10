@@ -62,6 +62,8 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
   const [countLikes, setLikeCount] = useState<number>(0);
   const { isLoading, setIsLoading } = useLoading();
   const router = useRouter();
+  const [isPossible, setIsPossible] = useState<boolean>(true);
+  const [isSold, setIsSold] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -82,6 +84,9 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
         setArticle(data);
         setIsLiked(data.liked);
         setLikeCount(data.countLikes);
+        setIsPossible(data.possible);
+        setIsSold(data.sold);
+        // console.log("접속자의 거래 참여 상태 : ", data.possible);
       } catch (error) {
         console.error("Error fetching article:", error);
       } finally {
@@ -281,6 +286,11 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
               />
 
               <div className="mt-auto">
+              {!isPossible && (
+                <p className="text-sm text-muted-foreground mb-2">
+                  판매자는 거래에 참여할 수 없습니다.
+                </p>
+              )}
                 <div className="grid grid-cols-12 gap-1">
                   <div className="col-span-5">
                     {showPurchaseDialog && (
@@ -305,6 +315,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                         className="h-12 w-full px-[16px]"
                         size="lg"
                         onClick={handleClickBuy}
+                        disabled={!isPossible || isSold}
                       >
                         <ShoppingCart className="mr-1 h-4 w-4" />
                         구매하기
@@ -318,6 +329,7 @@ export default function ArticlePage({ params }: { params: { id: string } }) {
                       className="h-12 w-full px-[16px]"
                       size="lg"
                       onClick={handleClickGift} // 이제 조건 검사 잘됨!
+                      disabled={!isPossible || isSold}
                     >
                       <Gift className="mr-1 h-4 w-4" />
                       선물하기

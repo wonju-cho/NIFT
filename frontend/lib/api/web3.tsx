@@ -165,6 +165,7 @@ export interface UserNFT {
   serialNum: bigint;
   title: string;
   tokenId: number;
+  owner?: string;
 }
 
 // ✅ 시리얼 기반으로 사용자 NFT 목록 가져오기
@@ -735,6 +736,7 @@ export async function getNFTDetailInfo(serial: bigint): Promise<any> {
       serialNum: serial,
       price: Number(price),
       seller: seller,
+      owner: owner,
       isSelling:
         Number(price) > 0 &&
         seller !== "0x0000000000000000000000000000000000000000",
@@ -803,6 +805,7 @@ export async function getGift(kakaoId: string): Promise<UserNFT[]> {
           category: nft.category,
           expirationDate: nft.expirationDate,
           id: nft.id,
+          owner:nft.owner,
           image: nft.image,
           isPending: nft.isPending,
           isSelling: nft.isSelling,

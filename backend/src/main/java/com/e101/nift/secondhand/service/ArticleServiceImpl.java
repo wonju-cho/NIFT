@@ -129,7 +129,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     // 중고 기프티콘의 상세 정보 조회
     @Override
-    public ArticleDetailDto getArticleDetail(Long articleId, Long userId) {
+    public ArticleDetailDto getArticleDetail(Long articleId, Long userId, Long accessUserId) {
 
         Article article = articleRepository.findByArticleId(articleId)
                 .orElseThrow(() -> new RuntimeException("상품이 조회되지 않습니다."));
@@ -147,6 +147,15 @@ public class ArticleServiceImpl implements ArticleService {
         User user = userRepository.findByUserId(article.getUserId())
                 .orElseThrow(() -> new RuntimeException("판매자 정보가 조회되지 않습니다."));
         Long sellerTxs = articleRepository.countByUserId(article.getUserId());
+
+        boolean isPossible = true;
+//        System.out.println("🍰🍰🍰접속한 사용자 : "+ accessUserId+ ", 판매자 : "+ article.getUserId());
+        if (accessUserId != null) {
+            isPossible = (!accessUserId.equals(article.getUserId()));
+        }
+
+        boolean isSold = false;
+        isSold = article.getState() == SaleStatus.SOLD;
 
         return new ArticleDetailDto(
                 article.getArticleId(),
@@ -167,7 +176,9 @@ public class ArticleServiceImpl implements ArticleService {
                 isLiked,
                 user.getNickName(),
                 user.getProfileImage(),
-                sellerTxs
+                sellerTxs,
+                isPossible,
+                isSold
         );
     }
 

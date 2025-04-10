@@ -70,10 +70,19 @@ public class ArticleController {
     @Operation(summary = "판매 게시글 상세조회", description = "판매중인 상품의 상세 정보를 조회합니다.")
     public ResponseEntity<ArticleDetailDto> getArticleById(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable("articleId") Long articleId) {
+            @PathVariable("articleId") Long articleId,
+            HttpServletRequest request
+    ) {
+
+        Long accessUserId = null;
+        try {
+            accessUserId = jwtTokenProvider.getUserFromRequest(request).getUserId();
+        } catch (UsernameNotFoundException e) {
+            log.warn("유효하지 않은 사용자 입니다: {}", e.getMessage());
+        }
 
         Long userId = (userDetails != null) ? userDetails.getUserId() : null;
-        ArticleDetailDto dto = articleService.getArticleDetail(articleId, userId);
+        ArticleDetailDto dto = articleService.getArticleDetail(articleId, userId, accessUserId);
         return ResponseEntity.ok(dto);
     }
 
