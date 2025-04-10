@@ -253,6 +253,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
         isAccepted: true,
         acceptedDate: item.createdAt,
         cardData: {
+          id: card.id,
           frontTemplate: { background: card.frontTemplate.background || "transparent" },
           backTemplate: { background: card.backTemplate.background },
           frontElements: card.frontElements,

@@ -19,5 +19,7 @@ public interface GiftHistoryRepository extends JpaRepository<GiftHistory, Long> 
     Optional<GiftHistory> findGiftHistoriesByTxHash(String txHash);
     Optional<GiftHistory> findBySerialNum(Long serialNum);
 
+    Optional<GiftHistory> findBySerialNumAndIsReceivedFalse(Long serialNum);
+
     Page<GiftHistory> findByToUserIdAndIsReceivedTrue(Long toUserId, Pageable pageable);
 }
