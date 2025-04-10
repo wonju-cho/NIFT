@@ -17,7 +17,7 @@ pipeline {
 
 					// null 이거나 공백이거나 잘못된 값일 경우 자동 분기
 					if (!selectedEnv || !(selectedEnv in ['develop', 'master'])) {
-						selectedEnv = (branch == 'develop') ? 'dev' : 'master'
+						selectedEnv = (branch == 'develop') ? 'develop' : 'master'
 						echo "🔄 ENV auto-detected as: ${selectedEnv}"
 					} else {
 						selectedEnv = branch
