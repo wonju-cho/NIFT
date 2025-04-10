@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers, TransactionResponse, TransactionReceipt } from "ethers";
 import { GetGifticonResponse } from "./CreateGiftHistory";
 import axios from "axios";
 import exp from "constants";
@@ -834,23 +834,30 @@ export interface RecieveResponse {
   serialNum?: bigint;
 }
 
-export async function receiveNFT(
+// lib/api/web3.tsx
+
+/**
+ * 트랜잭션 전송: 사용자가 메타마스크 컨펌을 누른 후 실제 트랜잭션을 전송하고
+ * ethers Transaction 객체를 반환합니다.
+ */
+export async function sendReceiveNFT(
   serialNum: bigint,
   kakaoId: string
-): Promise<RecieveResponse> {
+): Promise<ethers.Transaction | null> {
   const provider = new ethers.BrowserProvider(window.ethereum);
-  const fail: RecieveResponse = { success: false };
-  if (!provider) return fail;
+  if (!provider) {
+    console.error("Metamask가 설치되지 않음");
+    return null;
+  }
 
   if (!kakaoId || kakaoId.trim().length === 0) {
     alert("❌ 카카오 ID가 유효하지 않습니다.");
-    return fail;
+    return null;
   }
 
-  // ✅ 3. serialNum 유효성 확인
   if (!serialNum || serialNum <= 0n) {
     alert("❌ 시리얼 넘버가 유효하지 않습니다.");
-    return fail;
+    return null;
   }
 
   try {
@@ -858,7 +865,7 @@ export async function receiveNFT(
 
     if (!NFT_CONTRACT_ADDRESS || !SSF_CONTRACT_ADDRESS) {
       console.error("❌ 컨트랙트 주소가 설정되지 않았습니다.");
-      return fail;
+      return null;
     }
 
     const nftContract = new ethers.Contract(
@@ -867,20 +874,32 @@ export async function receiveNFT(
       signer
     );
 
-    console.log("🚀 NFT 선물 받기 트랜잭션 실행 시작...");
+    console.log("🚀 NFT 선물 받기 트랜잭션 전송 시작...");
+    // sendReceiveNFT에서는 tx.wait()를 호출하지 않고 tx 객체만 반환합니다.
     const tx = await nftContract.claimGiftByAlias(kakaoId, serialNum);
-    console.log("⏳ 트랜잭션 전송됨. 대기 중...");
-    const receipt = await tx.wait();
-    console.log("✅ NFT 선물 받기 완료");
-    console.log("✅ Success:", receipt);
-
-    return {
-      success: true,
-      txHash: tx.hash,
-      serialNum: serialNum,
-    };
+    console.log("⏳ 트랜잭션 전송됨. MetaMask 컨펌 완료 후 tx 객체 반환:", tx.hash);
+    return tx;
   } catch (error) {
-    console.error("❌ NFT 선물 실패:", error);
-    return fail;
+    console.error("❌ NFT 선물 받기 트랜잭션 전송 실패:", error);
+    return null;
   }
 }
+
+/**
+ * 트랜잭션 확정: 이전에 전송된 Transaction 객체를 받아서
+ * tx.wait()로 블록체인에서 확정되는 것을 기다립니다.
+ */
+export async function confirmReceiveNFT(
+  tx: TransactionResponse // 이제 직접 import한 TransactionResponse 사용
+): Promise<TransactionReceipt | null> {
+  try {
+    console.log("⏳ 트랜잭션 확정 대기 시작...");
+    const receipt = await tx.wait();
+    console.log("✅ NFT 선물 받기 트랜잭션 확정됨:", receipt.transactionHash);
+    return receipt;
+  } catch (error) {
+    console.error("❌ NFT 선물 받기 트랜잭션 확정 실패:", error);
+    return null;
+  }
+}
+
