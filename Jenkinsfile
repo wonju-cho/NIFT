@@ -2,7 +2,7 @@ pipeline {
 	agent any
 
 	parameters {
-  		choice(name: 'ENV', choices: ['dev', 'production'], description: 'Select deploy environment')
+  		choice(name: 'ENV', choices: ['dev', 'master'], description: 'Select deploy environment')
 	}
 
 	stages {
@@ -16,8 +16,8 @@ pipeline {
 					def selectedEnv = params.ENV?.trim()?.toLowerCase()
 
 					// null 이거나 공백이거나 잘못된 값일 경우 자동 분기
-					if (!selectedEnv || !(selectedEnv in ['dev', 'production'])) {
-						selectedEnv = (branch == 'develop') ? 'dev' : 'production'
+					if (!selectedEnv || !(selectedEnv in ['dev', 'master'])) {
+						selectedEnv = (branch == 'develop') ? 'dev' : 'master'
 						echo "🔄 ENV auto-detected as: ${selectedEnv}"
 					} else {
 						echo "✅ ENV manually selected: ${selectedEnv}"
