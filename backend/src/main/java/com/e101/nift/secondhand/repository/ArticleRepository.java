@@ -83,7 +83,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
 
     // 판매자로 찾는 게시글 수
-    Integer countByUserId(Long userId);
+    Long countByUserId(Long userId);
 
     // 판매자의 다른 상품
     Page<Article> findByUserIdAndState(Long userId, SaleStatus status, Pageable pageable);

@@ -108,7 +108,7 @@ public class GifticonServiceImpl implements GifticonService {
 
     @Override
     public Page<GifticonDetailDto> searchGifticons(String term, Long categoryId, Long brandId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "gifticonId"));
 
         Specification<Gifticon> spec = Specification.where(null);
 

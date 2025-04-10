@@ -159,13 +159,22 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
 
     @Override
     public CardDesign findCardDesignBySerialNumber(Long serialNumber) {
-        GiftHistory giftHistory = giftHistoryRepository.findBySerialNum(serialNumber)
+        GiftHistory giftHistory = giftHistoryRepository.findBySerialNumAndIsReceivedFalse(serialNumber)
                 .orElseThrow(() -> new EntityNotFoundException("GiftHistory not found for serialNum: " + serialNumber));
 
         CardDesign cardDesign = cardDesignRepository.findById(giftHistory.getMongoId())
                 .orElseThrow(() -> new EntityNotFoundException("CardDesign not found for mongoId: " + giftHistory.getMongoId()));
 
         return cardDesign;
+    }
+
+    @Override
+    public String getSenderNicknameBySerialNum(Long serialNum) {
+        GiftHistory giftHistory = giftHistoryRepository.findBySerialNumAndIsReceivedFalse(serialNum)
+                .orElseThrow(() -> new IllegalArgumentException("해당 serialNum의 선물 기록이 존재하지 않습니다."));
+//        log.info("serialNum = {}", serialNum);
+//        System.out.println("🪙🪙🪙확인: "+giftHistory.getGiftHistoryId());
+        return giftHistory.getFromUserId().getNickName();
     }
 
 

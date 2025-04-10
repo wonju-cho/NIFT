@@ -192,6 +192,10 @@ export const brandColors: Record<string, string> = {
   "YES24": "#4A98D1",
   "투썸플레이스": "#4B4B4B",
   "CGV": "#D6555A",
+  "BHC": "#E46F2A", 
+  "설빙": "#AD6585",
+  "롯데리아": "#D83A4D",
+  "도미노 피자": "#3A5BA0",
   "메가 커피": "#F5D56B",
 };
 

@@ -84,6 +84,7 @@ public class UserServiceImpl implements UserService{
                 .nickname(user.getNickName())
                 .walletAddress(user.getWalletAddress())
                 .kakaoId(user.getKakaoId().toString())
+                .role(user.getRole())
                 .message("본인 정보를 조회했습니다.")
                 .build();
     }

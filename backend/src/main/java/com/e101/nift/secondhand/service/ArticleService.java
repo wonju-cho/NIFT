@@ -15,7 +15,7 @@ public interface ArticleService {
     Page<ArticleListDto> getArticleList(String sort, List<Long> categories, Pageable pageable, Long userId, Float minPrice, Float maxPrice);
     void createArticle(PostArticleDto postArticleDto, Long userId);
 
-    ArticleDetailDto getArticleDetail(Long id, Long userId);
+    ArticleDetailDto getArticleDetail(Long id, Long userId, Long accessUserId);
 
     void deleteArticle(Long articleId, TxHashDTO txHashDTO);
 
