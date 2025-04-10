@@ -154,6 +154,9 @@ public class ArticleServiceImpl implements ArticleService {
             isPossible = (!accessUserId.equals(article.getUserId()));
         }
 
+        boolean isSold = false;
+        isSold = article.getState() == SaleStatus.SOLD;
+
         return new ArticleDetailDto(
                 article.getArticleId(),
                 article.getGifticon().getGifticonId(),
@@ -174,7 +177,8 @@ public class ArticleServiceImpl implements ArticleService {
                 user.getNickName(),
                 user.getProfileImage(),
                 sellerTxs,
-                isPossible
+                isPossible,
+                isSold
         );
     }
 
