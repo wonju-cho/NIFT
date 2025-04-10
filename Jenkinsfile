@@ -98,6 +98,26 @@ pipeline {
 			}
 		}
 
+		stage('Run Docker Compose') {
+			steps {
+				script {
+					try {
+						sh 'cp .env ./frontend'
+						sh 'cp .env ./admin'
+						sh "docker-compose --env-file .env up -d --build"	
+						env.IMAGE_BUILD_SUCCESS = "true"
+					}
+					catch(Exception e) {
+						env.IMAGE_BUILD_SUCCESS = "false"
+						currentBuild.result = 'FAILURE'
+						echo"❌ Docker 이미지 생성 실패"
+					}
+					
+				}
+			}
+		}
+
+
 		stage('Flyway Check and Migration') {
 		    steps {
 		        script {
@@ -157,26 +177,6 @@ pipeline {
 
 		        }
 		    }
-		}
-
-
-		stage('Run Docker Compose') {
-			steps {
-				script {
-					try {
-						sh 'cp .env ./frontend'
-						sh 'cp .env ./admin'
-						sh "docker-compose --env-file .env up -d --build"	
-						env.IMAGE_BUILD_SUCCESS = "true"
-					}
-					catch(Exception e) {
-						env.IMAGE_BUILD_SUCCESS = "false"
-						currentBuild.result = 'FAILURE'
-						echo"❌ Docker 이미지 생성 실패"
-					}
-					
-				}
-			}
 		}
 
 	}
