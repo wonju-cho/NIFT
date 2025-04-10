@@ -12,12 +12,13 @@ import { cn } from "@/lib/utils"
 import { useGiftCardMobile } from "@/hooks/use-giftcard-mobile"
 import type { GiftMemory } from "@/types/gift-memory"
 import { GiftUnboxAnimation } from "@/components/gift/gift-animation/gift-unbox-animation"
-import { getGift, getNFTDetailInfo, receiveNFT, type UserNFT } from "@/lib/api/web3"
+import { getGift, getNFTDetailInfo, type UserNFT, sendReceiveNFT, confirmReceiveNFT } from "@/lib/api/web3"
 import type { User } from "@/app/mypage/page"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { fetchReceivedGifts } from "@/lib/api/mypage"
 import { Pagination } from "@/components/mypage/pagination"
 import { apiClient } from "@/lib/api/CustomAxios"
+
 
 // ----------------------------------------------------------------
 // 1. 보낸 사람 정보를 API로 가져오는 함수
@@ -61,6 +62,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   const [acceptedPage, setAcceptedPage] = useState(0)
   const [isCardFlipped, setIsCardFlipped] = useState(false)
   const [acceptedGiftCount, setAcceptedGiftCount] = useState<number | null>(null)
+  const [transactionConfirmed, setTransactionConfirmed] = useState(false);
 
   // 상태 변경 로그로 현재 memories 값을 확인
   useEffect(() => {
@@ -165,40 +167,37 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   // ----------------------------------------------------------------
   // 5. 선물 수락 처리
   const handleReceive = async (gift: UserNFT) => {
-    const response = await receiveNFT(gift.serialNum, user.kakaoId)
-    if (response.success) {
-      setGifts(gifts.filter((g) => g.serialNum !== gift.serialNum))
-      const newInfo = await getNFTDetailInfo(gift.serialNum)
-      setAvailableGiftCards([...availableGiftCards, newInfo])
-      setMemories((prev) =>
-        prev.map((mem) =>
-          mem.id === String(gift.serialNum)
-            ? { ...mem, isAccepted: true, acceptedDate: new Date().toISOString() }
-            : mem
-        )
-      )
-      alert("선물 받기가 완료 되었습니다")
-      const data = {
-        txHash: response.txHash,
-      };
-      await apiClient.post("/gift-histories/received", data);
-
-      setGiftTab("accepted")
-      fetchReceivedGifts(0, itemsPerPage)
-        .then((res) => {
-          const transformed = transformReceivedGiftResponse(res.content)
-          setAcceptedMemories(transformed)
-          setAcceptedTotalPages(res.totalPages)
-          setAcceptedPage(0)
-          setAcceptedGiftCount(res.totalElements ?? 0)
-        })
-        .catch(() => {
-          alert("받은 선물을 불러오는 데 실패했습니다.")
-        })
-    } else {
-      alert("선물 받기에 실패했습니다.")
+    console.log("선물 받기 프로세스 시작됨:", gift);
+    // setIsUnboxing(true);
+  
+    // 1단계: 트랜잭션 전송 (메타마스크 컨펌)
+    const tx = await sendReceiveNFT(gift.serialNum, user.kakaoId);
+    if (!tx) {
+      console.error("트랜잭션 전송 실패 - 선물 받기 실패");
+      return;
     }
-  }
+    console.log("메타마스크 컨펌 후 트랜잭션 전송 완료. tx hash:", tx.hash);
+    
+  
+    // 트랜잭션 전송이 완료되었으므로 애니메이션 시작
+    setIsUnboxing(true);
+  
+    // 2단계: 트랜잭션 확정 대기
+    const receipt = await confirmReceiveNFT(tx);
+    const txHash = tx.hash;
+
+    if (receipt && receipt.status === 1) {
+      // console.log("선물 트랜잭션 확정됨. 트랜잭션 해시:", receipt.transactionHash);
+      setTransactionConfirmed(true);
+      const data = {txHash}
+      console.log("📦 transactionHash 확인:", data);
+      await apiClient.post("/gift-histories/received", data);
+    } else {
+      console.error("선물 받기에 실패했습니다 - 트랜잭션 확정 실패");
+      setIsUnboxing(false);
+    }
+  };
+  
 
   // ----------------------------------------------------------------
   // 6. 받은 선물 API 응답 타입 및 변환 함수
@@ -347,16 +346,21 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   }
 
   const handleUnboxComplete = () => {
-    if (selectedGift) {
-      const now = new Date().toISOString()
+    if (selectedGift && transactionConfirmed) {
+      const now = new Date().toISOString();
       const updatedMemories = memories.map((gift) =>
-        gift.id === selectedGift.id ? { ...gift, isAccepted: true, acceptedDate: now } : gift
-      )
-      setMemories(updatedMemories)
-      setSelectedGift({ ...selectedGift, isAccepted: true, acceptedDate: now })
-      setIsUnboxing(false)
+        gift.id === selectedGift.id
+          ? { ...gift, isAccepted: true, acceptedDate: now }
+          : gift
+      );
+      setMemories(updatedMemories);
+      setSelectedGift({ ...selectedGift, isAccepted: true, acceptedDate: now });
+      setIsUnboxing(false);
+      // 완료 후 플래그 초기화
+      setTransactionConfirmed(false);
     }
-  }
+  };
+
 
   // ----------------------------------------------------------------
   // 9. UI 렌더링
@@ -420,7 +424,16 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
                             }}>
                               선물 수락하기
                             </Button>
+                            <div className="p-4">
+                              <div className="text-sm font-medium">
+                                from. {gift.senderNickname}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {format(new Date(gift.sentDate), "yyyy.MM.dd a hh:mm", { locale: ko })}
+                              </div>
+                            </div>
                           </div>
+                          
                         )}
                       </div>
                     )}
@@ -532,5 +545,6 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
         )}
       </TabsContent>
     </Tabs>
+    
   )
 }
