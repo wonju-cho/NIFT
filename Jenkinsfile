@@ -20,6 +20,7 @@ pipeline {
 						selectedEnv = (branch == 'develop') ? 'dev' : 'master'
 						echo "🔄 ENV auto-detected as: ${selectedEnv}"
 					} else {
+						selectedEnv = branch
 						echo "✅ ENV manually selected: ${selectedEnv}"
 					}
 
