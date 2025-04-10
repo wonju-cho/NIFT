@@ -191,6 +191,8 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
       const data = {txHash}
       console.log("📦 transactionHash 확인:", data);
       await apiClient.post("/gift-histories/received", data);
+      window.location.href = "/mypage";
+      
     } else {
       console.error("선물 받기에 실패했습니다 - 트랜잭션 확정 실패");
       setIsUnboxing(false);
