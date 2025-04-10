@@ -834,7 +834,56 @@ export interface RecieveResponse {
   serialNum?: bigint;
 }
 
-// lib/api/web3.tsx
+export async function receiveNFT(
+  serialNum: bigint,
+  kakaoId: string
+): Promise<RecieveResponse> {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const fail: RecieveResponse = { success: false };
+  if (!provider) return fail;
+
+  if (!kakaoId || kakaoId.trim().length === 0) {
+    alert("❌ 카카오 ID가 유효하지 않습니다.");
+    return fail;
+  }
+
+  // ✅ 3. serialNum 유효성 확인
+  if (!serialNum || serialNum <= 0n) {
+    alert("❌ 시리얼 넘버가 유효하지 않습니다.");
+    return fail;
+  }
+
+  try {
+    const signer = await provider.getSigner();
+
+    if (!NFT_CONTRACT_ADDRESS || !SSF_CONTRACT_ADDRESS) {
+      console.error("❌ 컨트랙트 주소가 설정되지 않았습니다.");
+      return fail;
+    }
+
+    const nftContract = new ethers.Contract(
+      NFT_CONTRACT_ADDRESS,
+      NFT_ABI,
+      signer
+    );
+
+    console.log("🚀 NFT 선물 받기 트랜잭션 실행 시작...");
+    const tx = await nftContract.claimGiftByAlias(kakaoId, serialNum);
+    console.log("⏳ 트랜잭션 전송됨. 대기 중...");
+    const receipt = await tx.wait();
+    console.log("✅ NFT 선물 받기 완료");
+    console.log("✅ Success:", receipt);
+
+    return {
+      success: true,
+      txHash: tx.hash,
+      serialNum: serialNum,
+    };
+  } catch (error) {
+    console.error("❌ NFT 선물 실패:", error);
+    return fail;
+  }
+}
 
 /**
  * 트랜잭션 전송: 사용자가 메타마스크 컨펌을 누른 후 실제 트랜잭션을 전송하고
@@ -843,7 +892,7 @@ export interface RecieveResponse {
 export async function sendReceiveNFT(
   serialNum: bigint,
   kakaoId: string
-): Promise<ethers.Transaction | null> {
+): Promise<ethers.TransactionResponse | null> {
   const provider = new ethers.BrowserProvider(window.ethereum);
   if (!provider) {
     console.error("Metamask가 설치되지 않음");
@@ -895,7 +944,6 @@ export async function confirmReceiveNFT(
   try {
     console.log("⏳ 트랜잭션 확정 대기 시작...");
     const receipt = await tx.wait();
-    console.log("✅ NFT 선물 받기 트랜잭션 확정됨:", receipt.transactionHash);
     return receipt;
   } catch (error) {
     console.error("❌ NFT 선물 받기 트랜잭션 확정 실패:", error);

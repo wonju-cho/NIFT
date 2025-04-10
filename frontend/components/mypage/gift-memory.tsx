@@ -184,12 +184,13 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   
     // 2단계: 트랜잭션 확정 대기
     const receipt = await confirmReceiveNFT(tx);
+    const txHash = tx.hash;
+
     if (receipt && receipt.status === 1) {
-      console.log("선물 트랜잭션 확정됨. 트랜잭션 해시:", receipt.transactionHash);
+      // console.log("선물 트랜잭션 확정됨. 트랜잭션 해시:", receipt.transactionHash);
       setTransactionConfirmed(true);
-      const data = {
-        txHash: receipt.transactionHash, // ❌ 'response'가 아니라 'receipt'
-      };
+      const data = {txHash}
+      console.log("📦 transactionHash 확인:", data);
       await apiClient.post("/gift-histories/received", data);
     } else {
       console.error("선물 받기에 실패했습니다 - 트랜잭션 확정 실패");
