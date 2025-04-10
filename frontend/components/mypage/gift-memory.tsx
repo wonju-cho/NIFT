@@ -168,7 +168,7 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
   // 5. 선물 수락 처리
   const handleReceive = async (gift: UserNFT) => {
     console.log("선물 받기 프로세스 시작됨:", gift);
-    setIsUnboxing(true);
+    // setIsUnboxing(true);
   
     // 1단계: 트랜잭션 전송 (메타마스크 컨펌)
     const tx = await sendReceiveNFT(gift.serialNum, user.kakaoId);
@@ -191,6 +191,8 @@ export function GiftMemories({ user, availableGiftCards, setAvailableGiftCards }
       const data = {txHash}
       console.log("📦 transactionHash 확인:", data);
       await apiClient.post("/gift-histories/received", data);
+      window.location.href = "/mypage";
+      
     } else {
       console.error("선물 받기에 실패했습니다 - 트랜잭션 확정 실패");
       setIsUnboxing(false);
