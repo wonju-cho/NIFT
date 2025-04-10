@@ -2,7 +2,7 @@ pipeline {
 	agent any
 
 	parameters {
-		choice(name: 'ENV', choices: ['dev', 'production'], description: 'Select environment')
+  		choice(name: 'ENV', choices: ['dev', 'production'], description: 'Select deploy environment')
 	}
 
 	stages {
@@ -100,62 +100,73 @@ pipeline {
 		stage('Flyway Check and Migration') {
 		    steps {
 		        script {
-		            if (env.ENV == 'dev') {
-		                def props = readProperties file: '.env'
-		                def workspace = env.WORKSPACE.replaceFirst("^/var/jenkins_home", "/home/ubuntu/jenkins-data")
-		                def migrationPath = (env.ENV == 'dev') ?
-		                "${workspace}/backend/src/main/resources/db/migration" :
+
+		        	def sendMessage = { String msg -> 
+	            		def payload = groovy.json.JsonOutput.toJson([text: msg])
+						writeFile file: 'payload.json', text: payload
+
+						withCredentials([string(credentialsId: 'MATTERMOST_WEBHOOK', variable: 'MATTERMOST_WEBHOOK')]){
+							sh(
+								script: '''
+									curl -X POST -H 'Content-Type: application/json' -d @payload.json \$MATTERMOST_WEBHOOK
+								''',
+								label: 'Send message'
+							)
+						}
+	            	}
+
+	            	def props = readProperties file: '.env'
+		            def workspace = env.WORKSPACE.replaceFirst("^/var/jenkins_home", "/home/ubuntu/jenkins-data")
+		            def migrationPath = (env.ENV == 'dev') ?
+		               	"${workspace}/backend/src/main/resources/db/migration" :
 		                "${workspace}/backend/src/main/resources/db/migration_master"
-		                
-		                echo "Migration Path: ${migrationPath}"
 
-		                def baseCmd = """
-		                    docker run --rm \\
-		                      --network shared_backend \\
-		                      -v ${migrationPath}:/flyway/sql \\
-		                      flyway/flyway \\
-		                      -locations=filesystem:/flyway/sql \\
-		                      -url='jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false' \\
-		                      -user=${props.MYSQL_USER} \\
-		                      -password=${props.MYSQL_PASSWORD}
-		                """.stripIndent().trim()
+  					echo "Migration Path: ${migrationPath}"
 
-		                // 초기 info 시도
-		                def infoOutput = sh(
-		                    script: "${baseCmd} info -outputType=json 2>&1 || true",
-		                    returnStdout: true
-		                ).trim()
+					def baseCmd = """
+					    docker run --rm \\
+					      --network shared_backend \\
+					      -v ${migrationPath}:/flyway/sql \\
+					      flyway/flyway \\
+					      -locations=filesystem:/flyway/sql \\
+					      -url='jdbc:mysql://mysql:3306/${props.MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false' \\
+					      -user=${props.MYSQL_USER} \\
+					      -password=${props.MYSQL_PASSWORD}
+					""".stripIndent().trim()
 
-		                def infoJson
-		                try {
-		                    infoJson = readJSON text: infoOutput
-		                } catch (e) {
-		                    if (infoOutput.contains("Detected failed migration") || infoOutput.contains("Validate failed")) {
-		                        echo "🛠️ Validate 실패 감지 → repair 시도"
-		                        sh "${baseCmd} repair"
-		                        infoOutput = sh(script: "${baseCmd} info -outputType=json", returnStdout: true).trim()
-		                        infoJson = readJSON text: infoOutput
-		                    } else {
-		                        error "❌ Flyway info 실패: repair로도 복구할 수 없는 문제\n${infoOutput}"
-		                    }
-		                }
+					// 초기 info 시도
+					def infoOutput = sh(
+					    script: "${baseCmd} info -outputType=json 2>&1 || true",
+					    returnStdout: true
+					).trim()
 
-		                // 상태 확인
-		                echo "📦 Flyway info 상태:\n${infoOutput}"
+					def infoJson
+					try {
+					    infoJson = readJSON text: infoOutput
+					} catch (e) {
+					    if (infoOutput.contains("Detected failed migration") || infoOutput.contains("Validate failed")) {
+					        echo "🛠️ Validate 실패 감지 → repair 시도"
+					        sh "${baseCmd} repair"
+					        infoOutput = sh(script: "${baseCmd} info -outputType=json", returnStdout: true).trim()
+					        infoJson = readJSON text: infoOutput
+					    } else {
+					        error "❌ Flyway info 실패: repair로도 복구할 수 없는 문제\n${infoOutput}"
+					    }
+					}
 
-						def needsRepair = infoJson?.migrations?.any {
-							it.state.toLowerCase() in ['failed', 'missing_success', 'outdated', 'ignored']
-						} ?: false
+					// 상태 확인
+					echo "📦 Flyway info 상태:\n${infoOutput}"
 
-		                if (needsRepair) {
-		                    echo "⚠️ Flyway 상태 이상 감지 → repair + migrate 실행"
-		                    sh "${baseCmd} repair"
-		                }
+					def needsRepair = infoJson?.migrations?.any {
+						it.state.toLowerCase() in ['failed', 'missing_success', 'outdated', 'ignored']
+					} ?: false
 
-		                sh "${baseCmd} migrate"
-		            } else {
-		                echo "👌 (master branch) Skipping Flyway Migration."
-		            }
+					if (needsRepair) {
+					    echo "⚠️ Flyway 상태 이상 감지 → repair + migrate 실행"
+					    sh "${baseCmd} repair"
+					}
+
+					sh "${baseCmd} migrate"
 		        }
 		    }
 		}
