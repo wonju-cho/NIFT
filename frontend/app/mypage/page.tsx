@@ -78,7 +78,9 @@ export default function MyPage() {
   const [activeTab, setActiveTab] = useState("gifticons");
   const [giftCardTab, setGiftCardTab] = useState("available");
   const [usedGiftCards, setUsedGiftCards] = useState<any[]>([]);
-const [usedCurrentPage, setUsedCurrentPage] = useState(0)
+  const [usedCurrentPage, setUsedCurrentPage] = useState(0)
+  const [usedTotalPage, setUsedTotalPage] = useState(1);
+  const [usedTotalCount, setUsedTotalCount] = useState(0);
 
   const calculateDday = (expiry: string): number => {
     const today = new Date();
@@ -295,17 +297,19 @@ const [usedCurrentPage, setUsedCurrentPage] = useState(0)
   useEffect(() => {
     const fetchUsedGifts = async () => {
       try {
-        const data = await fetchUsedGifticons(0, 6); // 필요에 따라 size 조정
+        const data = await fetchUsedGifticons(usedCurrentPage, 6); // ✅ 현재 페이지 반영
         setUsedGiftCards(data.content || []);
+        setUsedTotalPage(data.totalPages || 1); // ✅ 전체 페이지도 저장
+        setUsedTotalCount(data.totalElements || 0); // ✅ 총 개수 저장
       } catch (err) {
         console.error("사용 완료 선물 불러오기 실패:", err);
       }
     };
-  
+
     if (accessToken) {
       fetchUsedGifts();
     }
-  }, [accessToken]);
+  }, [accessToken, usedCurrentPage]); // ✅ 페이지 변경 감지
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -360,27 +364,32 @@ const [usedCurrentPage, setUsedCurrentPage] = useState(0)
                               보유 NIFT
                             </h2>
                             <p className="mb-6 text-sm text-muted-foreground">
-                              {giftCardTab === "available"
-                                ? `사용 가능한 선물이 ${availableGiftCards.length}개 있어요.`
-                                : `사용 완료된 선물이 ${calculatedCards.length}개 있어요.`}
+                              {giftCardTab === "available" &&
+                                  `사용 가능한 기프티콘이 ${availableGiftCards.length}개 있어요.`}
+                              {giftCardTab === "used" &&
+                                  `사용 완료된 기프티콘이 ${usedTotalCount}개 있어요.`}
+                              {giftCardTab === "calculated" &&
+                                  `정산 완료된 기프티콘이 ${calculatedCards.length}개 있어요.`}
                             </p>
                           </div>
                           <GiftTab
-                            userRole={user.role}
-                            availableGiftCards={availableGiftCards}
-                            usedGiftCards={usedGiftCards}
-                            calculatedCards={calculatedCards}
-                            ITEMS_PER_PAGE={ITEMS_PER_PAGE}
-                            availableCurrentPage={availableCurrentPage}
-                            setAvailableCurrentPage={setAvailableCurrentPage}
-                            usedCurrentPage={usedCurrentPage}
-                            setUsedCurrentPage={setUsedCurrentPage}
-                            calculatedCurrentPage={calculatedCurrentPage}
-                            setCalculatedCurrentPage={setCalculatedCurrentPage}
-                            calculateDday={calculateDday}
-                            giftCardTab={giftCardTab}
-                            setGiftCardTab={setGiftCardTab}
-                            onGifticonCalculated={handleGifticonCalculated}
+                              userRole={user.role}
+                              availableGiftCards={availableGiftCards}
+                              usedGiftCards={usedGiftCards}
+                              calculatedCards={calculatedCards}
+                              ITEMS_PER_PAGE={ITEMS_PER_PAGE}
+                              availableCurrentPage={availableCurrentPage}
+                              setAvailableCurrentPage={setAvailableCurrentPage}
+                              usedCurrentPage={usedCurrentPage}
+                              setUsedCurrentPage={setUsedCurrentPage}
+                              calculatedCurrentPage={calculatedCurrentPage}
+                              setCalculatedCurrentPage={setCalculatedCurrentPage}
+                              calculateDday={calculateDday}
+                              giftCardTab={giftCardTab}
+                              setGiftCardTab={setGiftCardTab}
+                              onGifticonCalculated={handleGifticonCalculated}
+                              usedTotalPage={usedTotalPage}
+                              usedTotalCount={usedTotalCount}
                           />
                         </TabsContent>
 

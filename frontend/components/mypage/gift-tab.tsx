@@ -20,6 +20,8 @@ interface GiftTabProps {
   giftCardTab: string;
   setGiftCardTab: (tab: string) => void;
   onGifticonCalculated: (serialNum: number) => void;
+  usedTotalPage: number;
+  usedTotalCount: number;
 }
 
 interface UsedGifticon {
@@ -46,10 +48,11 @@ export function GiftTab({
   giftCardTab,
   setGiftCardTab,
   onGifticonCalculated,
+  usedTotalPage,
+  usedTotalCount
 }: GiftTabProps) {
   const availableTotalPage =
     Math.ceil(availableGiftCards.length / ITEMS_PER_PAGE) || 1;
-  const usedTotalPage = Math.ceil(usedGiftCards.length / ITEMS_PER_PAGE) || 1;
   const calculatedTotalPage = Math.ceil(calculatedCards.length / ITEMS_PER_PAGE) || 1;
   
   return (
@@ -59,7 +62,7 @@ export function GiftTab({
           사용 가능 {availableGiftCards.length}
         </TabsTrigger>
         <TabsTrigger value="used" className="flex-1">
-          사용 완료 {usedGiftCards.length}
+          사용 완료 {usedTotalCount}
         </TabsTrigger>
         {userRole === 1 && (
           <TabsTrigger value="calculated" className="flex-1">
@@ -69,52 +72,62 @@ export function GiftTab({
       </TabsList>
 
       <TabsContent value="available" className="mt-6">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
-          {availableGiftCards
-            .slice(
-              availableCurrentPage * ITEMS_PER_PAGE,
-              (availableCurrentPage + 1) * ITEMS_PER_PAGE
-            )
-            .map((card: UserNFT) => (
-              <GiftCard
-                key={Number(card.serialNum)}
-                expiryDays={`D-${calculateDday(card.expiryDate)}`}
-                card={card}
-              />
-            ))}
-        </div>
+        {(() => {
+          const sortedAvailableGiftCards = [
+            ...availableGiftCards
+                .filter(card => !card.isPending && !card.isSelling)
+                .sort((a, b) => Number(b.id) - Number(a.id)),
+            ...availableGiftCards
+                .filter(card => !card.isPending && card.isSelling)
+                .sort((a, b) => Number(b.id) - Number(a.id)),
+            ...availableGiftCards
+                .filter(card => card.isPending && !card.isSelling)
+                .sort((a, b) => Number(b.id) - Number(a.id)),
+          ];
 
-        {availableGiftCards.length === 0 ? (
-          <div className="mt-8 mb-12 text-center text-muted-foreground">
-            사용 가능한 선물이 없습니다.
-          </div>
-        ) : (
-          <Pagination
-            currentPage={availableCurrentPage}
-            totalPage={availableTotalPage}
-            setCurrentPage={setAvailableCurrentPage}
-          />
-        )}
+          return (
+              <>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
+                  {sortedAvailableGiftCards
+                      .slice(
+                          availableCurrentPage * ITEMS_PER_PAGE,
+                          (availableCurrentPage + 1) * ITEMS_PER_PAGE
+                      )
+                      .map((card: UserNFT) => (
+                          <GiftCard
+                              key={Number(card.serialNum)}
+                              expiryDays={`D-${calculateDday(card.expiryDate)}`}
+                              card={card}
+                          />
+                      ))}
+                </div>
+
+                {availableGiftCards.length === 0 ? (
+                    <div className="mt-8 mb-12 text-center text-muted-foreground">
+                      사용 가능한 기프티콘이 없습니다.
+                    </div>
+                ) : (
+                    <Pagination
+                        currentPage={availableCurrentPage}
+                        totalPage={availableTotalPage}
+                        setCurrentPage={setAvailableCurrentPage}
+                    />
+                )}
+              </>
+          );
+        })()}
       </TabsContent>
 
       <TabsContent value="used" className="mt-6">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
-          {usedGiftCards
-            .slice(
-              usedCurrentPage * ITEMS_PER_PAGE,
-              (usedCurrentPage + 1) * ITEMS_PER_PAGE
-            )
-            .map((gifticon) => (
-              <UsedGiftCard
-                key={gifticon.usedHistoryId}
-                gifticon={gifticon}
-              />
-            ))}
+          {usedGiftCards.map((gifticon) => (
+              <UsedGiftCard key={gifticon.usedHistoryId} gifticon={gifticon} />
+          ))}
         </div>
 
         {usedGiftCards.length === 0 ? (
           <div className="mt-8 mb-12 text-center text-muted-foreground">
-            정산 완료된 기프티콘이 없습니다.
+            사용 완료된 기프티콘이 없습니다.
           </div>
         ) : (
           <Pagination
