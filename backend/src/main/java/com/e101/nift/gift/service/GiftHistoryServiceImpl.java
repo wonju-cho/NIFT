@@ -159,7 +159,7 @@ public class GiftHistoryServiceImpl implements GiftHistoryService {
 
     @Override
     public CardDesign findCardDesignBySerialNumber(Long serialNumber) {
-        GiftHistory giftHistory = giftHistoryRepository.findBySerialNum(serialNumber)
+        GiftHistory giftHistory = giftHistoryRepository.findBySerialNumAndIsReceivedFalse(serialNumber)
                 .orElseThrow(() -> new EntityNotFoundException("GiftHistory not found for serialNum: " + serialNumber));
 
         CardDesign cardDesign = cardDesignRepository.findById(giftHistory.getMongoId())
