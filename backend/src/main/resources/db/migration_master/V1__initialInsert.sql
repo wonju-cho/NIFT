@@ -1,257 +1,128 @@
--- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
---
--- Host: j12e101.p.ssafy.io    Database: nift_db
--- ------------------------------------------------------
--- Server version   8.0.41
+-- Drop and recreate the database
+-- DROP DATABASE IF EXISTS nift;
+-- CREATE DATABASE nift;
+-- USE nift;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+-- 1. brands
+INSERT INTO brands (brand_id, brand_name) VALUES
+                                              (1, '이디야커피'),
+                                              (2, '스타벅스'),
+                                              (3, '던킨도너츠'),
+                                              (4, '배스킨라빈스'),
+                                              (5, '교촌치킨'),
+                                              (6, '버거킹'),
+                                              (7, '맥도날드'),
+                                              (8, 'BBQ'),
+                                              (9, '굽네치킨'),
+                                              (10, '파리바게뜨'),
+                                              (11, '뚜레쥬르'),
+                                              (12, '이마트24'),
+                                              (13, 'GS25'),
+                                              (14, 'CU'),
+                                              (15, '컬리'),
+                                              (16, '신세계상품권'),
+                                              (17, '교보문고'),
+                                              (18, 'YES24'),
+                                              (19, '투썸플레이스'),
+                                              (20, 'CGV');
 
---
--- Dumping data for table `brands`
---
+-- 2. categories
+INSERT INTO categories (category_id, category_name) VALUES
+                                                        (1, '카페/음료'),
+                                                        (2, '베이커리/디저트'),
+                                                        (3, '아이스크림/빙수'),
+                                                        (4, '치킨'),
+                                                        (5, '버거/피자'),
+                                                        (6, '편의점/마트'),
+                                                        (7, '상품권/금액권'),
+                                                        (8, '영화/도서');
 
-INSERT INTO `brands` (brand_id, brand_name) VALUES (1,'이디야커피'),(2,'스타벅스'),(3,'던킨도너츠'),(4,'배스킨라빈스'),(5,'교촌치킨'),(6,'버거킹'),(7,'맥도날드'),(8,'BBQ'),(9,'굽네치킨'),(10,'파리바게뜨'),(11,'뚜레쥬르'),(12,'이마트24'),(13,'GS25'),(14,'CU'),(15,'컬리'),(16,'신세계상품권'),(17,'교보문고'),(18,'YES24'),(19,'투썸플레이스'),(20,'CGV'),(22,'BHC'),(24,'설빙'),(25,'롯데리아'),(26,'도미노 피자');
+-- 3. users
+INSERT INTO users (user_id, kakao_id, nick_name, wallet_address, profile_image, gender, age, role) VALUES
+                                                                                                       (1, 100001, '도원이', '0xAbC123...', 'https://example.com/profile1.png', 'male', '20', 0),
+                                                                                                       (2, 100002, '지혜짱', '0xDef456...', 'https://example.com/profile2.png', 'female', '23', 1),
+                                                                                                       (3, 100003, '승호형', '0x789abc...', 'https://example.com/profile3.png', 'male', '27', 0),
+                                                                                                       (4, 100004, '혜민쓰', '0x321fed...', 'https://example.com/profile4.png', 'female', '25', 2),
+                                                                                                       (5, 100005, '현수', '0xa1b2c3...', 'https://example.com/profile5.png', 'male', '21', 1),
+                                                                                                       (6, 100006, '기훈이', '0xb3c4d5...', 'https://example.com/profile6.png', 'male', '22', 0),
+                                                                                                       (7, 100007, '혜진님', '0xc5d6e7...', 'https://example.com/profile7.png', 'female', '24', 2),
+                                                                                                       (8, 100008, '성현이', '0xd7e8f9...', 'https://example.com/profile8.png', 'male', '26', 1),
+                                                                                                       (9, 100009, '유림짱', '0xe9f0a1...', 'https://example.com/profile9.png', 'female', '23', 0),
+                                                                                                       (10, 100010, '정우대장', '0xf1a2b3...', 'https://example.com/profile10.png', 'male', '29', 2);
 
---
--- Dumping data for table `categories`
---
+-- 4. gifticons
+INSERT INTO gifticons (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id)
+VALUES (1, '아메리카노', '따뜻한 커피 한 잔', 4.5, 'https://example.com/gift1.png', 1, 4);
+INSERT INTO gifticons (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id)
+VALUES (2, '초코케이크', '달콤한 디저트', 5.0, 'https://example.com/gift2.png', 2, 3);
+INSERT INTO gifticons (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id)
+VALUES (3, '버거세트', '한 끼 식사로 충분', 7.5, 'https://example.com/gift3.png', 3, 5);
+INSERT INTO gifticons (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id)
+VALUES (4, '도시락', '편의점 도시락', 4.0, 'https://example.com/gift4.png', 4, 1);
+INSERT INTO gifticons (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id)
+VALUES (5, '기프트카드', '모든 곳에서 사용 가능', 10.0, 'https://example.com/gift5.png', 5, 2);
 
-INSERT INTO `categories` (category_id, category_name) VALUES (1,'카페/음료'),(2,'베이커리/디저트'),(3,'아이스크림/빙수'),(4,'치킨'),(5,'버거/피자'),(6,'편의점/마트'),(7,'상품권/금액권'),(8,'영화/도서'),(9,'생활용품');
+-- 5. articles
+INSERT INTO articles (article_id, serial_num, title, description, user_id, expiration_date, image_url, count_likes, current_price, created_at, view_cnt, gifticon_id) VALUES
+                                                                                                                                                                          (1, 20250325001, '기프티콘 팝니다 - 스타벅스 아메리카노', '따뜻한 아메리카노 필요하신 분!', 1, '2025-12-31 23:59:59', 'https://example.com/starbucks1.png', 5, 4.2, '2025-03-25 13:00:00', 120, 1),
+                                                                                                                                                                          (2, 20250325002, '할인된 파리바게뜨 케이크', '유통기한 넉넉해요!', 2, '2025-12-15 23:59:59', 'https://example.com/cake1.png', 8, 6.5, '2025-03-25 13:05:00', 87, 2),
+                                                                                                                                                                          (3, 20250325003, '던킨도너츠 도넛팩', '6개 묶음 세트입니다.', 3, '2025-11-30 23:59:59', 'https://example.com/dunkin1.png', 3, 5.0, '2025-03-25 13:10:00', 60, 3),
+                                                                                                                                                                          (4, 20250325004, 'GS25 도시락 기프티콘', '점심 해결하세요!', 4, '2025-10-20 23:59:59', 'https://example.com/gs25lunch.png', 2, 4.0, '2025-03-25 13:15:00', 42, 4),
+                                                                                                                                                                          (5, 20250325005, '배스킨라빈스 싱글콘', '무난한 맛 선택 가능 🍦', 5, '2025-09-30 23:59:59', 'https://example.com/brsingle.png', 6, 3.1, '2025-03-25 13:20:00', 53, 5),
+                                                                                                                                                                          (6, 20250325006, '버거킹 와퍼세트', '콜라 포함된 세트!', 1, '2025-12-10 23:59:59', 'https://example.com/whopper.png', 11, 6.9, '2025-03-25 13:25:00', 98, 1),
+                                                                                                                                                                          (7, 20250325007, 'BHC 치킨반반 기프티콘', '순살 구성입니다.', 2, '2025-11-01 23:59:59', 'https://example.com/bhc1.png', 9, 17.8, '2025-03-25 13:30:00', 140, 2),
+                                                                                                                                                                          (8, 20250325008, '이디야 라떼 기프티콘', '따뜻한 커피 한 잔 어떠세요?', 3, '2025-10-05 23:59:59', 'https://example.com/ediya.png', 4, 3.6, '2025-03-25 13:35:00', 41, 3),
+                                                                                                                                                                          (9, 20250325009, '투썸 조각케이크', '디저트 타임용으로 딱입니다!', 4, '2025-09-20 23:59:59', 'https://example.com/twosomecake.png', 7, 5.8, '2025-03-25 13:40:00', 65, 4),
+                                                                                                                                                                          (10, 20250325010, 'CU 편의점 아이스크림', '쿨하게 즐겨요 🍨', 5, '2025-08-31 23:59:59', 'https://example.com/cuice.png', 1, 2.5, '2025-03-25 13:45:00', 23, 5);
 
+-- 6. likes
+INSERT INTO likes (like_id, articles_id, user_id) VALUES (1, 1, 2);
+INSERT INTO likes (like_id, articles_id, user_id) VALUES (2, 2, 3);
+INSERT INTO likes (like_id, articles_id, user_id) VALUES (3, 3, 4);
+INSERT INTO likes (like_id, articles_id, user_id) VALUES (4, 4, 5);
+INSERT INTO likes (like_id, articles_id, user_id) VALUES (5, 5, 1);
 
---
--- Dumping data for table `users`
---
-
-INSERT INTO `users` (user_id, kakao_id, nick_name, wallet_address, profile_image, gender, age, role) VALUES (1,'20~29','female',3976389070,'영민','http://img1.kakaocdn.net/thumb/R640x640.q70/?fname=http://t1.kakaocdn.net/account_images/default_profile.jpeg',0,'0xa7B9A191107081f780E534502C1B2288cFB7cC03'),(2,'20~29','male',3977733962,'김도원','http://img1.kakaocdn.net/thumb/R640x640.q70/?fname=http://t1.kakaocdn.net/account_images/default_profile.jpeg',1,'0x4ED78E0a67c2F984D4985D490aAA5bC36340263F'),(3,'20~29','female',3977722266,'권유주','http://k.kakaocdn.net/dn/czGA5m/btsLstCuIrI/fOphbzalRQZ0cumUvxzSsk/img_640x640.jpg',0,'0xc3c0Da7063617cA28e93A1cf0D53531c46A00AFd'),(4,'20~29','female',4006498484,'조원주','http://img1.kakaocdn.net/thumb/R640x640.q70/?fname=http://t1.kakaocdn.net/account_images/default_profile.jpeg',0,NULL),(5,'20~29','female',4100972657,'미서','http://img1.kakaocdn.net/thumb/R640x640.q70/?fname=http://k.kakaocdn.net/dn/bbaJYy/btsLMVr5aKx/CalKUSbvMKHl7tnAnvlkk0/img_640x640.jpg',0,'0xad241218a3C90a5c7bBd05F87DA4738676AF77b4'),(6,'20~29','female',4001926433,'희진','http://k.kakaocdn.net/dn/SCVgq/btsMcgPB7HK/L5YqXujKoAFLlP7DcKBTck/img_640x640.jpg',0,'0xe911090F1ca13EE23f3C1eE964c5d4e323987e9f'),(22,'20~29','male',4206087004,'박연후','http://img1.kakaocdn.net/thumb/R640x640.q70/?fname=http://t1.kakaocdn.net/account_images/default_profile.jpeg',0,'0x632b7604162eBC8cdab753783329857edE2fCBea'),(23,'20~29','female',4209140343,'윤예리','http://img1.kakaocdn.net/thumb/R640x640.q70/?fname=http://t1.kakaocdn.net/account_images/default_profile.jpeg',0,'0x9465f38e988d917FD26c6895b5608Dc0317ADB00');
-
-
---
--- Dumping data for table `gifticons`
---
-INSERT INTO `gifticons` (gifticon_id, gifticon_title, description, price, image_url, category_id, brand_id, created_at) VALUES (1,'던킨도너츠 - 미니도넛세트','미니도넛세트','https://ipfs.io/ipfs/QmetmTc5SHEeHGPtNMpksPn3UFz2qMLrMMtGynKRxm7V7R',55,3,2,'2025-04-08 12:03:03.814000','https://ipfs.io/ipfs/QmRQP6kU7YLGa8TyHm6mNTin1GnfThuqLtFbUvteufMBMs'),(2,'던킨도너츠 - 해피먼치킨컵','해피먼치킨컵','https://ipfs.io/ipfs/QmPs2ZF76FKBcM3cp1b7Ka5fLDh9C6QuKDppnzgj8DweX3',50,3,2,'2025-04-08 12:03:50.564000','https://ipfs.io/ipfs/QmNhGueS9RXUzhCMobsdVo4uUoNu8A372hYXWEEf52zirN'),(3,'던킨도너츠 - 바바리안필드','바바리안필드','https://ipfs.io/ipfs/QmdcBqoEsc73YMNYsQ9zyskzuKV8mavZdTJmBJ5Yfu92uF',20,3,2,'2025-04-08 12:04:15.772000','https://ipfs.io/ipfs/QmZBjhebmxhoWgXcyDLeF4kq93ddtbv7evkBD6ymYxXNVq'),(4,'던킨도너츠 - 올리브츄이스티','올리브츄이스티','https://ipfs.io/ipfs/QmQ2wxqQKSWYqezibwqvcN5zPDoorthdJRWbejsaWboTPa',25,3,2,'2025-04-08 12:05:01.813000','https://ipfs.io/ipfs/QmPhM9KwAwvFA6a2kJxQSn9k8ZpjjdLdz6nYXkRhm5r4sZ'),(5,'스타벅스 - 딸기초코생크림케이크','딸기초코생크림케이크','https://ipfs.io/ipfs/QmPzcWY5wmH7cZGRVZAcjJJG3SjLiM3XfrC7XNkQtdZA9P',69,2,1,'2025-04-08 12:06:00.294000','https://ipfs.io/ipfs/QmdcP4EKoQiq8FzCBTJ4nf1V394xwa6H7bgr7LaLg3vHNV'),(6,'스타벅스 - 딸기마스카포네샌드케이크','딸기마스카포네샌드케이크','https://ipfs.io/ipfs/QmW4cPyWiLJQxLEM5eriWqQZw7xz3ncjSrH2qa57QfvhQx',88,2,1,'2025-04-08 12:06:29.643000','https://ipfs.io/ipfs/Qmcx64N9aLj6ieXcwEkRN2P95iqLHupw5ccagasonuntdY'),(7,'스타벅스 - 블루베리마블치즈케이크','블루베리마블치즈케이크','https://ipfs.io/ipfs/QmSxMKv2mR9LT7rrutjJnUuJhYsuEtxqiafbM7kgLPGF9Z',65,2,1,'2025-04-08 12:07:14.712000','https://ipfs.io/ipfs/QmRcD2gwEvF1pYY9N3ZUL8DDZTXKVEYL31pk7bHa18mCew'),(8,'스타벅스 - 라즈베리쇼콜라','라즈베리쇼콜라','https://ipfs.io/ipfs/QmVBn17MoNsf8tmdiY9c96KQps12jpX17HGyFjX3eGGmcE',45,2,1,'2025-04-08 12:09:56.281000','https://ipfs.io/ipfs/QmRSYDsmqGJrvDPNSACDDApeCh24PPbh38rHQHnURM2sbF'),(9,'스타벅스 - 자바칩프라푸치노','자바칩프라푸치노','https://ipfs.io/ipfs/QmR7g9FET7ysmiDb5txTrExFm5uq4hhJX2ZJnkPtei9KFF',65,2,1,'2025-04-08 12:10:53.971000','https://ipfs.io/ipfs/Qmby1xr17HdaGfxiQdSCjjz96VYhizdei2skDEioPFmgkn'),(10,'스타벅스 - 바닐라빈라떼','바닐라빈라떼','https://ipfs.io/ipfs/QmUh1Xoyi3WXsP7hc8VqhTtZ96yzVWX1KMeexLa9aemmDp',55,2,1,'2025-04-08 12:11:21.845000','https://ipfs.io/ipfs/QmUVDQFoYinAQS2PU2RruT2AS12BjLNGKhwPJtGTeSoLyR'),(11,'이디야커피 - 버블크림밀크티','버블크림밀크티','https://ipfs.io/ipfs/QmcAuzA2Va74JRP7qhMhaDVZqdNjPJZfJC6KcFiY6vbbCC',40,1,1,'2025-04-08 12:11:52.237000','https://ipfs.io/ipfs/QmY7Gn4PW6tWww5LNYMsy3yxpNA3oERf5F9KHJm76dN57n'),(12,'이디야커피 - 아이스아메리카노','아이스아메리카노','https://ipfs.io/ipfs/QmV78VnySm9LKyhkTh9HHjropXAgGEGcRvPJSjEBFj975B',20,1,1,'2025-04-08 12:12:18.674000','https://ipfs.io/ipfs/Qmc6pxxi3hTjrSNaTXKQJyAbN9ht8cozLdzLZD5uwjvZLv'),(13,'이디야커피 - 모히또','모히또','https://ipfs.io/ipfs/QmTzuAVakpZs1KC2Ks4Y8v6CYHU9ZzB36AdXEacTnJC3xV',30,1,1,'2025-04-08 12:13:21.250000','https://ipfs.io/ipfs/QmSzMedWNq4R5rB6FPKJQWKEagpYaoN6z9CYJt6f98ndn9'),(14,'이디야커피 - 아망추','아망추','https://ipfs.io/ipfs/QmPUtyXW2jrh65gFAcJatuuRT3aE9mYPNMYCynXbn1tUWs',25,1,1,'2025-04-08 12:14:13.421000','https://ipfs.io/ipfs/QmPpcEPgZLDnY3fZ4RRZgrWPFTUrodFTZyZcfhNzWJjQpY'),(15,'이디야커피 - 핫아메리카노','핫아메리카노','https://ipfs.io/ipfs/QmZdpwEDwcajKC9NsLhCrLTUA9eu7GGM3VsbSWhaveuJX4',30,1,1,'2025-04-08 12:14:57.220000','https://ipfs.io/ipfs/QmW1ks3GZ31WWjgEmB47vWDTkpei8tFDaoqhfYx7yHWeYf'),(16,'투썸 플레이스 스트로베리 초코 생크림 케이크','스초생','https://ipfs.io/ipfs/QmQ5uacfdTsX1itsbkmb3HndZV3oMRZMuuWThRG4WzGYMv',700,19,2,'2025-04-09 09:07:53.189000','https://ipfs.io/ipfs/QmbLd1WjY6YrtkDcw225gXqwuc1UaVp41uLhwy95sYMN5z'),(17,'CGV 10000원 기프트 카드','CGV 영화 티켓','https://ipfs.io/ipfs/QmYMtoLMJD77T8tyyLRtUghaxFJqkrgPCVKsvMH8asvgjd',130,20,7,'2025-04-09 09:09:09.647000','https://ipfs.io/ipfs/QmbFHWcjxs2pBjHmujQkvUgnZkcujyuV3rVFtEK31Tptgr'),(18,'뿌링뿌링! 세상에 없던 마법의 맛 뿌링클,\n퍽퍽한 닭가슴살 없이 윙과 봉, 닭다리만\n담은 콤보(소스 포함)','뿌링클 콤보','https://ipfs.io/ipfs/QmTWi1gZGBi1JbEJHVrT6PT5Qypg3UdkcHNcMfLd4SwsQd',210,22,4,'2025-04-09 09:25:35.758000','ipfs://QmYCyDVPWZ3mPks6PoCwvukvUaHddyrcyMuDVr5waDLW53'),(19,'교보문고 기프트카드 10000원권','교보문고 기프트카드','https://ipfs.io/ipfs/QmVEejBTHzPDn8h7zG41KcGJcTST8Gd9tHgemZYqCCio5u',100,17,7,'2025-04-09 09:47:55.355000','https://ipfs.io/ipfs/QmX7fJ46PhzSRNwMdj63XMhyPWDBm5EC47EzmsP3bcN8nj'),(20,'뚜레쥬르 화이트 초코 케이크','화이트 초콜릿 케이크','https://ipfs.io/ipfs/Qmbh7co4MjxsXvJFeXwop65dxq76YRdFfd6uaVCBCtEez6',300,11,2,'2025-04-09 09:48:53.635000','https://ipfs.io/ipfs/QmbgXC67P6ceHhckyBJYaHSQP9oFmfHzfNy5o3yAWqKu6T'),(21,'파리바게트 파운드 케이크','파운드 케이크','https://ipfs.io/ipfs/QmQTbdHf1zVfxog2UxjtWxfQ9yLAMeLzQCaPfY6AFDFq3y',220,10,2,'2025-04-09 09:49:30.336000','https://ipfs.io/ipfs/QmYr8vVhGswgRse4LNGAYWrKwfKJg9AnG3aAXWusHiCgbX'),(22,'굽네 치킨 레토르트 닭다리 10개','굽네 레토르트 치킨','https://ipfs.io/ipfs/QmTZr6XBCo6xZdAMCSy1TMv5HdngosczJEgpxksBRorDnC',340,9,4,'2025-04-09 09:50:24.743000','https://ipfs.io/ipfs/QmT1BWoHv2b4b8ePoeoqcE85moRoa8mAB8EnBVsZrSkZ2C'),(23,'맥도날드 빅맥 세트입니다','빅맥 세트','https://ipfs.io/ipfs/QmS9hQykA398uQKUJF3Frkp6L7N7DDT4hhEL4rnSg7RkL9',100,7,5,'2025-04-09 09:53:56.496000','ipfs://QmRWc1KoCuHUkmgjxfiyHQi1Qr5ZdxPe4KNDsdfoUe2oyq'),(24,'교촌치킨 반반 콤보','반반 치킨','https://ipfs.io/ipfs/QmRzseYdpSyArXTAQBbtaAerLiEQZfFyZjWYXqrgJ2xPfv',310,5,4,'2025-04-09 09:55:00.875000','ipfs://QmQyXTFphkRJTo151LRd46wk3dFgzvDWpxhSnX4sEEfY9M'),(25,'베스킨 라빈스 파인트 쿠폰','파인트','https://ipfs.io/ipfs/Qma8pwbPD9mVGodivdPQiCRVZXKN7Yid3sUtvFXcUaErTA',85,4,3,'2025-04-09 09:55:54.735000','ipfs://QmdkBLCu2fwN8NuBZxkPPM7xxJdQuCuECKK6W6Ky1A1W89'),(26,'바나나맛 우유_CU','바나나맛우유','https://ipfs.io/ipfs/QmeVpfn3zocUiFspphX4th6QNTW2MZ1aXvZMBz3xcDFKEY',13,14,6,'2025-04-09 10:18:59.628000','ipfs://QmZdeV18dJmqo5SohzLKiFhCAB42mz9MADj2HLsmNQoDDm'),(27,'CU 기프트카드 5천원','cu 기프트카드','https://ipfs.io/ipfs/QmW9t62C22xtcyuKsQb1qY4S13DNQhvKu5wkAvdvsEP8oA',100,14,7,'2025-04-09 10:21:36.382000','https://ipfs.io/ipfs/QmUYoZMq5cuiRzXZfYnrJNzMpEzJobRWnbYfsHyuGn5Ti8'),(28,'츄파츕스','츄파츕스','https://ipfs.io/ipfs/QmbY6YPUCiDuWVBcJF7uvgqi32BMKGNhM1snAgHnrspS95',3,14,6,'2025-04-09 10:22:08.328000','ipfs://QmTagFgNmdx9RNUsLFsMojCNLoVwJEFp7MgKDWwzBnuHjc'),(29,'스타벅스 금액권 30,000원 입니다','스타벅스30000','https://ipfs.io/ipfs/QmZ7WUSL3XidMtbi2wPkFDZq8QGp4SGCjz5Ehpsf2D1iho',300,2,7,'2025-04-09 10:23:04.427000','ipfs://QmaQsaTT58RwfqVbPsFpNmUPksnKvvV27b3GyAGJk6SDkx'),(30,'팝콘(M)1+탄산음료(M)1','스몰콤보','https://ipfs.io/ipfs/QmS2FkaPTVPMy5pdnpA5RdUN733sagLDBvi4z9ghFdCdza',80,20,8,'2025-04-09 10:28:14.020000','https://ipfs.io/ipfs/QmeByottFSziqZgeBLwv3rkjkSdM61kd7WpFpMhLERP3TA'),(31,'IMAX는 사람이 볼 수 있는 최대 영상이라는 뜻으로, 최고의 몰입감을 선사합니다.','CGV IMAX 영화 관람권','https://ipfs.io/ipfs/QmSXuSkqBmt5BBYeupej9W3ejPJXxtqtp3pJ2Spa2BtYcY',180,20,8,'2025-04-09 10:31:31.075000','https://ipfs.io/ipfs/QmbzGd914dP6mZHemUnpeEGJiaVxCo29N4JZBi9pdcjdKQ'),(32,'설빙 망고 치즈큐브 빙','설빙 망고 치즈','https://ipfs.io/ipfs/QmRaYaXi4NrdqaNAEETnvmNryyhiBBtYxGB4owzEFvYWpg',200,24,3,'2025-04-09 10:32:27.612000','ipfs://QmcebykX1NpNroiVRFSq89z1M3duuqTH9HyyfVRao1mqp6'),(33,'SCREENX는 스크린의 경계를 넘어 극대화된 현장감을 제공하는\n전세계 가장 트렌디한 무비포맷입니다.','SCREENX 영화관람권','https://ipfs.io/ipfs/QmQQQcXd3zmQ3UhvANgYfWgezLD8bCDS9QGet7gTYrVNHZ',160,20,8,'2025-04-09 10:33:09.619000','https://ipfs.io/ipfs/QmdYXZfK24Msc2CeNNYF7wydcpgsS6dREdLQXcURxdUQKq'),(34,'팝콘(L)1+탄산음료(M)2으로 구성된 콤보','CGV콤보','https://ipfs.io/ipfs/QmW2a1qRFETNQjVizPYhp5bB41ygEAvxFB3NrtUxDfeVxY',120,20,8,'2025-04-09 10:35:15.106000','ipfs://Qmez611BL5TEFMoQyp5Kbq8W6X2MfD5SUU3HVioZB5dvP1'),(35,'팝콘(L)2+탄산음료(L)2으로 구성된 메뉴.','라지콤보','https://ipfs.io/ipfs/QmdRFB5eFFhErpsnff7Bdbovdzcr5HbH2Ye8Kdv5nawRPP',170,20,8,'2025-04-09 10:36:18.435000','ipfs://QmZpxHyPRaMvJSTSy5Ckw6FAvAYV3tUejAyrCFow1vAnPy'),(36,'예스24에서 이용할 수 있는 결제 수단입니다.','예스24 통합상품권 10만원권','https://ipfs.io/ipfs/QmZ3cpaMTTbpdQKvdkjWSfKJqMAJuY8qtXaKppAsSrjGtz',1000,18,7,'2025-04-09 10:43:27.014000','https://ipfs.io/ipfs/Qmchr8YAtXGRMdpFXKw4UWAUUyDeSnC5Q9KdXyMszdwMgn'),(37,'예스24에서 이용할 수 있는 결제 수단입니다.','예스24 통합상품권 1만원권','https://ipfs.io/ipfs/QmfSorhk246qnWwvS8KCfHrKwGL4vAXbYdqM17mhMu1w4Y',100,18,7,'2025-04-09 10:43:54.040000','https://ipfs.io/ipfs/QmdScHeQsWBvPyarB5MZZgdSQu7jiiTybdpZgntg3R33V6'),(38,'예스24에서 이용할 수 있는 결제 수단입니다.','예스24 통합상품권 5만원권','https://ipfs.io/ipfs/QmaDas7jFWbRJBMU95Ab2VkfjApZpxLXDhhihPHQRwgmyJ',500,18,7,'2025-04-09 10:44:56.600000','https://ipfs.io/ipfs/QmW1SktLKQcHRK91f3MAPvZzLjt2zVyjpEtmBFmpFQbAC3'),(39,'예스24에서 이용할 수 있는 결제 수단입니다.','예스24 통합상품권 3만원권','https://ipfs.io/ipfs/Qmcmpn1TZYr8JqEX9zjZjkNJ6iKkRQTjqtZyKFS5Hgq2Re',300,18,7,'2025-04-09 10:45:43.319000','https://ipfs.io/ipfs/QmNMcNndQsdqrSfT2pDijx8QvQK3utkEWCwdYiUr56Ueg8'),(40,'설빙 딸기 요거트 아이스크림 빙수','설빙 딸기 빙수','https://ipfs.io/ipfs/QmYmzJPnTuvm2dUXKEdtYnG4TgdKd63gNyCpqoYAp2uCpm',220,24,3,'2025-04-09 10:33:30.705000','ipfs://QmRJPixyRWVQyVfR4Gg4Q1xmZULQCvD988vvojAqcK86iD'),(41,'설빙 인절미 빙수','인절미 빙수','https://ipfs.io/ipfs/QmbDKgFraWyK9cD5VPtVrfq1vCumw7xTyWYnnm3JhxKZQp',130,24,3,'2025-04-09 10:34:07.117000','ipfs://QmSL72Br85NCjRmmNtAcywCkaqSf36r9p46PAXN5R3XiTd'),(42,'설빙 녹차 아이스크림 딸기 빙수','크리스마스 빙수','https://ipfs.io/ipfs/QmPTMjmY5HSgBQDnbNxGjoNjFmw7ADcENevaPk1NEuyfV2',220,24,3,'2025-04-09 10:34:54.074000','ipfs://Qmc2LV8xPVehH1Vk7F5yxwz2AoTgpF6a2VkJGPMKtH6jYo'),(43,'설빙 기프트카드 1만원','설빙 기프트카드','https://ipfs.io/ipfs/QmXMh7QoTD8vggh7ggc2gsVxeqWgQSqte9du3mtfpCDSdb',100,24,7,'2025-04-09 10:35:58.804000','https://ipfs.io/ipfs/QmPXXXT6NFtN5FQ9uZnTAR4J9SZQJieJeuF3y4KMv2Ffwv'),(44,'베스킨라빈스 싱글 콘','싱글 콘','https://ipfs.io/ipfs/QmPtL9pHNEXiz6tKyqyM7x1VpFUanWVWnU3BGgoSANnnhD',41,4,3,'2025-04-09 10:36:41.798000','ipfs://QmRwBvscxyhKiE3LvLqv91gh47FbV9kfo4SEoPTJ1AANFM'),(45,'베라 아이스크림 롤','아이스크림 롤','https://ipfs.io/ipfs/Qmcjp2U9fxUucwoeWfCEfxJcEBd7aD6pKDdBAaLCaVWsJe',18,4,3,'2025-04-09 10:37:11.995000','ipfs://QmRSEBNgwcyePrE1sMHdujSKi6f5MepHV94Zzh4sxwAwRj'),(46,'배스킨 라빈스 우석이 시리즈','우석이 시리즈','https://ipfs.io/ipfs/QmQroeMJfXpqALP5ZGUdt7XnrU24ZZoqYsvxjpyAXP7vgD',36,4,3,'2025-04-09 10:37:58.015000','ipfs://QmNtvyNzRwBbDT6u2o67ZdrZRYqzAUS59nDceRtK7pgA4E'),(47,'교촌 세트메뉴','교촌 세트','https://ipfs.io/ipfs/QmRxgSPwaYp2kCZWkDVaMFJeXWETqvM2ivtCDv4RTEMJVR',250,5,4,'2025-04-09 10:43:29.193000','ipfs://QmYkCQQ65rFLYiUoyxXmD7ZzP4BrvF1nHt18TAtoNnetNW'),(48,'교촌 닭강정','교촌 닭강정','https://ipfs.io/ipfs/Qma6gekV9AFGX2pibFavRbmZ6KpgAzpnnTrBJHd9zdyHqB',220,5,4,'2025-04-09 10:44:02.929000','ipfs://Qmf5aqnWsdCT11YfS2swVsqahUiv81MZPWzCjwugiKNNJT'),(49,'교촌 허니콤보','허니콤보','https://ipfs.io/ipfs/QmTmV27ZjY1bVbxmKLCMjhYhQfXm9WSKbD6jeAB1kQkcMH',250,5,4,'2025-04-09 10:44:37.850000','ipfs://QmUWtfhcVsNwvSkjdR7Eiz8pyEMp9dfypqjEYW28g2agiB'),(50,'비비큐 후라이드 + 콜라','비비큐 후라이드','https://ipfs.io/ipfs/Qmamy1GnucQUDsq5drSEjTNmx8WUmA6jNv9rn15zxZHsc1',200,8,4,'2025-04-09 10:45:27.633000','ipfs://QmaJmFDpdEL3FxjDtqZiCRsPFfXndm7fmbnRJ2z8LqsHDe'),(51,'굽네 양념치킨 콜라 세트','굽네 양념치킨 세트','https://ipfs.io/ipfs/QmVkcVbnJFXCKHPQMNiRtMW65QBPvyTwAWSejfKYKgaTMD',210,9,4,'2025-04-09 10:46:04.329000','ipfs://QmX5Lc9Z2HQzjcUWUkb11F4WzH6haQHkuTvZsei4oJ6qDv'),(52,'굽네 세트','굽네 치킨 + 콜라 세트','https://ipfs.io/ipfs/Qme7x1bPrei82YF5vZnWuHBBp4Lav34amDUHnmFyX9fh21',225,9,4,'2025-04-09 10:46:56.563000','ipfs://QmbiZZHypz15ZbyqCgFvCgDdmRHY3tccTE4eFUaLNmxYtL'),(53,'굽네 마늘치킨','마늘치킨','https://ipfs.io/ipfs/QmUcL2NgSANZaDmzDZSJU4QiGgtcnPDG42FbgnFEzFxrnG',215,9,4,'2025-04-09 10:47:39.392000','ipfs://QmPj5gfT2WrgfTiuKTmv7kPLzXD3SzpYc316WzcEhpfWVP'),(60,'빅맥세트입니다.','빅맥세트','https://ipfs.io/ipfs/QmNvi2cEnzTGKNnaCuTcEkaxUAzN3YgVu62y8qnbEZZQky',74,7,5,'2025-04-09 11:03:02.846000','ipfs://QmdFiSBENjjmz6M4E5P9RYW72vBAe7ycE1YrsvAVq28yWo'),(61,'슈비버거 세트입니다.','슈비버거 세트','https://ipfs.io/ipfs/QmYuSuKGTtozLENhEbLT2VwexbdWpzcoXdrYppeGfARSEY',78,7,5,'2025-04-09 11:03:34.946000','ipfs://QmV9usEFn79J7oNBxvynQBM18zryg2i5HcuV3QBinihM2r'),(62,'맥치킨 모짜렐라 세트입니다.','맥치킨 모짜렐라 세트','https://ipfs.io/ipfs/QmT6w1Cv9cMX4TxnJ6F1RDZArKZPvW9R7c8X8zR8gCTGFY',73,7,5,'2025-04-09 11:04:11.679000','ipfs://QmcEXTC59HQMpt4wYqwhXYij8uWwzU5F97zuspx2zQao9i'),(63,'데리버거 세트입니다.','데리버거 세트','https://ipfs.io/ipfs/QmWcURCbGvp8cRe5Q8LHVoMcATu2xMTGYcNJ6XatXbdDob',59,25,5,'2025-04-09 11:05:07.107000','ipfs://QmY8TRToguzgzgSS9eBvtdyKHC7KuTWCNS1XQHx5tvtAA7'),(64,'새우버거 세트입니다.','새우버거 세트','https://ipfs.io/ipfs/Qmbkef9Z79Cb2JNQ5xA2ji8SWNWEcLsNXWcST8py29woP1',71,25,5,'2025-04-09 11:05:31.452000','ipfs://QmRz7TJArnJNC49oEMHLBypVC8qtRFwEyXoJCqN3TqTTLu'),(65,'한우 불고기버거 세트입니다.','한우 불고기버거 세트','https://ipfs.io/ipfs/Qmag9gUHqWwmfNUbB7fUP6WbM4m6XQ7aFAu2cvGEwAAJ4y',92,25,5,'2025-04-09 11:05:56.865000','ipfs://QmdA7WwRcYFw7KTTM3P6zWTBTLyaiJQMbVwe9iTMTyg6SF'),(66,'도미노 시그니처 피자 블랙타이거 슈림프 L 입니다.','블랙타이거 슈림프피자','https://ipfs.io/ipfs/QmacDuN7whnVC3NHHq5Y7TC6CUycM2BS17Vcj4U6eUtxfX',369,26,5,'2025-04-09 11:07:06.968000','https://ipfs.io/ipfs/QmYws4qRmJVMHWEh2nSUE5j2tq6nkXBJhUdixegmQeyRzq'),(67,'도미노 시그니처 포테이토 피자 L 입니다.','포테이토 피자','https://ipfs.io/ipfs/QmT9q7VuLj4FF1J6GU8xhiH8mDgXX1s6LdVtqWK4JD2pZM',279,26,5,'2025-04-09 11:07:46.701000','ipfs://QmWzRjrbJGfBjPC3JLkGWUMiVUuK4LmGLKTzuhdPPJKtTh');
-
-
---
--- Dumping data for table `articles`
---
-INSERT 
-    INTO
-        `
-        articles` (
-            article_id, serial_num, title, description, user_id, expiration_date, image_url, count_likes, current_price, created_at, view_cnt, gifticon_id, state
-        ) 
-    VALUES
-        (82,2,'2025-04-08 21:43:08.000000',3,'싸게 모십니다.','2025-07-07 21:40:58.000000','https://ipfs.io/ipfs/QmetmTc5SHEeHGPtNMpksPn3UFz2qMLrMMtGynKRxm7V7R',100024,'DELETED','도넛한입하실래예?','0xb8ed6d8aa4f74bf80a75d5f40f47443ef90912b6849251e668626529d4b79631',6,0,1),(
-            83,1,'2025-04-08 21:45:58.000000',3,'몰디브 한잔 하시죠','2025-07-07 21:44:28.000000','https://ipfs.io/ipfs/QmTzuAVakpZs1KC2Ks4Y8v6CYHU9ZzB36AdXEacTnJC3xV',100026,'SOLD','모히또 가서','0xcc293cd6885fa47517f815882bffc9301cae91fa8fc744787ae3ea2aa605eacf',6,0,13
-        ),(
-            84,2,'2025-04-08 22:35:18.000000',100,'뜨아','2025-07-07 20:33:18.000000','https://ipfs.io/ipfs/QmZdpwEDwcajKC9NsLhCrLTUA9eu7GGM3VsbSWhaveuJX4',100023,'SOLD','뜨아','0x221deb744e374ac7e9d14b5f66316279341e62a81f530fad757b3ebca69af2a4',2,11,15
-        ),(
-            85,0,'2025-04-09 00:32:58.000000',2,'찐 도넛이에요','2025-07-07 21:40:58.000000','https://ipfs.io/ipfs/QmetmTc5SHEeHGPtNMpksPn3UFz2qMLrMMtGynKRxm7V7R',100024,'SOLD','진짜 도넛이에요','0xb9ce7552c774051e34a1e4b3913e2250d15927314afe716c11b12a404e94f65e',6,0,1
-        ),(
-            86,0,'2025-04-09 18:22:58.000000',90,'어디든 좋으니 나와 가줄래~~?','2025-07-08 18:17:18.000000','https://ipfs.io/ipfs/QmUsR2Q7fhVBdE3qBuD1XAEvnD3cL5M3PyhzoSnoyCcDUD',100035,'ON_SALE','나랑 영화 보러 갈래?','0x9a20c0c63cfe4a239ffda07f56d32cbc0a95b41047950d9f617cee2f0e299fc4',6,1,17
-        ),(
-            87,0,'2025-04-09 18:25:58.000000',15,'나랑 4귀는거다','2025-07-08 18:20:48.000000','https://ipfs.io/ipfs/QmV78VnySm9LKyhkTh9HHjropXAgGEGcRvPJSjEBFj975B',100053,'ON_SALE','이거 마시면','0x9aed3634f836786754653f04572682e0cf84b14397aab793c5b306a292c27e63',6,2,12
-        ),(
-            88,2,'2025-04-09 18:32:28.000000',30,'선물 받았는데 제가 자바를 안좋아해요','2025-07-08 18:25:18.000000','https://ipfs.io/ipfs/QmR7g9FET7ysmiDb5txTrExFm5uq4hhJX2ZJnkPtei9KFF',100057,'SOLD','Java칩','0x1487eafbdffd6f42e3ec359b19daedb31299b486d0498edaad4d321be093781f',2,0,9
-        ),(
-            89,1,'2025-04-09 18:33:08.000000',80,'제가 영화를 안봐서 올려요','2025-07-08 18:17:18.000000','https://ipfs.io/ipfs/QmUsR2Q7fhVBdE3qBuD1XAEvnD3cL5M3PyhzoSnoyCcDUD',100039,'ON_SALE','CGV 상품권','0x888a7dc7455b3bf1d97220aee202699a6f85d6745f10cfb8606d7688b84c7345',2,0,17
-        ),(
-            90,1,'2025-04-09 18:33:38.000000',50,'팝니다','2025-07-08 18:17:58.000000','https://ipfs.io/ipfs/QmQ5uacfdTsX1itsbkmb3HndZV3oMRZMuuWThRG4WzGYMv',100047,'ON_SALE','스초생','0x5fea4aea1f770277e8ae751ea70f99e7cbb7677f9b4474619efe4fcd47b569b7',2,0,16
-        ),(
-            91,2,'2025-04-09 18:34:18.000000',15,'제 스타일은 아닌거 같아요 ^^...','2025-07-08 18:10:18.000000','https://ipfs.io/ipfs/QmPUtyXW2jrh65gFAcJatuuRT3aE9mYPNMYCynXbn1tUWs',100032,'SOLD','아망추','0x22c61df07914214d1dbb96a3cb8fba0cfd37793c75a6bfa3641198989a282fa6',2,0,14
-        ),(
-            92,1,'2025-04-09 18:40:28.000000',15,'한 잔 팝니다','2025-07-07 21:44:28.000000','https://ipfs.io/ipfs/QmTzuAVakpZs1KC2Ks4Y8v6CYHU9ZzB36AdXEacTnJC3xV',100026,'ON_SALE','몰디브','0xb8a45914abaaae10051345c45a2924efe1b399b7685877515a18b43edc054755',2,1,13
-        ),(
-            93,0,'2025-04-09 19:00:48.000000',300,'다이어트 음식으로 최고 ㅠ 너무 많이 사서 저렴하게 내놓아요.. ','2025-07-08 18:52:28.000000','https://ipfs.io/ipfs/QmTZr6XBCo6xZdAMCSy1TMv5HdngosczJEgpxksBRorDnC',100094,'ON_SALE','굽네 치킨 10팩 싸게 올려요','0xb8745a788aeebd97cb73df370560497bf4f3ef53915d6d043b5f22271c3237f1',1,0,22
-        ),(
-            94,0,'2025-04-09 19:01:58.000000',80,'베라 파인트 싸게 내놓습니다 ??','2025-07-08 18:59:48.000000','https://ipfs.io/ipfs/Qma8pwbPD9mVGodivdPQiCRVZXKN7Yid3sUtvFXcUaErTA',100112,'DELETED','베라 파인트 급처','0xb52d8251e451bad693b02a1055410277dd84d0a0e62c10e221c6dfae8f2f8639',1,3,25
-        ),(
-            95,1,'2025-04-09 19:01:58.000000',50,'감기 걸려서 팔아요 ㅠㅠ','2025-07-08 18:59:48.000000','https://ipfs.io/ipfs/Qma8pwbPD9mVGodivdPQiCRVZXKN7Yid3sUtvFXcUaErTA',100115,'ON_SALE','베라','0x85ed24549c789f3ecea2fe756bea06cdfdc25cbcbdd10c0b0b57e4d36cd1b8bf',2,2,25
-        ),(
-            96,0,'2025-04-09 19:03:08.000000',18,'이디야 아메리카노 싸게 내놓아요','2025-07-07 20:33:18.000000','https://ipfs.io/ipfs/QmZdpwEDwcajKC9NsLhCrLTUA9eu7GGM3VsbSWhaveuJX4',100023,'ON_SALE','이디야 커피 은근 ㄱㅊ','0x8bef16f0a59ccf5fb3d128075b506183ba2ad74682b51d5fd23bc255658e94c2',1,0,15
-        ),(
-            97,0,'2025-04-09 19:04:38.000000',180,'황올입니다','2025-07-08 18:34:48.000000','https://ipfs.io/ipfs/Qmc4btDBr25N1wpW8T5jqeWhsaoUTswqEnVXcKrFyhEVkn',100078,'ON_SALE','황올   콜라 1.25L','0xf9796855ed950651de2b7988ac641837d166723dd77d369a9e71cc1e2d948e5d',1,0,18
-        ),(
-            98,0,'2025-04-09 19:05:58.000000',87,'맥날 빅맥 할인이요','2025-07-08 19:03:08.000000','https://ipfs.io/ipfs/QmS9hQykA398uQKUJF3Frkp6L7N7DDT4hhEL4rnSg7RkL9',100121,'ON_SALE','빅맥 할인','0xc10aab00d186e49f832e6b74d1a5ba41d4975fa54b36e84e72a91e68c946ffad',1,0,23
-        ),(
-            99,0,'2025-04-09 19:06:58.000000',280,'교촌 치킨 반반 오늘 저녁메뉴로 어떠신가요','2025-07-08 19:05:18.000000','https://ipfs.io/ipfs/QmRzseYdpSyArXTAQBbtaAerLiEQZfFyZjWYXqrgJ2xPfv',100130,'ON_SALE','교촌 반반   감자','0xff966a77178607c1b2295ca6866ea2837a967a024620db47669e668db8ec70e6',1,0,24
-        ),(
-            100,0,'2025-04-09 19:07:28.000000',190,'입맛이 없어서 싸게 팝니다','2025-07-08 19:05:18.000000','https://ipfs.io/ipfs/QmRzseYdpSyArXTAQBbtaAerLiEQZfFyZjWYXqrgJ2xPfv',100134,'SOLD','교촌 반반','0xf388e89aa1b39c4f9d72eaf4ce7098ca559e08466bb2b3f552fd74ab2e018d0c',2,1,24
-        ),(
-            101,0,'2025-04-09 19:08:48.000000',40,'제가 햄버거 알러지가 있어서 팝니다 ㅠㅠ','2025-07-08 19:07:58.000000','https://ipfs.io/ipfs/QmS9hQykA398uQKUJF3Frkp6L7N7DDT4hhEL4rnSg7RkL9',100141,'SOLD','빅맥 팔아요','0x7f6ec4cba0d7b5d968938e0cbb6489a23527de77dbdb847bfa875df014dcc333',2,2,23
-        ),(
-            102,0,'2025-04-09 19:08:58.000000',17,'원가 30인데 17로 싸게 내놔요... 사주세요 ㅠㅠ','2025-07-07 23:40:08.000000','https://ipfs.io/ipfs/QmZdpwEDwcajKC9NsLhCrLTUA9eu7GGM3VsbSWhaveuJX4',100031,'SOLD','이디야 커피 저렴하다구요','0x8826141418c357671142a4ba8f9b1d138f50e6ae6824b50613d5dd332aaec08d',1,0,15
-        ),(
-            103,0,'2025-04-09 19:09:28.000000',60,'스초생 진짜 맛있어요!!','2025-07-08 18:17:58.000000','https://ipfs.io/ipfs/QmQ5uacfdTsX1itsbkmb3HndZV3oMRZMuuWThRG4WzGYMv',100048,'ON_SALE','스초생!','0x930215c49c6861ddf1823f46979aa83df5dfbf963ff8a65b62f7c9131548c3b6',2,0,16
-        ),(
-            104,0,'2025-04-09 19:09:58.000000',80,'영화 잼남 싸게 보세요','2025-07-08 18:17:18.000000','https://ipfs.io/ipfs/QmUsR2Q7fhVBdE3qBuD1XAEvnD3cL5M3PyhzoSnoyCcDUD',100033,'ON_SALE','만원짜리 기프트카드','0x1a78117c19088be040691f9b5eed0719061e9b6a25875d5886eff005a0465f59',1,1,17
-        ),(
-            105,0,'2025-04-09 19:10:58.000000',550,'요즘 없어서 못 파는 스초생 홀케이크~','2025-07-08 18:17:58.000000','https://ipfs.io/ipfs/QmQ5uacfdTsX1itsbkmb3HndZV3oMRZMuuWThRG4WzGYMv',100052,'ON_SALE','?스초생?','0x5d588bee712e04b3f9be672ffe02d344582e7a688ce195f82fff3f3902ef1223',1,0,16
-        ),(
-            106,0,'2025-04-09 19:12:18.000000',10,'반으로 갈라버리겠어\nby. 에미넴','2025-07-08 19:05:18.000000','https://ipfs.io/ipfs/QmRzseYdpSyArXTAQBbtaAerLiEQZfFyZjWYXqrgJ2xPfv',100132,'DELETED','너의 머리를','0xd423d65c475ca74bd533669f5fbb0d44f9867024f83b6ecfb2cd4241aa37d618',6,0,24
-        ),(
-            107,1,'2025-04-09 19:12:28.000000',60,'???','2025-07-08 18:25:18.000000','https://ipfs.io/ipfs/QmR7g9FET7ysmiDb5txTrExFm5uq4hhJX2ZJnkPtei9KFF',100056,'ON_SALE','스벅 자바칩','0x9119201a0cb8dac1d970886174f8cfefa560e3956ef701093afd16b62176cf12',1,1,9
-        ),(
-            108,0,'2025-04-09 19:13:18.000000',87,'존맛','2025-07-08 19:03:08.000000','https://ipfs.io/ipfs/QmS9hQykA398uQKUJF3Frkp6L7N7DDT4hhEL4rnSg7RkL9',100120,'SOLD','맥날 ???','0xaccb3d84d6751a36ab2d592264692d1d2084dfc6197f5dea511521c680b8c295',1,0,23
-        ),(
-            109,1,'2025-04-09 19:13:28.000000',100,'반으로 갈라버리겠어 by. 에미넴','2025-07-08 19:05:18.000000','https://ipfs.io/ipfs/QmRzseYdpSyArXTAQBbtaAerLiEQZfFyZjWYXqrgJ2xPfv',100132,'ON_SALE','너의 머리를','0xc50f0af6948c49f8e6f631361eb86536d3049b84dc87e81bbe632479801823c5',6,1,24
-        ),(
-            110,0,'2025-04-09 19:14:08.000000',76,'기간 넉넉~합니다','2025-07-08 18:59:48.000000','https://ipfs.io/ipfs/Qma8pwbPD9mVGodivdPQiCRVZXKN7Yid3sUtvFXcUaErTA',100111,'ON_SALE','???','0xc52ed8524053c724844956cabf824cd0c8d3f002d1f0172d5d27cf51647425f4',1,9,25
-        ),(
-            111,0,'2025-04-09 19:14:28.000000',200,'돈 필요해서 급처해요. 유효기간 짱짱합니다.','2025-07-08 19:12:38.000000','https://ipfs.io/ipfs/Qmbh7co4MjxsXvJFeXwop65dxq76YRdFfd6uaVCBCtEez6',100153,'ON_SALE','급처급처','0x387b0fc5a4c279165ab1185ebb23fe7b2c0569d73b365701974fed667f665494',6,2,20
-        ),(
-            112,0,'2025-04-09 19:15:18.000000',270,'눅진한 초콜릿 케이크 맛도링임','2025-07-08 19:12:38.000000','https://ipfs.io/ipfs/Qmbh7co4MjxsXvJFeXwop65dxq76YRdFfd6uaVCBCtEez6',100144,'ON_SALE','달다 달아','0xbc4fc995ddc499664e8bf8067ca91a86b7aca40243d200dde5ff6d6945ceb14e',1,1,20
-        ),(
-            113,0,'2025-04-09 19:15:38.000000',60,'air 쓰니까 눈이 아파요. 큰 모니터 사려면 돈 필요하니까 빅맥 팔고 광명 찾겠습니다.','2025-07-08 19:03:08.000000','https://ipfs.io/ipfs/QmS9hQykA398uQKUJF3Frkp6L7N7DDT4hhEL4rnSg7RkL9',100126,'ON_SALE','빅MAC','0x9f9900d7d387a41f8437a371e7ddb6a9bd23a80eb613b4a59749403c3f0ff40b',6,1,23
-        ),(
-            114,0,'2025-04-09 19:16:18.000000',60,'이번 시즌에 나온 신상 케이크 맛있어요','2025-07-08 18:25:38.000000','https://ipfs.io/ipfs/QmW4cPyWiLJQxLEM5eriWqQZw7xz3ncjSrH2qa57QfvhQx',100064,'ON_SALE','숨겨진 디저트','0x9702f1e7ce82e3171a315ae390ad8399a25b52450d8b5f2a82f2fec814675e58',1,1,6
-        ),(
-            115,1,'2025-04-09 19:16:28.000000',200,'내 허리도 굽네','2025-07-08 18:52:28.000000','https://ipfs.io/ipfs/QmTZr6XBCo6xZdAMCSy1TMv5HdngosczJEgpxksBRorDnC',100097,'ON_SALE','굽네를 굽네','0x0677add8f72ea60c99400b36aa2b7b3228ee5898e88be5e7316a5be9c72a19cd',6,0,22
-        ),(
-            116,0,'2025-04-09 19:17:18.000000',200,'샀습니다. 더 싸게 팔아드림 ㅎㅎ','2025-07-08 18:34:48.000000','https://ipfs.io/ipfs/Qmc4btDBr25N1wpW8T5jqeWhsaoUTswqEnVXcKrFyhEVkn',100070,'ON_SALE','광희씨가 가격 후려칠때','0xea73242be07ddaa7f5f1acbb044384bc5c3bbe43769bbc40775ea5153e8ce8c0',6,0,18
-        ),(
-            117,0,'2025-04-09 19:17:38.000000',17,'이디야','2025-07-07 02:39:18.000000','https://ipfs.io/ipfs/QmZdpwEDwcajKC9NsLhCrLTUA9eu7GGM3VsbSWhaveuJX4',100022,'ON_SALE','어디야','0x2f86810b5c4a5dfe705a396de6e8a0243684691b05d00ae39640182a30843bc9',1,20,15
-        ),(
-            118,0,'2025-04-09 19:18:28.000000',20,'아메리카노~~ 좋아좋아좋아','2025-07-08 18:49:48.000000','https://ipfs.io/ipfs/QmQHMXwkDMuhZsSEiegB2XyDRNtTdzxEZDCHQAsUfThTnL',100083,'DELETED','아메아메아메아메아메','0x2c36bb06c528b18f6fcb1db05225c01f7b90aaa4dd8006a30ead8cab6ca2849a',6,0,19
-        ),(
-            119,1,'2025-04-09 19:26:48.000000',270,'제가 스벅을 안가요,,,,','2025-07-08 19:23:38.000000','https://ipfs.io/ipfs/QmZ7WUSL3XidMtbi2wPkFDZq8QGp4SGCjz5Ehpsf2D1iho',100177,'ON_SALE','스벅 금액권','0x709f3082a8f76ca204852cae581fa5da39118ab0eb51dd1d41db4349345e715f',2,0,29
-        ),(
-            120,0,'2025-04-09 19:37:58.000000',80,'겨울에만 있는 시즌 메뉴 입니다','2025-07-08 19:35:28.000000','https://ipfs.io/ipfs/QmYmzJPnTuvm2dUXKEdtYnG4TgdKd63gNyCpqoYAp2uCpm',100237,'SOLD','딸기빙수','0x8c8167058a2928587886b0f2e8c81574cf704e826a46de0c8e9ce00db38f6a95',2,0,40
-        ),(
-            121,0,'2025-04-09 19:38:48.000000',120,'아이맥스가 좋긴 해요','2025-07-08 19:33:18.000000','https://ipfs.io/ipfs/QmSXuSkqBmt5BBYeupej9W3ejPJXxtqtp3pJ2Spa2BtYcY',100217,'SOLD','관람권 입니다','0x5e62cfa9013c112462ef4be47f58fb7417f83a02b5d62926155d520a352864bf',2,0,31
-        ),(
-            122,0,'2025-04-09 19:41:28.000000',15,'원.숭.이','2025-07-08 19:19:18.000000','https://ipfs.io/ipfs/QmeVpfn3zocUiFspphX4th6QNTW2MZ1aXvZMBz3xcDFKEY',100157,'DELETED','나는 바나나 알러지','0xb803dcfc214dc9163bca80840d2330b6323bc22909acbf7e0128fe6b29b3ee9f',6,0,26
-        ),(
-            123,0,'2025-04-09 19:42:18.000000',10,'원 숭 이 ????','2025-07-08 19:19:18.000000','https://ipfs.io/ipfs/QmeVpfn3zocUiFspphX4th6QNTW2MZ1aXvZMBz3xcDFKEY',100157,'SOLD','나는 바나나 알러지','0x6257d98d9f9bdbea3735816c6154acf460ab147d507336db3a0c2343a4e2b40c',6,0,26
-        ),(
-            124,0,'2025-04-09 19:48:48.000000',10,'단지 바나나우유 CU에서 사용하세용','2025-07-08 19:19:18.000000','https://ipfs.io/ipfs/QmeVpfn3zocUiFspphX4th6QNTW2MZ1aXvZMBz3xcDFKEY',100160,'ON_SALE','뚱바','0x3f8ede82de836a54e4748cf99d8aaa9f2f6a3fff572b806e573e39be841dbcaf',1,1,26
-        ),(
-            125,0,'2025-04-09 19:49:28.000000',200,'설빙 딸빙','2025-07-08 19:35:28.000000','https://ipfs.io/ipfs/QmYmzJPnTuvm2dUXKEdtYnG4TgdKd63gNyCpqoYAp2uCpm',100234,'ON_SALE','딸빙','0x089d395268a017780d29ec9bb5f2b4239041a199ff68bd382521c8adb220bca8',1,0,40
-        ),(
-            126,0,'2025-04-09 19:50:18.000000',180,'후라이드 치킨','2025-07-08 19:48:38.000000','https://ipfs.io/ipfs/Qmamy1GnucQUDsq5drSEjTNmx8WUmA6jNv9rn15zxZHsc1',100260,'ON_SALE','??','0x52c686d74bdf198b4fbd4dcc194c3157566030ec2185f7bba505e6949ebd510e',1,0,50
-        ),(
-            127,0,'2025-04-09 19:50:58.000000',15,'맛도링','2025-07-08 19:47:58.000000','https://ipfs.io/ipfs/Qmcjp2U9fxUucwoeWfCEfxJcEBd7aD6pKDdBAaLCaVWsJe',100252,'ON_SALE','베라 아이스크림 롤','0x7e2df3ba083120ec4517ce4bfa198fc372e2bcb6e7935ed7bd7e8ec0a2111280',1,0,45
-        ),(
-            128,0,'2025-04-09 19:51:58.000000',950,'5마넌 에누리','2025-07-08 19:46:58.000000','https://ipfs.io/ipfs/QmZ3cpaMTTbpdQKvdkjWSfKJqMAJuY8qtXaKppAsSrjGtz',100247,'ON_SALE','Yes24 10만원!!!','0xe23365c19e8c50a93c0539376a2a2cebc043b4fc9188c49267b3b9e4941e5d4d',1,0,36
-        ),(
-            129,0,'2025-04-09 19:53:18.000000',480,'(도서상품권이란 뜻)','2025-07-08 19:48:28.000000','https://ipfs.io/ipfs/QmaDas7jFWbRJBMU95Ab2VkfjApZpxLXDhhihPHQRwgmyJ',100259,'ON_SALE','도.상','0x8b35c58831d4c43393ab449fbc346000fb4c05f9ceb389e3d56173836ede6f4e',1,0,38
-        ),(
-            130,0,'2025-04-09 19:53:58.000000',185,'매콤달콤 닭강정','2025-07-08 19:48:58.000000','https://ipfs.io/ipfs/Qma6gekV9AFGX2pibFavRbmZ6KpgAzpnnTrBJHd9zdyHqB',100263,'ON_SALE','야구볼때 닭강정','0xb9301634f23bcb8d58a3bed3727dd7de6eb2724d272b03c7e63d948f0528b08b',1,0,48
-        ),(
-            131,0,'2025-04-09 19:54:38.000000',165,'라지 콤보','2025-07-08 19:47:38.000000','https://ipfs.io/ipfs/QmdRFB5eFFhErpsnff7Bdbovdzcr5HbH2Ye8Kdv5nawRPP',100250,'ON_SALE','영화볼 땐~','0x5efcd7b69bde322f69cc64b3e37b38907a054fd71f483e510ba7375dc5d83f94',1,0,35
-        ),(
-            132,0,'2025-04-09 19:55:48.000000',40,'싱글 콘','2025-07-08 19:47:18.000000','https://ipfs.io/ipfs/QmPtL9pHNEXiz6tKyqyM7x1VpFUanWVWnU3BGgoSANnnhD',100248,'ON_SALE','?‍?‍?❌','0x6289230eb9fdf527d7ea7b5e24cbc8f14e90c5c268ff30f39f537990627a92c7',1,0,44
-        ),(
-            133,0,'2025-04-09 19:56:28.000000',189,'굽네 치킨에 콜라까지?!','2025-07-08 19:53:48.000000','https://ipfs.io/ipfs/QmVkcVbnJFXCKHPQMNiRtMW65QBPvyTwAWSejfKYKgaTMD',100264,'ON_SALE','굽네 세트','0x3aebae4862c15f408e51cd75ee8983d17a94d5b1d024c43201dd5093794d4f70',1,0,51
-        ),(
-            134,0,'2025-04-09 19:56:48.000000',100,'이거 진짜 맛있어요\n','2025-07-08 19:35:48.000000','https://ipfs.io/ipfs/QmPTMjmY5HSgBQDnbNxGjoNjFmw7ADcENevaPk1NEuyfV2',100244,'ON_SALE','크리스마스 빙수','0xa965542ec777337f6c9463d6e42bd0f032a4416f50cec3a498eb6833d805731a',2,0,42
-        ),(
-            135,0,'2025-04-09 19:57:08.000000',187,'진짜 맛있겠다..','2025-07-08 19:53:58.000000','https://ipfs.io/ipfs/Qme7x1bPrei82YF5vZnWuHBBp4Lav34amDUHnmFyX9fh21',100265,'ON_SALE','맛있는 치킨','0x35d84e35dd32cb8ebaea8182c0c490ccfe9e9c4e848892a42137a5989856013d',1,0,52
-        ),(
-            136,0,'2025-04-09 19:57:28.000000',100,'달콤 어니언 반반이 진짜 맛있어요\n','2025-07-08 19:47:38.000000','https://ipfs.io/ipfs/QmdRFB5eFFhErpsnff7Bdbovdzcr5HbH2Ye8Kdv5nawRPP',100251,'ON_SALE','CGV 라지콤보','0x0f43334ddb66040e432abbff266394f9908bb231d6624dd89ac2e0d6f12f699e',2,0,35
-        ),(
-            137,0,'2025-04-09 19:58:08.000000',176,'아이맥스는 좀 달라요','2025-07-08 19:33:18.000000','https://ipfs.io/ipfs/QmSXuSkqBmt5BBYeupej9W3ejPJXxtqtp3pJ2Spa2BtYcY',100214,'ON_SALE','???','0x7cb0a4deb14793661adf906898bf5069b17b7dea83a34438af5163f5d0f8845d',1,0,31
-        ),(
-            138,0,'2025-04-09 19:58:18.000000',20,'은근히 맛있더라구요\n','2025-07-08 19:33:38.000000','https://ipfs.io/ipfs/QmexUT53zgXWcaWc4Ca8S27zTQRmCWka3q5udf3BgtHDsr',100229,'DELETED','라거맥주','0xfedbb70bd5b1804b5b05bf228b2e7ef45b6fe65c23d6b2538f51bbfce0489e66',2,0,32
-        ),(
-            139,0,'2025-04-09 19:58:58.000000',980,'도상','2025-07-08 19:46:58.000000','https://ipfs.io/ipfs/QmZ3cpaMTTbpdQKvdkjWSfKJqMAJuY8qtXaKppAsSrjGtz',100246,'ON_SALE','도서상품권 10마넌','0xdc9fdd68f8c7fd6de536fbb7b9d21332512e9cfe9c2750b015fe3665a72d24d8',1,1,36
-        ),(
-            140,0,'2025-04-09 20:12:38.000000',57,'롯리 데리버거 세트','2025-07-08 20:06:38.000000','https://ipfs.io/ipfs/QmWcURCbGvp8cRe5Q8LHVoMcATu2xMTGYcNJ6XatXbdDob',100277,'SOLD','추억의 데리버거','0x04ab84a9832cc96d85a67909f0e2351001197d1c2aa9cb6a0546eb6e1a856fcb',1,1,63
-        ),(
-            141,0,'2025-04-09 20:13:28.000000',10,'몰입감이 좋아요\n','2025-07-08 20:12:18.000000','https://ipfs.io/ipfs/QmQQQcXd3zmQ3UhvANgYfWgezLD8bCDS9QGet7gTYrVNHZ',100282,'SOLD','스크린엑스 관람권','0x5628d8d553a3835011e29ce4a251edb01714a44871759d5342d9631ebfcea329',2,0,33
-        ),(
-            142,0,'2025-04-09 20:13:28.000000',140,'cgv 영화 저렴하게 보세유','2025-07-08 20:12:18.000000','https://ipfs.io/ipfs/QmQQQcXd3zmQ3UhvANgYfWgezLD8bCDS9QGet7gTYrVNHZ',100281,'ON_SALE','영화 관람권','0x4e9edcaf08193234e18d49e9571ff17c48284a32012acbf1c74bff8e1706a81c',1,0,33
-        ),(
-            143,0,'2025-04-09 20:15:08.000000',230,'진짜 맛있어요. 근데 제가 새우 알러지라 ㅠㅠ','2025-07-08 20:11:08.000000','https://ipfs.io/ipfs/QmacDuN7whnVC3NHHq5Y7TC6CUycM2BS17Vcj4U6eUtxfX',100279,'ON_SALE','블랙타이거','0x0131e6989391c672f4126e0debf5395dbebc92d1858cc5982bf83623962b81f8',2,2,66
-        ),(
-            144,0,'2025-04-09 20:15:08.000000',200,'설빙 트리 빙수 ','2025-07-08 19:35:48.000000','https://ipfs.io/ipfs/QmPTMjmY5HSgBQDnbNxGjoNjFmw7ADcENevaPk1NEuyfV2',100243,'ON_SALE','?트리빙수?','0xb886da472312506753efef301b637840fa0b0489cc19313739d5a0be81deb502',1,0,42
-        ),(
-            145,0,'2025-04-09 20:15:48.000000',70,'롯데리아 시그니처\n','2025-07-08 20:06:18.000000','https://ipfs.io/ipfs/Qmag9gUHqWwmfNUbB7fUP6WbM4m6XQ7aFAu2cvGEwAAJ4y',100276,'SOLD','한우불고기 세트','0x0cd51f69afcc6f2ebbad320d11f16356fc9d2b6d4269818ece231f7072c1cc16',2,2,65
-        ),(
-            146,0,'2025-04-09 20:15:58.000000',80,'이거 맛있는데~ ','2025-07-08 20:04:48.000000','https://ipfs.io/ipfs/QmT6w1Cv9cMX4TxnJ6F1RDZArKZPvW9R7c8X8zR8gCTGFY',100271,'SOLD','이거 맛있음','0x1abf655c3d07d6562bfe97fde05cfac2a7ef6e2b44544b3ebf46bb41d512d9de',1,0,62
-        ),(
-            147,1,'2025-04-09 20:16:38.000000',49,'진짜 아는 사람 많이 없긴 한데 이거 맛있어요','2025-07-08 20:04:48.000000','https://ipfs.io/ipfs/QmT6w1Cv9cMX4TxnJ6F1RDZArKZPvW9R7c8X8zR8gCTGFY',100272,'ON_SALE','맥날의 숨겨진 메뉴','0x7f46636aaf94a68d3aad13aca2424b19e6434352482a608b40fff8c44362899c',2,0,62
-        ),(
-            148,0,'2025-04-09 20:16:38.000000',290,'','2025-07-08 19:55:08.000000','https://ipfs.io/ipfs/Qmcmpn1TZYr8JqEX9zjZjkNJ6iKkRQTjqtZyKFS5Hgq2Re',100267,'ON_SALE','문상','0xf2f149a8b5a0785294227acddfd2a7147babd1efb24e5496de25a7f173a7d503',1,1,39
-        ),(
-            149,0,'2025-04-09 20:17:18.000000',30,'가볍게 먹기 좋아요!','2025-07-08 19:47:18.000000','https://ipfs.io/ipfs/QmPtL9pHNEXiz6tKyqyM7x1VpFUanWVWnU3BGgoSANnnhD',100249,'ON_SALE','베라 싱글콘','0x26d873b85771a5ed9296284d601d18832133a106812ecbaf795f39395b70fef0',2,2,44
-        ),(
-            150,0,'2025-04-09 20:17:28.000000',198,'마늘 치킨이요~','2025-07-08 19:54:28.000000','https://ipfs.io/ipfs/QmUcL2NgSANZaDmzDZSJU4QiGgtcnPDG42FbgnFEzFxrnG',100266,'SOLD','?마늘치킨?','0x8e38b22e3202b3112a1e7b72e9e0bc572eebfc8cd28a56a9c50718ab23e1cf45',1,0,53
-        ),(
-            151,1,'2025-04-09 20:17:58.000000',1,'아무나 가져가세요~~','2025-07-08 19:23:18.000000','https://ipfs.io/ipfs/QmbY6YPUCiDuWVBcJF7uvgqi32BMKGNhM1snAgHnrspS95',100171,'ON_SALE','추파춥스','0x3219618cc847ea468c20b94f3e6c3b04d649d6283a71133b5d8b6281b75ee7da',2,0,28
-        ),(
-            152,0,'2025-04-09 20:18:18.000000',197,'맛있는거 알죠? ','2025-07-08 19:58:38.000000','https://ipfs.io/ipfs/QmTmV27ZjY1bVbxmKLCMjhYhQfXm9WSKbD6jeAB1kQkcMH',100268,'SOLD','진리의 허니콤보','0x92c6b3951e6f5084aee1d5820e9bf1360eddb214a8f19a85482d4e837b0b5b0e',1,2,49
-        ),(
-            153,0,'2025-04-09 20:18:48.000000',60,'맥날의 슈비버거 입니당~~~','2025-07-08 20:04:38.000000','https://ipfs.io/ipfs/QmYuSuKGTtozLENhEbLT2VwexbdWpzcoXdrYppeGfARSEY',100270,'SOLD','슈비버거','0xfd65e4b41616b47484d578112511da884a9b2f46b6f8565d6f5201eb122f2d64',2,0,61
-        ),(
-            154,0,'2025-04-09 20:18:58.000000',980,'저렴합니다구용','2025-07-08 19:48:08.000000','https://ipfs.io/ipfs/QmfSorhk246qnWwvS8KCfHrKwGL4vAXbYdqM17mhMu1w4Y',100254,'SOLD','통상','0x1f71fd74914b4436f28312fd24a3df4ba890921b5e1636b0f9aa7bed40bc76e8',1,6,37
-        ),(
-            155,1,'2025-04-09 20:19:28.000000',1,'춥스를 받다','2025-07-08 19:23:18.000000','https://ipfs.io/ipfs/QmbY6YPUCiDuWVBcJF7uvgqi32BMKGNhM1snAgHnrspS95',100172,'SOLD','추파를 던지다','0x36b538d68113416aaa042ce0abd4030f770022959ba0026599b9cdc4e35383e0',2,2,28
-        ),(
-            156,0,'2025-04-09 20:19:48.000000',186,'달달한 요거트에 딸기까지 듬뿍 ','2025-07-08 19:35:28.000000','https://ipfs.io/ipfs/QmYmzJPnTuvm2dUXKEdtYnG4TgdKd63gNyCpqoYAp2uCpm',100235,'SOLD','딸빙?','0xeb80683987d1f69b0897be86cba53231a893c52b33ec02f12305aaa28bfba5eb',1,0,40
-        ),(
-            157,0,'2025-04-09 20:20:48.000000',77,'슈프림 앤~ 비프 ','2025-07-08 20:04:38.000000','https://ipfs.io/ipfs/QmYuSuKGTtozLENhEbLT2VwexbdWpzcoXdrYppeGfARSEY',100269,'SOLD','슈비???','0x4338371ee32a78a56afe714d43f2d8b643baa9adcaee0bebc5d72ae84859bebf',1,0,61
-        ),(
-            158,0,'2025-04-09 20:22:48.000000',80,'화이트 초코 케이크 ','2025-07-08 19:12:38.000000','https://ipfs.io/ipfs/Qmbh7co4MjxsXvJFeXwop65dxq76YRdFfd6uaVCBCtEez6',100145,'ON_SALE','케이크','0x646d0e7ec0c2d2a0c95aaa1f0336ba5c2200fa2931fa404d95382a60c5cb749b',1,1,20
-        ),(
-            159,0,'2025-04-09 20:23:58.000000',380,'달짝지근 ','2025-07-08 18:17:58.000000','https://ipfs.io/ipfs/QmQ5uacfdTsX1itsbkmb3HndZV3oMRZMuuWThRG4WzGYMv',100051,'ON_SALE','???','0xeed68ab2afc3d0812f4dfd4e6cb6bc8911650fe2de7d9728655deee38416df6c',1,24,16
-        ),(
-            160,1,'2025-04-09 20:25:28.000000',50,'콜라인가요?','2025-07-08 20:24:28.000000','https://ipfs.io/ipfs/QmVBn17MoNsf8tmdiY9c96KQps12jpX17HGyFjX3eGGmcE',100291,'ON_SALE','라즈베리 쇼콜라도','0x6c36675cee26385cbad07473403acaa65a46556717d766a00b0ed7af1d6cf9d0',2,17,8
-        ),(
-            161,0,'2025-04-09 20:25:58.000000',30,'1파운드 입니다','2025-07-08 20:23:28.000000','https://ipfs.io/ipfs/QmQTbdHf1zVfxog2UxjtWxfQ9yLAMeLzQCaPfY6AFDFq3y',100284,'SOLD','파운드 케이크','0xedda1296c31c4c869e8d294047da0a8d0635150bb5b010319406520832799cd8',2,0,21
-        ),(
-            162,0,'2025-04-10 01:24:28.000000',40,'데리버거 팔아용','2025-07-08 20:06:38.000000','https://ipfs.io/ipfs/QmWcURCbGvp8cRe5Q8LHVoMcATu2xMTGYcNJ6XatXbdDob',100278,'SOLD','롯데리버거','0x6eb984c7891a89803121afe56560a8ea2053efaaa6f0262d44c012b2694fbe85',2,38,63
-        ),(
-            163,0,'2025-04-10 01:29:58.000000',10,'제가 좋아하지 않는 피자라 싼 가격으로 드립니다,,,!!','2025-07-08 20:30:18.000000','https://ipfs.io/ipfs/QmT9q7VuLj4FF1J6GU8xhiH8mDgXX1s6LdVtqWK4JD2pZM',100292,'SOLD','도미노 포테이토 피자 입니다','0xd285d5ccc04f3358e885200cd1fe34f72f9f5098e8d0b1989278201105f70d60',2,0,67
-        ),(
-            164,0,'2025-04-10 02:24:18.000000',1000,'맛있는 피자입니다 ^^','2025-07-09 02:18:38.000000','https://ipfs.io/ipfs/QmacDuN7whnVC3NHHq5Y7TC6CUycM2BS17Vcj4U6eUtxfX',100296,'SOLD','비싸게 팔아요','0xc7b621783a52b9d3703e9813b94176d411ea449546c2162a7ff018c648008369',22,0,66
-        ),(
-            165,2,'2025-04-10 23:20:08.000000',5000,'피자열판 쏘겠습니다^^\n???????????\n\n허리피자.\n가슴피자.\n얼굴피자.\n어깨피자.\n다리피자.\n주름피자.\n형편피자.\n인생피자.\n팔자피자.\n웃음피자.\n\n언제나 건강과 행복이 함께 하시길 기원합니다\n.\n.\n⛄️❄️~^^~* ??\n세상 살아 가면서 천만번\n해도 부족한 말...\n\n?감사합니다?\n?사랑합니다?\n?고맙습니다?\n?건강하세요?\n?행복하세요?','2025-07-09 02:18:38.000000','https://ipfs.io/ipfs/QmacDuN7whnVC3NHHq5Y7TC6CUycM2BS17Vcj4U6eUtxfX',100295,'SOLD','피자 10판 팝니다...','0xbc909346733552ecb3d2944288865a98668808965ce8abf4c2b0272df0a10b87',22,7,66
-        ),(
-            166,0,'2025-04-11 01:03:38.000000',50,'제가 새우 알러지가 있어서... 선물 받은 기프티콘을 팔아요!!!','2025-07-08 20:06:08.000000','https://ipfs.io/ipfs/Qmbkef9Z79Cb2JNQ5xA2ji8SWNWEcLsNXWcST8py29woP1',100274,'ON_SALE','새우버거 팝니다!!','0x58f9253c788a9f447be530820d38baf9721d5236c9125bd490ff39f21011efc2',2,3,64
-        );
-
---
--- Dumping data for table `article_histories`
---
-
-INSERT INTO `article_histories` (article_history_id, created_at, history_type, user_id, article_id) VALUES (81,83,'2025-04-09 00:30:58.000000',1,'0x5c2d3524175f0786f0bc0c7f75047619627e2d859c361825cec5ec21cd55a7e7',2),(82,85,'2025-04-09 17:43:38.000000',1,'0x57da9af10b8a0235447100f5ab3bb50f11b741c0494dc34eb9a04b73518c9580',1),(83,161,'2025-04-10 00:05:58.000000',1,'0x16607240f13ccd302bf677d39fd8c1bcbefd73fe33177352e3814690df54c3d6',1),(84,121,'2025-04-10 00:50:18.000000',1,'0x7f00ed670121976eb1c563a7afb8670051ad6c8bb39f6526704de328647e5484',1),(85,88,'2025-04-10 01:41:48.000000',1,'0xc7a1b7363ffd7930ea0193670c19404782b88f30e9e23bad3b3a2805f6853c3d',5),(86,153,'2025-04-10 01:41:38.000000',1,'0xe34fb69df4663010e4703b23d3d0420c20422a7ed7ede360cc86cec248b27e26',1),(87,163,'2025-04-10 02:17:28.000000',1,'0x22f96cb2fbc87bc44fe80d102dccebcbf985185b3f26f63940df877c94e89ec7',1),(88,164,'2025-04-10 02:24:48.000000',1,'0x6a0cd8510beae9149ded6e6526dc4cf1356684e1252b127f4eb686e66460c2b7',2),(89,108,'2025-04-10 02:25:58.000000',1,'0x6a57261f38beec8319e623e11815e41f698777bc44f6b78d42508d90d411b19e',3),(90,155,'2025-04-10 02:28:18.000000',1,'0x1c077b2e04b1f5247be5c5919490c9dddb762da1c4bf03c5dd418e974fef3597',23),(91,123,'2025-04-10 02:33:48.000000',1,'0x2335e49b29c2ef51698c3fee0d7bc473995879e01f8294906ae3fc663c18a1cd',22),(92,102,'2025-04-10 02:34:58.000000',1,'0x63d9a8a4b28d2f0184eac961d84ea824681326a462e084b10af234412b86736e',23),(93,146,'2025-04-10 02:57:48.000000',1,'0x52be6a3458d330f5c8b4091cdcafc57c5d00937269c77036cc96b94d858f8f75',2),(94,91,'2025-04-10 03:05:38.000000',1,'0x5c97527a1beb02e54cb929e6622b3af9818f84629fc7f9273a54cd8e601e7d4e',1),(95,157,'2025-04-09 21:52:48.000000',1,'0xbd8a9bf2bb8599ef518a85330d7ed9fec8865a2650950ee4a9152a789aaad355',1),(96,141,'2025-04-09 21:54:18.000000',1,'0x69dabf23aa3c17e783df234dc8c72b0040ee89cd5d009ab79ad7508f1a948ac7',1),(97,120,'2025-04-09 21:57:38.000000',1,'0x730099d2e20440a69716a35cb3b17a0d7d471c5386afb8c63c753d1a414a991b',1),(98,84,'2025-04-09 22:00:28.000000',1,'0xa7d99e551be32aa09e72e2361dfb60c56ab3a7f48bbc2d7b7334e70778433c6f',1),(99,150,'2025-04-09 22:02:48.000000',1,'0xb0801304a8aea98770aa96766d992b1283d45a3c68cc0cc88bff35f55e366bf8',1),(100,156,'2025-04-09 22:15:48.000000',1,'0xe57c13d48ac82df57800c02633ada3ec0da3cae736dd4e4d95f8511fe289c927',1),(101,154,'2025-04-10 18:27:08.000000',1,'0x574907190ffc2d4fd3771a1302a6ca6ed58897337ab261a9df217630818eeffd',2),(102,100,'2025-04-10 18:29:58.000000',1,'0x36a621684ae3f699f156cce5d25ca5c000e81d4fc6fc0feb4a1b3924407c3618',2),(103,101,'2025-04-10 18:37:28.000000',1,'0x6a492f55682e6a94259b90bf4ec1e15db04164983c681bac04d5844a20b8e62e',1),(104,165,'2025-04-11 01:14:18.000000',1,'0xf262f515a8b328e5b48cbeffde05e934af60936cbb67a60e69c6cbd034b88b27',2),(105,152,'2025-04-11 01:35:08.000000',1,'0x28d649070f1775b94538e565aa58a496ff36215b047c6231c0421a4ead182854',2),(106,145,'2025-04-11 01:47:08.000000',1,'0xad8e047f9ccf450f8280bbd0e941d709cf1414874074ee3da1e17fff53efa5c2',1),(107,140,'2025-04-11 02:11:48.000000',1,'0xa3268a3cfe42cc7579365d48d8b2f624c14e2c9acea1216ad0562f3e630d4111',2),(108,162,'2025-04-10 17:59:48.000000',1,'0x75678008f50a3ff45f4119035cd1b6217443885a2fd8e8dc49769d369bbe9761',5);
-
---
--- Dumping data for table `likes`
---
-INSERT INTO `likes` (like_id, articles_id, user_id) VALUES (251,82,1),(250,84,1),(266,107,1),(265,109,1),(269,119,1),(264,147,1),(268,151,1),(267,160,1),(249,82,2),(248,83,2),(258,84,2),(256,88,2),(255,89,2),(254,90,2),(253,91,2),(257,92,2),(259,95,2),(271,165,2),(260,88,6),(262,155,6),(272,165,6),(261,91,23),(263,115,23);
-/*!40000 ALTER TABLE `likes` ENABLE KEYS */;
-
---
--- Dumping data for table `gift_histories`
---
-
-INSERT INTO `gift_histories` (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received, serial_num) VALUES (36,'2025-04-09 00:21:58.000000',0,'67f4c07fab253558d93158c6',6,4001926433,2,15,'0x94ae0ee6476fefc239ff864d1dce8a08905c9eae38edb569dd15222fb12c9674',100031),(37,'2025-04-09 00:28:28.000000',1,'67f4c20aab253558d93158c7',2,3977733962,6,8,'0x7dfe83e2088c3226ddfc2f56971fb2ec831dbbedd8e7f82827e90baea4646f31',100025),(38,'2025-04-09 17:36:18.000000',1,'67f5b2ebab253558d93158c8',5,4100972657,1,7,'0x5fd241b2fe5a6f41bfbbdefe35dd366997666c6b4b7d149e5174dea1c459f591',100028),(39,'2025-04-09 17:37:58.000000',0,'67f5b350ab253558d93158c9',5,4100972657,1,14,'0x390f5e173756611d68c0c6e3208201bf910a1dbab736adcdd30ebe83f80aa57e',100027),(40,'2025-04-09 17:47:18.000000',0,'67f5b579ab253558d93158ca',5,4100972657,1,1,'0x26ffc333b27b48d006ebb37f0c0655c9a8cc9adb622d320c2f75eef923e15ffe',100024),(41,'2025-04-09 23:01:28.000000',0,'67f5ff217f15c902a5ef3aba',5,4100972657,6,20,'0xcd71100ed527b3c04eecdc93bdb67fa12c5dd7e7eff60e8ef525a4007b27ea1b',100152),(42,'2025-04-10 01:12:58.000000',1,'67f61def47f42d5c556ec4d3',1,3976389070,5,19,'0x3f30b0c8311028ccc7ddffdd9d58988362fd75437b9bd525accdc3f29a0f79c5',100010),(43,'2025-04-10 01:12:58.000000',0,'67f61dee47f42d5c556ec4d2',5,4100972657,1,26,'0x5f79dc2c3ce7b6312bdecdf849aff13b419d64854ba871db42452c0431119f69',100154),(44,'2025-04-10 01:26:08.000000',0,'67f6210847f42d5c556ec4d4',5,4100972657,1,25,'0x283b652f0b439dce8e56bf116a29c415fe13d11c98517036a074fd0f7e521395',100110),(45,'2025-04-10 01:40:48.000000',0,'67f6247d47f42d5c556ec4d5',5,4100972657,1,23,'0xb2140421125058154da2d4d7f9e894e3d4797c5b489c6cc31e81e3c12e41513d',100122),(46,'2025-04-10 01:41:08.000000',0,'67f6248c47f42d5c556ec4d6',1,3976389070,5,16,'0xa6113b9f48e3e6d16492d2e0a52e8ca10bf941d531d5499485913b298d846040',100043),(47,'2025-04-10 01:41:58.000000',1,'67f6249e47f42d5c556ec4d7',5,4100972657,1,61,'0x4d96a2835ab050ccabc1180834858ff1bd90db497cdbdd066db99fa5018c41f0',100270),(48,'2025-04-10 01:43:38.000000',1,'67f6252147f42d5c556ec4d8',1,3976389070,5,9,'0x9476837457fa332f66f7faf13ed081ae5e300ad5a17a419eecfbbd86e78bc308',100057),(49,'2025-04-10 02:38:58.000000',1,'67f6321e47f42d5c556ec4d9',23,4209140343,22,66,'0x5759639a2a7031b797c2f901ffaa8cba2181c516140f4a899e2a3b9a312695f2',100279),(50,'2025-04-10 02:44:58.000000',0,'67f6330047f42d5c556ec4da',6,4001926433,2,9,'0x115beeb0ca8d6519d6aa13d758d9b24f16de51a7da548fe96a35c852c7b3c28b',100058),(51,'2025-04-10 02:45:58.000000',1,'67f633b847f42d5c556ec4db',2,3977733962,6,18,'0x496ef612580387871ef2356aa0e338b1e3ca6c76394e858861ab32e533370754',100069),(52,'2025-04-10 02:47:38.000000',1,'67f6342347f42d5c556ec4dc',1,3976389070,6,19,'0x7d07fe450a9932f654be70395c7780f3d083e66661ec3fe548ece9d6a3fb3dcc',100088),(53,'2025-04-10 02:49:08.000000',0,'67f6347547f42d5c556ec4dd',5,4100972657,1,16,'0x4bd8123d007ec733e4fd335d98a0bce598360c1d149e4ba7883b5de557053ad4',100043),(54,'2025-04-10 17:55:58.000000',0,'67f7090647f42d5c556ec4de',5,4100972657,3,6,'0xf0bd2d66bb40c0c54db2d864cb732f69a9f76dfa85a316c0ce274592882a1b01',100067),(55,'2025-04-10 18:06:38.000000',0,'67f70b8c47f42d5c556ec4df',5,4100972657,3,9,'0x3af18fb8a67da2b7cd7dbe778087d57687f416d61e4429d814dd65e9ca1dd27a',100062),(56,'2025-04-10 18:10:28.000000',1,'67f70c71caf9f97a6517db46',5,4100972657,3,22,'0x32a884e3354dc022e6cb1f9f2b04fff038e82889b0eb0305ca3fd24e9f81a136',100090),(57,'2025-04-10 18:13:48.000000',0,'67f70d2bcaf9f97a6517db47',5,4100972657,1,19,'0x0a86aea04038df897c67c23fd8ff9f57a53677b3af0d3fe0e6497560bb36b9e4',100010),(58,'2025-04-10 18:14:48.000000',1,'67f70d6fcaf9f97a6517db48',5,4100972657,1,9,'0xbf8d6a0def10424c586ea96dd6703b1df8daeee9b914f7c5a429471c46391245',100054),(59,'2025-04-10 18:16:08.000000',0,'67f70dc1caf9f97a6517db49',5,4100972657,1,19,'0x9378161ad58a38298e10b690d2fab6ff29b154105831ca1b57a5b2b3cd0b1f45',100088),(60,'2025-04-10 18:17:18.000000',0,'67f70e07caf9f97a6517db4a',5,4100972657,1,19,'0x67d10e338689108443b32907553f485c0aede7134646fe76546574e78c73153a',100003),(61,'2025-04-10 18:18:28.000000',1,'67f70e4ccaf9f97a6517db4b',5,4100972657,1,19,'0x564e77ee30084e941e0e30392c3aac3bb19f3a9ef93d54314af1a6b512896843',100012),(62,'2025-04-10 18:19:28.000000',0,'67f70e86caf9f97a6517db4c',5,4100972657,1,26,'0x6ee6bd80e2d45160466d5d21e4168fefe39320d47b98a5c35bae5cd42c24a195',100162),(63,'2025-04-10 18:25:38.000000',0,'67f70ffecaf9f97a6517db50',5,4100972657,1,28,'0xd322f3b1a2043009197a02a79c2a43f95fb5882917830394b736e1f22fcdb7fc',100165),(64,'2025-04-10 18:26:38.000000',1,'67f71037caf9f97a6517db51',5,4100972657,1,30,'0x55a93b98bfb3869855270ab285a98295d74afac59aaac46d2a45b3b5afd25dc6',100185),(65,'2025-04-10 18:27:28.000000',0,'67f7106ccaf9f97a6517db53',5,4100972657,1,31,'0x0a3668f579d05a4d02dcbe9ae54faefdcefbf66a67f5a512197df9f3657dc6fc',100215),(66,'2025-04-10 18:27:28.000000',1,'67f7104bcaf9f97a6517db52',1,3976389070,2,37,'0xdf2fd82c26e69f907e305801a1d518ab226caf9762b53cb71b83d42a87b8913b',100254),(67,'2025-04-10 18:30:48.000000',0,'67f7112fcaf9f97a6517db54',5,4100972657,1,41,'0x69a4b30534fe8898ba925596a7e8ab69edc9aa41314218a840bcbb04f436cc72',100239),(68,'2025-04-10 18:37:38.000000',0,'67f712bdcaf9f97a6517db55',5,4100972657,1,23,'0x908e194e3684654207f9658dac7e03f076a0d593f6c121a24b33aeccf2f5d42e',100141),(69,'2025-04-10 19:21:08.000000',0,'67f71d00caf9f97a6517db56',1,3976389070,5,61,'0xa34616055c8a79e5bcf10722c4bfe5c9b2c549222bcf1d9cf5a08dfcec20d837',100270),(70,'2025-04-10 19:22:18.000000',0,'67f71d43caf9f97a6517db58',1,3976389070,5,23,'0x636e697b6c0cc0137339f606c80d9e6e9bab4d0c216eb1b0d9ecece3510282dc',100122),(71,'2025-04-10 19:22:58.000000',1,'67f71d69caf9f97a6517db59',1,3976389070,5,19,'0xb398826961c9ac5a19cf672b7581e4735f7e214fb9f18735d38ce9e73aabe518',100002),(72,'2025-04-10 19:26:18.000000',1,'67f71e34caf9f97a6517db5a',1,3976389070,5,19,'0x665e179b09cdb84f3df8d8504ded4ab8dc5c42010a9029cb6cf5843d408321d6',100009),(73,'2025-04-10 19:26:58.000000',1,'67f71e5bcaf9f97a6517db5b',1,3976389070,5,16,'0x9a332fac7e4ee5a531b57ba7ffcb2b83714cb113664be7d667fd9aa8a01a7dcb',100049),(74,'2025-04-10 19:32:58.000000',1,'67f71fc6caf9f97a6517db5f',1,3976389070,5,19,'0x299be2ee8b82f1ef4d76387eb980bdd47a3f2a73b0fff99a56b63e7ef8406bb3',100006),(75,'2025-04-10 19:41:58.000000',0,'67f721dfcaf9f97a6517db60',1,3976389070,5,30,'0x035b154b55a4d6ba1f76dd1e6bbfec86e71922b7977d5c5bca78f866fb4b9f73',100185),(76,'2025-04-10 19:47:38.000000',1,'67f7232ecaf9f97a6517db61',1,3976389070,5,16,'0x1a5017913a8833156f813c15be2966597efd0dfc02a3c56970f14347d757c118',100044),(77,'2025-04-11 00:44:38.000000',0,'67f768c8caf9f97a6517db62',5,4100972657,1,30,'0x998679432ee24d2c0133acba243e5377789c9eb6d26184da3c24a15ffe8d2bdd',100186),(78,'2025-04-11 00:52:48.000000',0,'67f76ab6caf9f97a6517db63',6,4001926433,2,66,'0xd08f48b6fb552b6f1103ab50d70b522226500a5c63f6af11546b627f2db27f5c',100296),(79,'2025-04-11 01:31:18.000000',1,'67f773bd32ca3262e6fa62c1',2,3977733962,1,53,'0x89fb114c1f0514f5143a15a690e03af8c285a9fa602520273afc3d4325960c70',100266),(80,'2025-04-11 01:34:38.000000',0,'67f7748232ca3262e6fa62c2',1,3976389070,5,19,'0x579b6abe00417b27282a29cca9373123c25ce0e1f7a4beffa3a955bf633f841f',100010),(81,'2025-04-11 01:40:58.000000',0,'67f775ff32ca3262e6fa62c3',1,3976389070,5,22,'0x5c3b2b10be90edc90a8a05191214bee372d58963d45bac95521b8f5b947369a7',100090),(82,'2025-04-11 01:44:08.000000',1,'67f776be32ca3262e6fa62c4',5,4100972657,1,28,'0x6ea43ce87140183913cc03cac40f36c14bcf15cc5983a7d29c6d7c49de098c88',100164),(83,'2025-04-11 01:47:28.000000',0,'67f7776e32ca3262e6fa62c5',5,4100972657,1,65,'0x4789473b17e9995947b48b84158b076e6d3d847cf51380b357fb25d152b775ec',100276),(84,'2025-04-11 01:48:18.000000',0,'67f777bb32ca3262e6fa62c6',2,3977733962,1,41,'0xf88c317bd2ffaf63dfc3980dd95899145c496daccef8374d31e7589853cd6268',100238),(85,'2025-04-11 01:49:38.000000',0,'67f7780f32ca3262e6fa62c7',2,3977733962,1,37,'0xb526da8c1e4b894cb6adce7a872239f65ba10ea40115b86c73cb0ca964f4700d',100254),(86,'2025-04-11 02:14:08.000000',0,'67f77dcdf0d876566b2237e2',2,3977733962,1,31,'0x1bebe6e267043005e32334fbff86d7c40529fcc6958aebfdd2e23d2b79250a48',100216),(87,'2025-04-10 17:16:08.000000',0,'67f77e3e8f3b9f4792a4abc0',2,3977733962,1,31,'0xeb47517ceefce2667b89f71a86aaf078a630670402c1edd1a2a861efc4abe19a',100217);
-
---
--- Dumping data for table `used_histories`
---
-
-INSERT INTO `used_histories` (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id) VALUES (6,'2025-04-09 22:46:08.000000',100004,'0x9ed8b0ac5d4f1b6df07ac79776493ee5d501eee0c6a7ad5b5a553c9b9a738103',19,1),(7,'2025-04-09 22:56:08.000000',100237,'0x7bf84536cd9bef06671c9b231abab0172087b0509c5e4028cd352e5998af4bf9',40,1),(8,'2025-04-09 22:56:28.000000',100282,'0x793ea45bd1ae545d5972339850f129d8ae817216f7d46abbd317bb57116b503b',33,1),(9,'2025-04-09 22:56:58.000000',100269,'0x66b3de733e69d9d7bf3201ad82c17f70b18ef4ee4321caa84834416d0ea79fe3',61,1),(10,'2025-04-09 22:57:28.000000',100235,'0x533e386ab5d40a8771f18485dd655f3b9eecd22c20c646f8f2dd3352defec264',40,1),(11,'2025-04-09 22:57:58.000000',100155,'0x7fc29bd65b65d039ef9755c2025768c9b95ebee817315d3d2df322af03d02954',26,1),(12,'2025-04-09 22:58:28.000000',100156,'0xd45e8762863c8da89c6ce75db39bfc48e6834982be7c6c67873a68922702710d',26,1),(13,'2025-04-11 01:12:18.000000',100271,'0xaa6045764ba46f7390b78cb45805bf2437eb614709fc4a11ee5482709c20900f',62,2),(14,'2025-04-10 18:01:28.000000',100278,'0x0f2031ce8138155abb33b50a9a31d58c00e26aea6dd84a1dba4eeea03f6cbfb6',63,5);
+-- 7. article_histories
+INSERT INTO article_histories (article_history_id, created_at, history_type, user_id, article_id)
+VALUES (1, '2025-03-25 11:00:00', 1, 1, 1);
+INSERT INTO article_histories (article_history_id, created_at, history_type, user_id, article_id)
+VALUES (2, '2025-03-25 11:05:00', 2, 2, 2);
+INSERT INTO article_histories (article_history_id, created_at, history_type, user_id, article_id)
+VALUES (3, '2025-03-25 11:10:00', 1, 3, 3);
+INSERT INTO article_histories (article_history_id, created_at, history_type, user_id, article_id)
+VALUES (4, '2025-03-25 11:15:00', 3, 4, 4);
+INSERT INTO article_histories (article_history_id, created_at, history_type, user_id, article_id)
+VALUES (5, '2025-03-25 11:20:00', 2, 5, 5);
 
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+-- 8. gift_histories (JPA 기준에 맞춘 형태)
+INSERT INTO gift_histories (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received)
+VALUES (1, '2025-03-25 12:00:00', 'mongo001', 1, 2, NULL, 1, false);
 
--- Dump completed on 2025-04-10 22:21:12
+INSERT INTO gift_histories (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received)
+VALUES (2, '2025-03-25 12:10:00', 'mongo002', 2, 3, NULL, 2, false);
+
+INSERT INTO gift_histories (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received)
+VALUES (3, '2025-03-25 12:20:00', 'mongo003', 3, 4, NULL, 3, false);
+
+INSERT INTO gift_histories (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received)
+VALUES (4, '2025-03-25 12:30:00', 'mongo004', 4, 5, NULL, 4, false);
+
+INSERT INTO gift_histories (gift_history_id, created_at, mongo_id, from_user_id, to_user_kakao_id, to_user_id, gifticon_id, is_received)
+VALUES (5, '2025-03-25 12:40:00', 'mongo005', 5, 1, NULL, 5, false);
+
+-- 9. used_histories (JPA 기준 반영)
+INSERT INTO used_histories (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id)
+VALUES (1, '0xtxhash001', 100001, '2025-03-25 13:00:00', 1, 1);
+
+INSERT INTO used_histories (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id)
+VALUES (2, '0xtxhash002', 100002, '2025-03-25 13:10:00', 2, 2);
+
+INSERT INTO used_histories (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id)
+VALUES (3, '0xtxhash003', 100003, '2025-03-25 13:20:00', 3, 3);
+
+INSERT INTO used_histories (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id)
+VALUES (4, '0xtxhash004', 100004, '2025-03-25 13:30:00', 4, 4);
+
+INSERT INTO used_histories (used_history_id, tx_hash, serial_num, created_at, user_id, gifticon_id)
+VALUES (5, '0xtxhash005', 100005, '2025-03-25 13:40:00', 5, 5);
