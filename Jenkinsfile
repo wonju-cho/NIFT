@@ -2,7 +2,7 @@ pipeline {
 	agent any
 
 	parameters {
-  		choice(name: 'ENV', choices: ['dev', 'master'], description: 'Select deploy environment')
+  		choice(name: 'ENV', choices: ['develop', 'master'], description: 'Select deploy environment')
 	}
 
 	stages {
@@ -16,7 +16,7 @@ pipeline {
 					def selectedEnv = params.ENV?.trim()?.toLowerCase()
 
 					// null 이거나 공백이거나 잘못된 값일 경우 자동 분기
-					if (!selectedEnv || !(selectedEnv in ['dev', 'master'])) {
+					if (!selectedEnv || !(selectedEnv in ['develop', 'master'])) {
 						selectedEnv = (branch == 'develop') ? 'dev' : 'master'
 						echo "🔄 ENV auto-detected as: ${selectedEnv}"
 					} else {
@@ -70,7 +70,7 @@ pipeline {
 				script {
 					def db = readProperties file: '.env'
 
-					def isDev = (env.ENV == 'dev')
+					def isDev = (env.ENV == 'develop')
 
 					def mySQLDbName = isDev ? db.MYSQL_DEV_DATABASE : db.MYSQL_DATABASE
 					def mongoDbName ='nift_db'
@@ -104,7 +104,7 @@ pipeline {
 
 	            	def props = readProperties file: '.env'
 		            def workspace = env.WORKSPACE.replaceFirst("^/var/jenkins_home", "/home/ubuntu/jenkins-data")
-		            def migrationPath = (env.ENV == 'dev') ?
+		            def migrationPath = (env.ENV == 'develop') ?
 		               	"${workspace}/backend/src/main/resources/db/migration" :
 		                "${workspace}/backend/src/main/resources/db/migration_master"
 
