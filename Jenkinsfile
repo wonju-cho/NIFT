@@ -72,7 +72,7 @@ pipeline {
 					def isDev = (env.ENV == 'dev')
 
 					def mySQLDbName = isDev ? db.MYSQL_DEV_DATABASE : db.MYSQL_DATABASE
-					def mongoDbName = isDev ? 'nift_db' : 'nift'
+					def mongoDbName ='nift_db'
 
 					//덮어쓰기
 					db["MYSQL_DATABASE"] = mySQLDbName
@@ -100,8 +100,7 @@ pipeline {
 		stage('Flyway Check and Migration') {
 		    steps {
 		        script {
-		            if (env.ENV == 'dev') {
-		                def props = readProperties file: '.env'
+		           def props = readProperties file: '.env'
 		                def workspace = env.WORKSPACE.replaceFirst("^/var/jenkins_home", "/home/ubuntu/jenkins-data")
 		                def migrationPath = (env.ENV == 'dev') ?
 		                "${workspace}/backend/src/main/resources/db/migration" :
@@ -152,10 +151,6 @@ pipeline {
 		                    sh "${baseCmd} repair"
 		                }
 
-		                sh "${baseCmd} migrate"
-		            } else {
-		                echo "👌 (master branch) Skipping Flyway Migration."
-		            }
 		        }
 		    }
 		}
