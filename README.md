@@ -42,6 +42,37 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 # 👥팀 구성
 
 ---
+### 권유주(BE/FE)
+
+- 상품 목록 관련 REST API 설계 및 다중 카테고리, 필터링 기능 구현과 UI 연동
+- 마이페이지 내 메타마스크 지갑 보유 기프티콘 조회 기능 및 UI 개발
+
+### 김도원(SmartContract/BE)
+
+- 스마트 컨트랙트 코드 작성 및 ABI연결
+- REST API 설계 및 구현
+- DB 테이블 설계
+
+### 조희진(BE/SmartContract)
+
+- 스마트 컨트랙트 코드 작성
+- 히스토리 관련 REST API 작성
+
+### 조원주(Infra)
+
+- 브랜치에 따라 다른 빌드 전략을 적용하도록 파이프라인을 구축
+- Data Migration을 이용하여 데이터를 효과적으로 관리
+
+### 문영민(BE/FE)
+
+- REST API 설계 및 구현, 선물 송수신 트랜잭션 처리 로직 구현
+- 카카오 API 적용
+- 마이페이지, 선물카드 확인 UI 구현
+
+### 최미서(FE)
+
+- 사용자 웹 애플리케이션의 전체 레이아웃 및 페이지 구조 설계
+- 관리자 웹 애플리케이션의 전반적인 UI 프레임워크 구축 및 반응형 디자인 적용
 
 
 # 🚀주요 기능
@@ -49,8 +80,7 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 ---
 
 ### 👤 사용자 사이트
-<details>
-<summary> **메인 페이지** </summary>
+- **메인 페이지**
     - **최근 등록 상품 및 인기 상품 조회**
         
         ![image.png](./README_contents/image.png)
@@ -58,16 +88,16 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
         - 최근 등록된 상품 및 인기 상품을 조회할 수 있습니다.
     - **소셜 로그인**
         
-        ![image.png](./README_contents/image1.png)
+        ![image.png](./README_contents/image 1.png)
         
         - 소셜 로그인(카카오톡)을 통해 로그인 할 수 있습니다.
-</details>
 
-<details>
-<summary> **마이페이지** </summary>
+
+
+- **마이페이지** 
     - **지갑 연결**
         
-        ![image.png](./README_contents/image2.png)
+        ![image.png](./README_contents/image 2.png)
         
         - [설정]탭 및 좌측 본인 정보 칸에서, 지갑과 페이지를 연결할 수 있습니다.
     - **보유 NIFT 조회 및 거래 내역 조회**
@@ -81,10 +111,10 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
         
         - 보유한 기프티콘을 클릭하고, 사용하기 버튼을 누르면 카메라가 동작합니다. 기프티콘을 사용하고자 하는 매장의 지갑주소QR 코드를 읽으면 주소에 대한 유효값을 검증하고, 사용이 완료됩니다.
 
-</details>
 
-<details>
-<summary> **게시글 조회 페이지** </summary>
+
+
+- **게시글 조회 페이지**
     - **게시글 조회**
         
         ![게시글 조회 - Clipchamp로 제작.gif](./README_contents/게시글_조회_-_Clipchamp로_제작.gif)
@@ -95,7 +125,7 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
         ![기프티콘_구매_모바일 - Clipchamp로 제작.gif](./README_contents/기프티콘_구매_모바일_-_Clipchamp로_제작.gif)
         
         - 판매 등록된 기프티콘을 구매할 수 있습니다.
-</details>
+
 
 - **게시글 등록 페이지**
     - **기프티콘 판매 게시글 등록하기**
@@ -127,9 +157,9 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
         
         **ex) 기프티콘 등록 요청서를 받은 상황**
         
-        ![image.png](image%203.png)
+        ![image.png](./README_contents/image 3.png)
         
-        ![image.png](image%204.png)
+        ![image.png](./README_contents/image 4.png)
         
 - **NIFT 발급 페이지**
     - **기프티콘(NFT) 발급**
@@ -190,7 +220,37 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 
 ### **Front-End**
 
-- 
+- **Next.js 14**
+    - App Router 기반 프로젝트 구조
+    - `use client` 지시어를 활용한 클라이언트 컴포넌트 구성
+    - `page.tsx` 단위의 경로별 페이지 구성 및 동적 라우팅 적용
+- **TypeScript**
+    - 명시적인 타입 선언을 통한 안정성 확보
+    - API 응답 타입, Props 인터페이스, 컴포넌트 상태 등을 엄격히 관리
+- **Tailwind CSS**
+    - 유틸리티 기반 CSS 프레임워크 사용
+    - 반응형 UI 및 사용자 친화적인 디자인 구현
+- **Framer Motion**
+    - 선물 박스 애니메이션 등 인터랙티브한 사용자 경험 제공
+    - 단계별 애니메이션 시퀀스를 통한 몰입도 강화
+- **Shadcn/ui**
+    - 버튼, 다이얼로그 등 기본 UI 구성요소 활용
+    - Dialog, Tabs, Badge 등 다양한 컴포넌트를 커스터마이징하여 적용
+- **Axios + Interceptor**
+    - API 통신 라이브러리로 axios 사용
+    - JWT 토큰을 자동으로 헤더에 포함시키는 interceptor 설정
+    - **AccessToken 만료 시 자동 로그아웃 처리 및 로그인 페이지로 리디렉션**
+    - 서버로부터의 인증 실패(`401`) 응답 시 모달 또는 토스트 메시지로 사용자에게 안내
+- **Responsive / Mobile UI**
+    - 모바일 환경 최적화
+    - 카카오톡 친구에게 선물 전송 등의 UX 흐름 고려
+- **이미지 최적화**
+    - `next/image`를 활용하여 자동 이미지 크기 조절 및 lazy loading 처리
+    - GIF / 카드 디자인 등 고용량 이미지도 네트워크 병목 없이 렌더링
+    - `blurDataURL` 및 placeholder를 통해 UX 향상
+- **에러 처리 및 사용자 피드백**
+    - 요청 실패 시 토스트 / 모달을 통한 사용자 피드백 제공
+    - 예외 상황에서도 앱이 중단되지 않도록 방어 로직 구현
 
 ### **Infra(CI/CD)**
 
@@ -239,20 +299,20 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 
 - **와이어 프레임**
     
-    ![image.png](image%205.png)
+    ![image.png](./README_contents/image 5.png)
     
 - **초기 기능 디자인**
     
-    ![Nift(수정).png](Nift(%EC%88%98%EC%A0%95).png)
+    ![Nift(수정).png](./README_contents/Nift(수정).png)
     
 
 ### 3. 아키텍처
 
-![NIFT 수정 (4).png](NIFT_%EC%88%98%EC%A0%95_(4).png)
+![NIFT 수정 (4).png](./README_contents/NIFT_수정_(4).png)
 
 ### 4. ERD
 
-![NIFT (3).png](NIFT_(3).png)
+![NIFT (3).png](./README_contents/NIFT_(3).png)
 
 ### 5. API 명세서
 
