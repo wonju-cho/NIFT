@@ -140,14 +140,14 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
         
         - 보유한 기프티콘을 본인의 카카오톡 친구에게 선물할 수 있습니다. 선물할 때 특정 사진, 스티커를 통해 카드를 꾸밀 수 있습니다.
     - **선물 받기**
-
-        ![선물받기 - Clipchamp로 제작.gif](./README_contents/선물받기_-_Clipchamp로_제작.gif)
-
+    
+        ![선물 받기 - Clipchamp로 제작.gif](./README_contents/선물 받기 - Clipchamp로 제작.gif)
+    
         - 카카오톡 메세지를 통해 친구가 보낸 선물을 확인하고 받을 수 있습니다.
     - **받은 선물 카드 확인**
-
-        ![카드확인 - Clipchamp로 제작.gif](./README_contents/카드확인_-_Clipchamp로_제작.gif)
-        
+    
+        ![카드 확인 - Clipchamp로 제작.gif](./README_contents/카드확인 - Clipchamp로 제작.gif)
+    
         - 친구가 보낸 선물 카드를 확인하고, 조회할 수 있습니다.
 
 ### 💻관리자 사이트
