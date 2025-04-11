@@ -4,17 +4,17 @@
 생성 일시: 2025년 4월 10일 오전 9:44
 카테고리: 산출물
 
-![ChatGPT Image 2025년 4월 10일 오후 10_34_35.png](ea59d383-8151-46cf-adad-83c0a424407a.png)
+![ChatGPT Image 2025년 4월 10일 오후 10_34_35.png](./README_contents/ea59d383-8151-46cf-adad-83c0a424407a.png)
 
 # **📌**목차
 
 ---
 
-1. [서비스 소개](https://github.com/soyeonnnb/dallim#-%EC%86%8C%EA%B0%9C)
-2. [팀 구성](https://github.com/soyeonnnb/dallim#-%ED%8C%80-%EA%B5%AC%EC%84%B1)
-3. [주요 기능](https://github.com/soyeonnnb/dallim#-%EC%A3%BC%EC%9A%94-%EA%B8%B0%EB%8A%A5)
-4. [주요 기술](https://github.com/soyeonnnb/dallim#-%EC%A3%BC%EC%9A%94-%EA%B8%B0%EC%88%A0)
-5. [산출물](https://github.com/soyeonnnb/dallim#-%EC%82%B0%EC%B6%9C%EB%AC%BC) (최종발표자료, 아키텍쳐, 디자인, 요구사항 명세서, ERD, API 명세서)
+1. [서비스 소개](#서비스-소개)
+2. [팀 구성](#팀-구성)
+3. [주요 기능](#주요-기능)
+4. [주요 기술](#주요-기술)
+5. [산출물](#산출물) (최종발표자료, 아키텍쳐, 디자인, 요구사항 명세서, ERD, API 명세서)
 
 # 🎁**서비스 소개**
 
@@ -43,60 +43,70 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 
 ---
 
+
 # 🚀주요 기능
 
 ---
 
 ### 👤 사용자 사이트
-
-- **메인 페이지**
+<details>
+<summary> **메인 페이지** </summary>
     - **최근 등록 상품 및 인기 상품 조회**
         
-        ![image.png](image.png)
+        ![image.png](./README_contents/image.png)
         
         - 최근 등록된 상품 및 인기 상품을 조회할 수 있습니다.
     - **소셜 로그인**
         
-        ![image.png](image%201.png)
+        ![image.png](./README_contents/image1.png)
         
         - 소셜 로그인(카카오톡)을 통해 로그인 할 수 있습니다.
-- **마이페이지**
+</details>
+
+<details>
+<summary> **마이페이지** </summary>
     - **지갑 연결**
         
-        ![image.png](image%202.png)
+        ![image.png](./README_contents/image2.png)
         
         - [설정]탭 및 좌측 본인 정보 칸에서, 지갑과 페이지를 연결할 수 있습니다.
     - **보유 NIFT 조회 및 거래 내역 조회**
         
-        ![마이페이지 - Clipchamp로 제작.gif](%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
+        ![마이페이지 - Clipchamp로 제작.gif](./README_contents/마이페이지_-_Clipchamp로_제작.gif)
         
         - 본인이 보유한 NFT 기프티콘을 조회할 수 있고, 거래, 사용, 선물 내역을 확인할 수 있습니다.
     - **보유 기프티콘 사용(모바일 화면)**
         
-        ![기프티콘 사용_모바일 - Clipchamp로 제작.gif](%EA%B8%B0%ED%94%84%ED%8B%B0%EC%BD%98_%EC%82%AC%EC%9A%A9_%EB%AA%A8%EB%B0%94%EC%9D%BC_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
+        ![기프티콘 사용_모바일 - Clipchamp로 제작.gif](./README_contents/기프티콘_사용_모바일_-_Clipchamp로_제작.gif)
         
         - 보유한 기프티콘을 클릭하고, 사용하기 버튼을 누르면 카메라가 동작합니다. 기프티콘을 사용하고자 하는 매장의 지갑주소QR 코드를 읽으면 주소에 대한 유효값을 검증하고, 사용이 완료됩니다.
-- **게시글 조회 페이지**
+
+</details>
+
+<details>
+<summary> **게시글 조회 페이지** </summary>
     - **게시글 조회**
         
-        ![게시글 조회 - Clipchamp로 제작.gif](%EA%B2%8C%EC%8B%9C%EA%B8%80_%EC%A1%B0%ED%9A%8C_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
+        ![게시글 조회 - Clipchamp로 제작.gif](./README_contents/게시글_조회_-_Clipchamp로_제작.gif)
         
         - 게시글을 카테고리별로 조회할 수 있습니다.
     - **기프티콘 구매**
         
-        ![기프티콘_구매_모바일 - Clipchamp로 제작.gif](%EA%B8%B0%ED%94%84%ED%8B%B0%EC%BD%98_%EA%B5%AC%EB%A7%A4_%EB%AA%A8%EB%B0%94%EC%9D%BC_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
+        ![기프티콘_구매_모바일 - Clipchamp로 제작.gif](./README_contents/기프티콘_구매_모바일_-_Clipchamp로_제작.gif)
         
         - 판매 등록된 기프티콘을 구매할 수 있습니다.
+</details>
+
 - **게시글 등록 페이지**
     - **기프티콘 판매 게시글 등록하기**
         
-        ![게시글 등록 - Clipchamp로 제작.gif](%EA%B2%8C%EC%8B%9C%EA%B8%80_%EB%93%B1%EB%A1%9D_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
+        ![게시글 등록 - Clipchamp로 제작.gif](./README_contents/게시글_등록_-_Clipchamp로_제작.gif)
         
         - 보유한 기프티콘을 선택하고, 해당 기프티콘을 판매하는 게시글을 작성할 수 있습니다.
 - **선물 페이지**
     - **선물 보내기**
         
-        ![선물하기 - Clipchamp로 제작.gif](%EC%84%A0%EB%AC%BC%ED%95%98%EA%B8%B0_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
+        ![선물하기 - Clipchamp로 제작.gif](./README_contents/선물하기_-_Clipchamp로_제작.gif)
         
         - 보유한 기프티콘을 본인의 카카오톡 친구에게 선물할 수 있습니다. 선물할 때 특정 사진, 스티커를 통해 카드를 꾸밀 수 있습니다.
     - **선물 받기**
@@ -111,7 +121,7 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 - **상품 등록 페이지**
     - **기프티콘 등록**
         
-        ![기프티콘 등록 - Clipchamp로 제작.gif](%EA%B8%B0%ED%94%84%ED%8B%B0%EC%BD%98_%EB%93%B1%EB%A1%9D_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
+        ![기프티콘 등록 - Clipchamp로 제작.gif](./README_contents/기프티콘_등록_-_Clipchamp로_제작.gif)
         
         - 상품의 정보를 입력하고, 저장할 수 있습니다.
         
@@ -124,7 +134,7 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 - **NIFT 발급 페이지**
     - **기프티콘(NFT) 발급**
         
-        ![기프티콘_발급 - Clipchamp로 제작.gif](%EA%B8%B0%ED%94%84%ED%8B%B0%EC%BD%98_%EB%B0%9C%EA%B8%89_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
+        ![기프티콘_발급 - Clipchamp로 제작.gif](./README_contents/기프티콘_발급_-_Clipchamp로_제작.gif)
         
         - 저장된 기프티콘 정보를 바탕으로 원하는 개수 만큼의 기프티콘을 발급할 수 있습니다.
 
@@ -246,20 +256,20 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 
 ### 5. API 명세서
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0009.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0001.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0009.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0009.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0008.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0008.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0008.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0008.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0007.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0007.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0007.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0007.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0005.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0005.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0005.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0005.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0004.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0004.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0004.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0004.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0003.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0003.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0003.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0003.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0002.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0002.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0002.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0002.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0001.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0001.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0001.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0001.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0006.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0006.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0006.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0006.jpg)
