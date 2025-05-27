@@ -4,21 +4,18 @@
 생성 일시: 2025년 4월 10일 오전 9:44
 카테고리: 산출물
 
-![ChatGPT Image 2025년 4월 10일 오후 10_34_35.png](ea59d383-8151-46cf-adad-83c0a424407a.png)
+![ChatGPT Image 2025년 4월 10일 오후 10_34_35.png](./README_contents/ea59d383-8151-46cf-adad-83c0a424407a.png)
 
-# **📌**목차
+# 📌 목차
+1. [서비스 소개](#-서비스-소개)
+2. [팀 구성](#-팀-구성)
+3. [주요 기능](#-주요-기능)
+4. [주요 기술](#️-주요-기술)
+5. [프로젝트 산출물](#-프로젝트-산출물)
 
----
 
-1. [서비스 소개](https://github.com/soyeonnnb/dallim#-%EC%86%8C%EA%B0%9C)
-2. [팀 구성](https://github.com/soyeonnnb/dallim#-%ED%8C%80-%EA%B5%AC%EC%84%B1)
-3. [주요 기능](https://github.com/soyeonnnb/dallim#-%EC%A3%BC%EC%9A%94-%EA%B8%B0%EB%8A%A5)
-4. [주요 기술](https://github.com/soyeonnnb/dallim#-%EC%A3%BC%EC%9A%94-%EA%B8%B0%EC%88%A0)
-5. [산출물](https://github.com/soyeonnnb/dallim#-%EC%82%B0%EC%B6%9C%EB%AC%BC) (최종발표자료, 아키텍쳐, 디자인, 요구사항 명세서, ERD, API 명세서)
+# 🎁 서비스 소개
 
-# 🎁**서비스 소개**
-
----
 
 ### **⌛프로젝트 기간**
 
@@ -39,98 +36,170 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 > **“NFT는 더 이상 디지털 자산의 끝이 아니라, 실물 소비의 새로운 시작입니다.**
 > 
 
-# 👥팀 구성
+# 👥 팀 구성
 
----
+### 권유주(BE/FE)
 
-# 🚀주요 기능
+- 상품 목록 관련 REST API 설계 및 다중 카테고리, 필터링 기능 구현과 UI 연동
+- 마이페이지 내 메타마스크 지갑 보유 기프티콘 조회 기능 및 UI 개발
 
----
+### 김도원(SmartContract/BE)
 
-### 👤 사용자 사이트
+- 스마트 컨트랙트 코드 작성 및 ABI연결
+- REST API 설계 및 구현
+- DB 테이블 설계
 
-- **메인 페이지**
-    - **최근 등록 상품 및 인기 상품 조회**
-        
-        ![image.png](image.png)
-        
-        - 최근 등록된 상품 및 인기 상품을 조회할 수 있습니다.
-    - **소셜 로그인**
-        
-        ![image.png](image%201.png)
-        
-        - 소셜 로그인(카카오톡)을 통해 로그인 할 수 있습니다.
-- **마이페이지**
-    - **지갑 연결**
-        
-        ![image.png](image%202.png)
-        
-        - [설정]탭 및 좌측 본인 정보 칸에서, 지갑과 페이지를 연결할 수 있습니다.
-    - **보유 NIFT 조회 및 거래 내역 조회**
-        
-        ![마이페이지 - Clipchamp로 제작.gif](%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
-        
-        - 본인이 보유한 NFT 기프티콘을 조회할 수 있고, 거래, 사용, 선물 내역을 확인할 수 있습니다.
-    - **보유 기프티콘 사용(모바일 화면)**
-        
-        ![기프티콘 사용_모바일 - Clipchamp로 제작.gif](%EA%B8%B0%ED%94%84%ED%8B%B0%EC%BD%98_%EC%82%AC%EC%9A%A9_%EB%AA%A8%EB%B0%94%EC%9D%BC_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
-        
-        - 보유한 기프티콘을 클릭하고, 사용하기 버튼을 누르면 카메라가 동작합니다. 기프티콘을 사용하고자 하는 매장의 지갑주소QR 코드를 읽으면 주소에 대한 유효값을 검증하고, 사용이 완료됩니다.
-- **게시글 조회 페이지**
-    - **게시글 조회**
-        
-        ![게시글 조회 - Clipchamp로 제작.gif](%EA%B2%8C%EC%8B%9C%EA%B8%80_%EC%A1%B0%ED%9A%8C_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
-        
-        - 게시글을 카테고리별로 조회할 수 있습니다.
-    - **기프티콘 구매**
-        
-        ![기프티콘_구매_모바일 - Clipchamp로 제작.gif](%EA%B8%B0%ED%94%84%ED%8B%B0%EC%BD%98_%EA%B5%AC%EB%A7%A4_%EB%AA%A8%EB%B0%94%EC%9D%BC_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
-        
-        - 판매 등록된 기프티콘을 구매할 수 있습니다.
-- **게시글 등록 페이지**
-    - **기프티콘 판매 게시글 등록하기**
-        
-        ![게시글 등록 - Clipchamp로 제작.gif](%EA%B2%8C%EC%8B%9C%EA%B8%80_%EB%93%B1%EB%A1%9D_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
-        
-        - 보유한 기프티콘을 선택하고, 해당 기프티콘을 판매하는 게시글을 작성할 수 있습니다.
-- **선물 페이지**
-    - **선물 보내기**
-        
-        ![선물하기 - Clipchamp로 제작.gif](%EC%84%A0%EB%AC%BC%ED%95%98%EA%B8%B0_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
-        
-        - 보유한 기프티콘을 본인의 카카오톡 친구에게 선물할 수 있습니다. 선물할 때 특정 사진, 스티커를 통해 카드를 꾸밀 수 있습니다.
-    - **선물 받기**
-        - **[동영상 필요]**
-        - 카카오톡 메세지를 통해 친구가 보낸 선물을 확인하고 받을 수 있습니다.
-    - **받은 선물 카드 확인**
-        - **[동영상 필요]**
-        - 친구가 보낸 선물 카드를 확인하고, 조회할 수 있습니다.
+### 조희진(BE/SmartContract)
 
-### 💻관리자 사이트
+- 스마트 컨트랙트 코드 작성
+- 히스토리 관련 REST API 작성
 
-- **상품 등록 페이지**
-    - **기프티콘 등록**
-        
-        ![기프티콘 등록 - Clipchamp로 제작.gif](%EA%B8%B0%ED%94%84%ED%8B%B0%EC%BD%98_%EB%93%B1%EB%A1%9D_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
-        
-        - 상품의 정보를 입력하고, 저장할 수 있습니다.
-        
-        **ex) 기프티콘 등록 요청서를 받은 상황**
-        
-        ![image.png](image%203.png)
-        
-        ![image.png](image%204.png)
-        
-- **NIFT 발급 페이지**
-    - **기프티콘(NFT) 발급**
-        
-        ![기프티콘_발급 - Clipchamp로 제작.gif](%EA%B8%B0%ED%94%84%ED%8B%B0%EC%BD%98_%EB%B0%9C%EA%B8%89_-_Clipchamp%EB%A1%9C_%EC%A0%9C%EC%9E%91.gif)
-        
-        - 저장된 기프티콘 정보를 바탕으로 원하는 개수 만큼의 기프티콘을 발급할 수 있습니다.
+### 조원주(Infra)
+
+- 브랜치에 따라 다른 빌드 전략을 적용하도록 파이프라인을 구축
+- Data Migration을 이용하여 데이터를 효과적으로 관리
+
+### 문영민(BE/FE)
+
+- REST API 설계 및 구현, 선물 송수신 트랜잭션 처리 로직 구현
+- 카카오 API 적용
+- 마이페이지, 선물카드 확인 UI 구현
+
+### 최미서(FE)
+
+- 사용자 웹 애플리케이션의 전체 레이아웃 및 페이지 구조 설계
+- 관리자 웹 애플리케이션의 전반적인 UI 프레임워크 구축 및 반응형 디자인 적용
+
+
+# 🚀 주요 기능
+
+
+## 👤 사용자 사이트
+
+<details>
+<summary><strong>메인 페이지</strong></summary>
+
+- **최근 등록 상품 및 인기 상품 조회**
+
+    ![image.png](./README_contents/image.png)
+
+    - 최근 등록된 상품 및 인기 상품을 조회할 수 있습니다.
+
+- **소셜 로그인**
+
+    ![image.png](./README_contents/image%201.png)
+
+    - 소셜 로그인(카카오톡)을 통해 로그인할 수 있습니다.
+
+</details>
+
+<details>
+<summary><strong>마이페이지</strong></summary>
+
+- **지갑 연결**
+
+    ![image.png](./README_contents/image%202.png)
+
+    - [설정]탭 및 좌측 본인 정보 칸에서, 지갑과 페이지를 연결할 수 있습니다.
+
+- **보유 NIFT 조회 및 거래 내역 조회**
+
+    ![마이페이지 - Clipchamp로 제작.gif](./README_contents/마이페이지_-_Clipchamp로_제작.gif)
+
+    - 보유 NFT 기프티콘을 확인하고, 거래, 사용, 선물 내역을 확인할 수 있습니다.
+
+- **보유 기프티콘 사용(모바일 화면)**
+
+    ![기프티콘 사용_모바일 - Clipchamp로 제작.gif](./README_contents/기프티콘_사용_모바일_-_Clipchamp로_제작.gif)
+
+    - 기프티콘을 선택하고 QR을 스캔하여 사용처를 검증 후 사용 완료됩니다.
+
+</details>
+
+<details>
+<summary><strong>게시글 조회 페이지</strong></summary>
+
+- **게시글 조회**
+
+    ![게시글 조회 - Clipchamp로 제작.gif](./README_contents/게시글_조회_-_Clipchamp로_제작.gif)
+
+    - 게시글을 카테고리별로 조회할 수 있습니다.
+
+- **기프티콘 구매**
+
+    ![기프티콘_구매_모바일 - Clipchamp로 제작.gif](./README_contents/기프티콘_구매_모바일_-_Clipchamp로_제작.gif)
+
+    - 판매 등록된 기프티콘을 구매할 수 있습니다.
+
+</details>
+
+<details>
+<summary><strong>게시글 등록 페이지</strong></summary>
+
+- **기프티콘 판매 게시글 등록하기**
+
+    ![게시글 등록 - Clipchamp로 제작.gif](./README_contents/게시글_등록_-_Clipchamp로_제작.gif)
+
+    - 보유한 기프티콘을 선택 후 게시글을 작성해 판매할 수 있습니다.
+
+</details>
+
+<details>
+<summary><strong>선물 페이지</strong></summary>
+
+- **선물 보내기**
+
+    ![선물하기 - Clipchamp로 제작.gif](./README_contents/선물하기_-_Clipchamp로_제작.gif)
+
+    - 보유 기프티콘을 카카오톡 친구에게 선물하고, 꾸밀 수 있습니다.
+
+- **선물 받기**
+
+    ![선물 받기 - Clipchamp로 제작.gif](./README_contents/선물%20받기%20-%20Clipchamp로%20제작.gif)
+
+    - 친구가 보낸 선물을 확인하고 수락할 수 있습니다.
+
+- **받은 선물 카드 확인**
+
+    ![카드 확인 - Clipchamp로 제작.gif](./README_contents/카드확인%20-%20Clipchamp로%20제작.gif)
+
+    - 받은 선물 카드의 내용을 조회할 수 있습니다.
+
+</details>
+
+
+## 💻 관리자 사이트
+
+<details>
+<summary><strong>상품 등록 페이지</strong></summary>
+
+- **기프티콘 등록**
+
+    ![기프티콘 등록 - Clipchamp로 제작.gif](./README_contents/기프티콘_등록_-_Clipchamp로_제작.gif)
+
+    - 기프티콘 정보를 입력하고 저장할 수 있습니다.
+
+    **예시: 기프티콘 등록 요청서**
+
+    ![image.png](./README_contents/image%203.png)  
+    ![image.png](./README_contents/image%204.png)
+
+</details>
+
+<details>
+<summary><strong>NIFT 발급 페이지</strong></summary>
+
+- **기프티콘(NFT) 발급**
+
+    ![기프티콘_발급 - Clipchamp로 제작.gif](./README_contents/기프티콘_발급_-_Clipchamp로_제작.gif)
+
+    - 저장된 기프티콘 정보를 기반으로 원하는 수량만큼 NFT를 발급할 수 있습니다.
+
+</details>
+
 
 # 🛠️ 주요 기술
 
----
 
 ### **Smart Contract**
 
@@ -180,7 +249,37 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 
 ### **Front-End**
 
-- 
+- **Next.js 14**
+    - App Router 기반 프로젝트 구조
+    - `use client` 지시어를 활용한 클라이언트 컴포넌트 구성
+    - `page.tsx` 단위의 경로별 페이지 구성 및 동적 라우팅 적용
+- **TypeScript**
+    - 명시적인 타입 선언을 통한 안정성 확보
+    - API 응답 타입, Props 인터페이스, 컴포넌트 상태 등을 엄격히 관리
+- **Tailwind CSS**
+    - 유틸리티 기반 CSS 프레임워크 사용
+    - 반응형 UI 및 사용자 친화적인 디자인 구현
+- **Framer Motion**
+    - 선물 박스 애니메이션 등 인터랙티브한 사용자 경험 제공
+    - 단계별 애니메이션 시퀀스를 통한 몰입도 강화
+- **Shadcn/ui**
+    - 버튼, 다이얼로그 등 기본 UI 구성요소 활용
+    - Dialog, Tabs, Badge 등 다양한 컴포넌트를 커스터마이징하여 적용
+- **Axios + Interceptor**
+    - API 통신 라이브러리로 axios 사용
+    - JWT 토큰을 자동으로 헤더에 포함시키는 interceptor 설정
+    - **AccessToken 만료 시 자동 로그아웃 처리 및 로그인 페이지로 리디렉션**
+    - 서버로부터의 인증 실패(`401`) 응답 시 모달 또는 토스트 메시지로 사용자에게 안내
+- **Responsive / Mobile UI**
+    - 모바일 환경 최적화
+    - 카카오톡 친구에게 선물 전송 등의 UX 흐름 고려
+- **이미지 최적화**
+    - `next/image`를 활용하여 자동 이미지 크기 조절 및 lazy loading 처리
+    - GIF / 카드 디자인 등 고용량 이미지도 네트워크 병목 없이 렌더링
+    - `blurDataURL` 및 placeholder를 통해 UX 향상
+- **에러 처리 및 사용자 피드백**
+    - 요청 실패 시 토스트 / 모달을 통한 사용자 피드백 제공
+    - 예외 상황에서도 앱이 중단되지 않도록 방어 로직 구현
 
 ### **Infra(CI/CD)**
 
@@ -217,9 +316,8 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
     - 프로젝트의 UI/UX 설계 및 디자인 가이드라인 구축에 활용
     - 팀원 간의 효과적인 디자인 커뮤니케이션 및 일관성 있는 디자인 유지
 
-# 📜프로젝트 산출물
+# 📜 프로젝트 산출물
 
----
 
 ### 1. 최종 발표 자료
 
@@ -229,37 +327,37 @@ NIFT는 이러한 문제를 해결하기 위해, **기프티콘을 NFT로 민팅
 
 - **와이어 프레임**
     
-    ![image.png](image%205.png)
+    ![image.png](./README_contents/image 5.png)
     
 - **초기 기능 디자인**
     
-    ![Nift(수정).png](Nift(%EC%88%98%EC%A0%95).png)
+    ![Nift(수정).png](./README_contents/Nift(수정).png)
     
 
 ### 3. 아키텍처
 
-![NIFT 수정 (4).png](NIFT_%EC%88%98%EC%A0%95_(4).png)
+![NIFT 수정 (4).png](./README_contents/NIFT_수정_(4).png)
 
 ### 4. ERD
 
-![NIFT (3).png](NIFT_(3).png)
+![NIFT (3).png](./README_contents/NIFT_(3).png)
 
 ### 5. API 명세서
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0009.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0001.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0009.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0009.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0008.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0008.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0008.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0008.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0007.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0007.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0007.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0007.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0005.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0005.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0005.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0005.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0004.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0004.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0004.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0004.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0003.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0003.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0003.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0003.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0002.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0002.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0002.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0002.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0001.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0001.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0001.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0001.jpg)
 
-![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0006.jpg](Santa_%EA%B0%9C%EB%B0%9C_%EB%AC%B8%EC%84%9C_-_API_%EB%AA%85%EC%84%B8%EC%84%9C_-_%EC%9A%94%EC%B2%AD_(1)_page-0006.jpg)
+![Santa 개발 문서 - API 명세서 - 요청 (1)_page-0006.jpg](./README_contents/Santa_개발_문서_-_API_명세서_-_요청_(1)_page-0006.jpg)
